@@ -11,8 +11,10 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build:web": "expo export --platform web",
-    "check": "npm run typecheck && npm test"
+    "build:web": "expo export --platform web && node scripts/prepare-offline.mjs",
+    "check": "npm run typecheck && npm test",
+    "format": "prettier --write src supabase/functions *.json *.js",
+    "preview": "node scripts/serve-web.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -41,6 +43,7 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-ble-plx": "^3.5.1",
+    "react-native-maps": "1.27.2",
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
@@ -53,8 +56,14 @@
     "@types/node": "^24.0.0",
     "@types/react": "~19.2.0",
     "babel-preset-expo": "~57.0.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^3.4.19",
-    "typescript": "~5.9.2",
-    "vitest": "^3.2.4"
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "decode-uri-component": "^0.5.0",
+    "postcss-selector-parser": "^7.1.6",
+    "uuid": "^11.1.1"
   }
 }

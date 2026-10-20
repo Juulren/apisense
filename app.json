@@ -11,7 +11,8 @@
       "bundleIdentifier": "com.apisense.app"
     },
     "android": {
-      "package": "com.apisense.app"
+      "package": "com.apisense.app",
+      "allowBackup": false
     },
     "web": {
       "bundler": "metro",
@@ -19,15 +20,18 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
       "expo-secure-store",
       [
         "react-native-ble-plx",
         {
           "isBackgroundEnabled": false,
-          "modes": [
-            "central"
-          ],
+          "modes": ["central"],
           "bluetoothAlwaysPermission": "Apisense usa Bluetooth para recibir telemetría de tus micrófonos de colmena."
         }
       ]
