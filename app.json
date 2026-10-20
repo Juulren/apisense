@@ -1,1 +1,39 @@
-{"expo":{"name":"Apisense","slug":"apisense","scheme":"apisense","version":"0.1.0","orientation":"portrait","userInterfaceStyle":"automatic","ios":{"supportsTablet":true,"bundleIdentifier":"com.apisense.app"},"android":{"package":"com.apisense.app"},"web":{"bundler":"metro","output":"single"},"plugins":["expo-router","expo-sqlite","expo-secure-store"],"experiments":{"typedRoutes":true}}}
+{
+  "expo": {
+    "name": "Apisense",
+    "slug": "apisense",
+    "scheme": "apisense",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.apisense.app"
+    },
+    "android": {
+      "package": "com.apisense.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "modes": [
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "Apisense usa Bluetooth para recibir telemetría de tus micrófonos de colmena."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
