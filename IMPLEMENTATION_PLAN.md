@@ -6,7 +6,7 @@ La solicitud inicial produjo trabajo de las fases 0–5 antes de acordar este fl
 
 ## Bloque actual — Issue #4
 
-Rama: `feat/screens-implementation`. Alcance: conectar las diez pantallas operativas y el catálogo a la base local y servicios ya preparados.
+Rama: `feat/screens-implementation`. [PR #19](https://github.com/Juulren/apisense/pull/19), en borrador para revisión. Alcance: conectar las diez pantallas operativas y el catálogo a la base local y servicios ya preparados.
 
 - [x] Onboarding, login/registro y acceso offline; demo separada de cuentas reales.
 - [x] Dashboard con estados derivados de muestras y resúmenes locales.
@@ -34,7 +34,7 @@ La fidelidad exacta de las pantallas sin export original queda en #7. Login clou
 | [#3](https://github.com/Juulren/apisense/issues/3) | SQLite, cola transaccional, revisiones, ACK condicional, retries, upload de audio antes del registro y pull paginado; SQL/RLS/Storage | [PR #11](https://github.com/Juulren/apisense/pull/11), 9 tests SQLite | Local validado. Backend real pendiente en #13 |
 | [#5](https://github.com/Juulren/apisense/issues/5) | Transportes BLE/MQTT, validación y fragmentación, deduplicación y cuatro patrones WAV | [PR #12](https://github.com/Juulren/apisense/pull/12), 7 tests IoT | Código implementado. Firmware/broker/hardware pendiente en #8 |
 | [#6](https://github.com/Juulren/apisense/issues/6) | FFT/MFCC, reglas con abstención, adaptadores ONNX, resúmenes locales y función/cron cloud | [PR #14](https://github.com/Juulren/apisense/pull/14), 7 tests IA; Deno check | Experimental validado en software. Modelo científico y cron desplegado pendientes |
-| [#4](https://github.com/Juulren/apisense/issues/4) | Diez pantallas conectadas y catálogo, flujos demo, cifrado integrado al acceso | Rama actual y reporte docs/VALIDATION.md | Implementación local lista para revisión; detenerse al entregar el PR |
+| [#4](https://github.com/Juulren/apisense/issues/4) | Diez pantallas conectadas y catálogo, flujos demo, cifrado integrado al acceso | [PR #19](https://github.com/Juulren/apisense/pull/19) y reporte docs/VALIDATION.md | Implementación local lista para revisión; detenerse al entregar el PR |
 
 ## Pendientes que requieren bloques separados
 
