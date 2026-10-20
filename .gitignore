@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.tools/
+.artifacts/
+coverage/
+android/
+ios/
+*.log
