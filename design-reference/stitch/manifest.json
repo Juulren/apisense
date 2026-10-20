@@ -1,0 +1,99 @@
+{
+  "project_id": "14657518597972503903",
+  "source": "user-provided local Stitch export",
+  "verified_screen_ids": false,
+  "files": [
+    {
+      "path": "exports/ac_stica_ia_modo_oscuro_apisense/code.html",
+      "sha256": "946b2cef16c86b7485e619ec5255e11379e481a4ca3eaae64394a9ab81732603"
+    },
+    {
+      "path": "exports/ac_stica_ia_modo_oscuro_apisense/screen.png",
+      "sha256": "3dec5ef74a1909f82383ac3069ccfe6297ce3b970cc2495cf26810d991330e1e"
+    },
+    {
+      "path": "exports/ac_stica_ia_simplificada_apisense/code.html",
+      "sha256": "1341835cdf46934eaacc059c5fb245f0982c13aa9463c549a2306c2389fb7ce9"
+    },
+    {
+      "path": "exports/ac_stica_ia_simplificada_apisense/screen.png",
+      "sha256": "cc782b47d0f1200e0a88217e8d183a0c9d1b859ae2656306bed308eee2dfa675"
+    },
+    {
+      "path": "exports/ajustes_y_configuraci_n_modo_oscuro_apisense/code.html",
+      "sha256": "d3ad27dc5fa75196c9d859823f0b548c5b2c38a456496d3d5dee261317c5af83"
+    },
+    {
+      "path": "exports/ajustes_y_configuraci_n_modo_oscuro_apisense/screen.png",
+      "sha256": "b6d45fadf4b5b7b5c3a0d2ec7194a8f2e9081a34429397cde6b3fe13eb756e7b"
+    },
+    {
+      "path": "exports/ajustes_y_configuraci_n_simplificada_apisense/code.html",
+      "sha256": "40e099aaa2762ce5b7fbddbdce397140054ea8a4255b24f2525e34b080557449"
+    },
+    {
+      "path": "exports/ajustes_y_configuraci_n_simplificada_apisense/screen.png",
+      "sha256": "29036b2dc26b388df4e4ef61e3128f277813ad5e84abe8f8c33d6ce499024085"
+    },
+    {
+      "path": "exports/dashboard_modo_oscuro_apisense/code.html",
+      "sha256": "64d732022f669565faad5909ab3a061ce1a5e978ab6c7fb61ea637b58a6d6650"
+    },
+    {
+      "path": "exports/dashboard_modo_oscuro_apisense/screen.png",
+      "sha256": "95e9e9cb7a68958e3f8fcd5975dd77381e446788ed6b1f42a7cafa09f17fda15"
+    },
+    {
+      "path": "exports/dashboard_simplificado_user_friendly_apisense/code.html",
+      "sha256": "b5056eee5de482c9bd24aec0ab8139ab1407a8b610f34664868d14f3c3049b0d"
+    },
+    {
+      "path": "exports/dashboard_simplificado_user_friendly_apisense/screen.png",
+      "sha256": "761da0889a0c8e39690f1b2b711d3b0caefedd05930d017a979bff6be5cefd62"
+    },
+    {
+      "path": "exports/diagn_stico_y_ciclo_modo_oscuro_apisense/code.html",
+      "sha256": "8ad68b70da2314d069a0f7a20797f45260d76402821230bfd0d8cd6c6cc9b058"
+    },
+    {
+      "path": "exports/diagn_stico_y_ciclo_modo_oscuro_apisense/screen.png",
+      "sha256": "0e4f555384ef2a1d946d44ffdb318302a7df264910e3727dd9078e5c2a273bd1"
+    },
+    {
+      "path": "exports/diagn_stico_y_ciclo_simplificado_apisense/code.html",
+      "sha256": "1a7391e9d596be4981058c75f799480a7ea78d92ff60a9d85e6e7c5dadb362c5"
+    },
+    {
+      "path": "exports/diagn_stico_y_ciclo_simplificado_apisense/screen.png",
+      "sha256": "595d9db448ed81539df721b0e65e071eb281e7a83c7081957758c5ea99f96b5b"
+    },
+    {
+      "path": "exports/inicio_de_sesi_n_modo_oscuro_apisense/code.html",
+      "sha256": "44a752ebdcb73b53f457dcb65437623c43741833758ac6d75634a3ddbc79285e"
+    },
+    {
+      "path": "exports/inicio_de_sesi_n_modo_oscuro_apisense/screen.png",
+      "sha256": "ca1ea87ef6df2f36dc039a03313bba342fb113f902594f0a582c255f9e6404d8"
+    },
+    {
+      "path": "exports/inicio_de_sesi_n_simplificado_apisense/code.html",
+      "sha256": "ded3ee89785f8b9be561777028290d542f335591159c3b86d1fc13a6616d5919"
+    },
+    {
+      "path": "exports/inicio_de_sesi_n_simplificado_apisense/screen.png",
+      "sha256": "c72e7e7f30efb46cf0b737b1a821ac70910895cbfa6e375361ce46c9ff448f08"
+    },
+    {
+      "path": "exports/pastel_precision_biotech/DESIGN.md",
+      "sha256": "99b3a211baa6009394a31258992e370d46ce14f7f8b6f3b5a398563e87c2881b"
+    },
+    {
+      "path": "exports/spec_de_botones_y_componentes_ui_apisense_figma/code.html",
+      "sha256": "161c02ca2440602a318f3abb62fe474d50a30e95a099a1ff93e4c8baef59b3f5"
+    },
+    {
+      "path": "exports/spec_de_botones_y_componentes_ui_apisense_figma/screen.png",
+      "sha256": "fc02226602993fa8ae24432232a19a0b980ca2f18dd3dfc50cac5b904721d1dd"
+    }
+  ]
+}

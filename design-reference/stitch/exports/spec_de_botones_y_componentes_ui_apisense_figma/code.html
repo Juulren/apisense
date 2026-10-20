@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Botones y Componentes UI - Apisense</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#F59E0B',
+              primaryHover: '#D97706',
+              primaryLight: '#FEF3C7',
+              secondary: '#10B981',
+              secondaryHover: '#059669',
+              secondaryLight: '#D1FAE5',
+              tertiary: '#0284C7',
+              tertiaryHover: '#0369A1',
+              tertiaryLight: '#E0F2FE',
+              dark: '#0B0F17',
+              darkCard: '#162032',
+              darkBorder: '#1E293B',
+              neutral: '#1E293B',
+              muted: '#64748B',
+              surface: '#F8FAFC',
+              card: '#FFFFFF',
+              border: '#E2E8F0',
+            }
+          },
+          fontFamily: {
+            headline: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            label: ['"Inter"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="bg-[#F1F5F9] text-[#1E293B] font-sans antialiased min-h-screen p-6 md:p-12">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto space-y-12">
+
+    <!-- Header & Documentation Badge -->
+    <header class="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-amber-600 fill">smart_button</span>
+          </div>
+          <span class="text-xs uppercase tracking-wider font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 font-label">
+            Design System Kit • Figma Ready
+          </span>
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Apisense — Spec de Botones e Interactivos</h1>
+        <p class="text-slate-600 text-sm max-w-2xl font-normal leading-relaxed">
+          Catálogo integral con todos los estados, tokens de color, bordes, variantes (Modo Claro & Modo Oscuro) y dimensiones precisas de los botones usados en la aplicación móvil de Apisense.
+        </p>
+      </div>
+
+      <!-- Quick Export / Specs pill -->
+      <div class="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs font-medium text-slate-700">
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-xl shadow-xs border border-slate-200">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Primary #F59E0B
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-xl shadow-xs border border-slate-200">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Secondary #10B981
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-xl shadow-xs border border-slate-200">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span> Tertiary #0284C7
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: BOTONES PRINCIPALES (CTA & ACTIONS) -->
+    <section class="space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <span class="material-symbols-outlined text-amber-500">ads_click</span>
+        <h2 class="text-xl font-bold text-slate-900">1. Botones Principales y Llamados a la Acción (CTA)</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Tokens: Primary, Accent & Secondary</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- CTA Principal: Entrar al Apiario -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">CTA Primario (Login)</span>
+            <span class="text-slate-400 font-mono">h: 52px • r: 16px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-3.5 px-6 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] transition-all rounded-2xl font-bold text-slate-950 text-sm shadow-md shadow-amber-500/20 flex items-center justify-center gap-2">
+              <span>Entrar al Apiario</span>
+              <span class="material-symbols-outlined text-base">arrow_forward</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Envío de formularios / Inicio de sesión</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-amber-500 text-slate-950 rounded-2xl</p>
+          </div>
+        </div>
+
+        <!-- Acción de Campo: Anotar Inspección -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Botón de Acción de Campo</span>
+            <span class="text-slate-400 font-mono">h: 48px • r: 16px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-3 px-5 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] transition-all rounded-2xl font-bold text-slate-950 text-sm flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-symbols-outlined text-lg">add_circle</span>
+              <span>Anotar inspección</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Diagnóstico y registro rápido de colmena</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-amber-500 text-slate-950 font-bold</p>
+          </div>
+        </div>
+
+        <!-- Botón de Audio: Escuchar Zumbido -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Botón Tonal Ámbar Profundo</span>
+            <span class="text-slate-400 font-mono">h: 48px • r: 16px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-3 px-5 bg-amber-700 hover:bg-amber-800 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+              <span class="material-symbols-outlined text-base">volume_up</span>
+              <span>Escuchar zumbido (5 seg)</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Reproducción de muestra acústica TinyML</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-amber-700 text-white rounded-2xl</p>
+          </div>
+        </div>
+
+        <!-- Botón de Sincronización: Nube & LoRaWAN -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Botón de Sincronización Nube</span>
+            <span class="text-slate-400 font-mono">h: 48px • r: 16px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-3 px-5 bg-amber-800 hover:bg-amber-900 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+              <span class="material-symbols-outlined text-base">cloud_sync</span>
+              <span>Forzar Sincronización Local a Nube</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Pantalla de Ajustes y Arquitectura Offline</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-amber-800 text-white font-bold</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 2: ACCIONES SECUNDARIAS, ALERTAS Y TERTARY -->
+    <section class="space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <span class="material-symbols-outlined text-emerald-600">tune</span>
+        <h2 class="text-xl font-bold text-slate-900">2. Botones Secundarios, Acciones de Advertencia & Filtros</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Acciones contextuales y de alerta</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- Botón Ver Cómo Actuar (Alerta de Enjambrazón) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Acción en Banner de Alerta</span>
+            <span class="text-slate-400 font-mono">h: 42px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-sm">lightbulb</span>
+              <span>Ver cómo actuar</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Dashboard ante aviso de calor o enjambrazón</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-amber-500 text-slate-950 font-bold</p>
+          </div>
+        </div>
+
+        <!-- Botón Secundario: Descartar Alerta -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Descartar / Secundario Outline</span>
+            <span class="text-slate-400 font-mono">h: 42px</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-2.5 px-4 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+              <span>Descartar</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Desestimar notificación de anomalía acústica</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-white border border-slate-200 text-slate-700</p>
+          </div>
+        </div>
+
+        <!-- Botón Demo (Login) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Botón Fantasma / Demo</span>
+            <span class="text-slate-400 font-mono">Ghost Text</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="py-2.5 px-4 text-amber-700 hover:text-amber-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
+              <span class="material-symbols-outlined text-sm text-amber-600">eco</span>
+              <span>Probar modo demo</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Acceso rápido evaluativo sin credenciales</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: text-amber-700 font-bold hover:underline</p>
+          </div>
+        </div>
+
+        <!-- Botón Acordeón Desplegable -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Botón de Expansión Técnica</span>
+            <span class="text-slate-400 font-mono">Dropdown CTA</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex items-center justify-center min-h-[90px]">
+            <button class="w-full py-3 px-4 bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl font-bold text-xs text-slate-700 flex items-center justify-between shadow-xs">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-500 text-base">tune</span>
+                <span>Ver telemetría y frecuencias</span>
+              </div>
+              <span class="material-symbols-outlined text-sm text-slate-400">expand_more</span>
+            </button>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Desplegar MFCC, espectros y parámetros TinyML</p>
+            <p class="font-mono text-[10px] text-slate-400">Class: bg-white border rounded-2xl justify-between</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 3: SELECTORES SEGMENTADOS, CHIPS & TOGGLES -->
+    <section class="space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <span class="material-symbols-outlined text-sky-600">segment</span>
+        <h2 class="text-xl font-bold text-slate-900">3. Selectores Segmentados, Conmutadores (Toggles) y Chips</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Controles de selección y estados</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Selector de Tema / Apariencia -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Selector de Tema (Ajustes)</span>
+            <span class="text-slate-400 font-mono">Segmented Control</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl space-y-2">
+            <div class="grid grid-cols-3 gap-2">
+              <button class="py-2.5 px-2 bg-white border-2 border-amber-500 rounded-xl flex flex-col items-center gap-1 shadow-xs">
+                <span class="material-symbols-outlined text-amber-600 text-lg">light_mode</span>
+                <span class="text-[10px] font-bold text-amber-800">Desactivar<br>(Claro)</span>
+              </button>
+              <button class="py-2.5 px-2 bg-white/70 hover:bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-1">
+                <span class="material-symbols-outlined text-slate-500 text-lg">dark_mode</span>
+                <span class="text-[10px] font-semibold text-slate-600">Activar<br>(Oscuro)</span>
+              </button>
+              <button class="py-2.5 px-2 bg-white/70 hover:bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-1">
+                <span class="material-symbols-outlined text-slate-500 text-lg">settings_suggest</span>
+                <span class="text-[10px] font-semibold text-slate-600">Auto /<br>Sistema</span>
+              </button>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Estado Activo:</strong> Borde ámbar 2px, texto ámbar-800, fondo blanco</p>
+            <p><strong>Estado Inactivo:</strong> Borde slate-200, texto slate-600</p>
+          </div>
+        </div>
+
+        <!-- Toggle Switch: Modo sin Internet -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Conmutador Offline (Switch Toggle)</span>
+            <span class="text-slate-400 font-mono">Toggle Switch</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex flex-col gap-3 justify-center min-h-[100px]">
+            <!-- State ON -->
+            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-800">Modo Offline (Activo)</span>
+              <div class="w-12 h-7 bg-amber-500 rounded-full flex items-center p-1 cursor-pointer transition-colors justify-end">
+                <div class="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[13px] text-amber-600 font-bold">check</span>
+                </div>
+              </div>
+            </div>
+            <!-- State OFF -->
+            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+              <span class="text-xs font-semibold text-slate-400">Modo Offline (Inactivo)</span>
+              <div class="w-12 h-7 bg-slate-300 rounded-full flex items-center p-1 cursor-pointer transition-colors justify-start">
+                <div class="w-5 h-5 bg-white rounded-full shadow-sm"></div>
+              </div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Tokens:</strong> Activo: bg-amber-500 • Inactivo: bg-slate-300</p>
+          </div>
+        </div>
+
+        <!-- Chips de Filtros y Sensores -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Chips de Selección y Sensores</span>
+            <span class="text-slate-400 font-mono">Status Chips</span>
+          </div>
+          <div class="p-4 bg-slate-50 rounded-xl flex flex-wrap gap-2 items-center justify-center min-h-[100px]">
+            <span class="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-full text-xs font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              C-01 Calma
+            </span>
+            <span class="px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-300 rounded-full text-xs font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              C-04 Alerta
+            </span>
+            <span class="px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-full text-xs font-medium flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              C-02 Calma
+            </span>
+            <span class="px-3 py-1.5 bg-sky-50 text-sky-800 border border-sky-300 rounded-full text-xs font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+              8 Sensores
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-500 font-label space-y-1">
+            <p><strong>Uso:</strong> Filtro de colmenas en pantalla Acústica IA</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 4: BOTONES EN MODO OSCURO (DARK MODE SUITE) -->
+    <section class="space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-300 pb-3">
+        <span class="material-symbols-outlined text-amber-400">dark_mode</span>
+        <h2 class="text-xl font-bold text-slate-900">4. Componentes y Botones en Modo Oscuro (Dark Theme)</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Superficies oscuras: #0B0F17 & #162032</span>
+      </div>
+
+      <div class="bg-[#0B0F17] p-8 rounded-3xl border border-slate-800 shadow-xl space-y-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          <!-- CTA Primario Modo Oscuro -->
+          <div class="bg-[#162032] p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span class="font-bold text-amber-400">CTA Primario (Dark)</span>
+              <span class="font-mono text-[10px]">#F59E0B</span>
+            </div>
+            <button class="w-full py-3.5 px-5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 transition-all">
+              <span>Entrar al Apiario</span>
+              <span class="material-symbols-outlined text-sm font-bold">arrow_forward</span>
+            </button>
+            <p class="text-[10px] text-slate-400">Alto contraste sobre fondo negro grafito</p>
+          </div>
+
+          <!-- Botón Anotar Inspección Modo Oscuro -->
+          <div class="bg-[#162032] p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span class="font-bold text-amber-400">Acción Diagnóstico (Dark)</span>
+              <span class="font-mono text-[10px]">#F59E0B</span>
+            </div>
+            <button class="w-full py-3 px-5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-symbols-outlined text-base">add_circle</span>
+              <span>+ Anotar inspección</span>
+            </button>
+            <p class="text-[10px] text-slate-400">Identificador unificado de registro en campo</p>
+          </div>
+
+          <!-- Selector de Tema Activo en Oscuro -->
+          <div class="bg-[#162032] p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span class="font-bold text-amber-400">Selector Activo (Dark)</span>
+              <span class="font-mono text-[10px]">Border Amber</span>
+            </div>
+            <div class="bg-[#0B0F17] p-2 rounded-xl border border-amber-500/50 flex flex-col items-center gap-1">
+              <span class="material-symbols-outlined text-amber-400 text-base">dark_mode</span>
+              <span class="text-[10px] font-bold text-amber-400">Activar (Oscuro)</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Borde con resplandor ámbar e icono relleno</p>
+          </div>
+
+          <!-- Botón Secundario Descartar Modo Oscuro -->
+          <div class="bg-[#162032] p-5 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span class="font-bold text-slate-300">Secundario (Dark)</span>
+              <span class="font-mono text-[10px]">#1E293B</span>
+            </div>
+            <button class="w-full py-2.5 px-4 bg-[#1E293B] hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-semibold text-xs flex items-center justify-center">
+              <span>Descartar</span>
+            </button>
+            <p class="text-[10px] text-slate-400">Superficie pizarra neutra de bajo deslumbramiento</p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 5: BARRA DE NAVEGACIÓN INFERIOR (BOTTOM BAR SPEC) -->
+    <section class="space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <span class="material-symbols-outlined text-amber-500">dock</span>
+        <h2 class="text-xl font-bold text-slate-900">5. Botones de Navegación Inferior (Bottom Tab Bar)</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Pestañas: Activo vs Inactivo</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- MODO CLARO BOTTOM BAR -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-800">Barra Inferior — Modo Claro</span>
+            <span class="text-slate-400 font-mono">Fixed Mobile Bar</span>
+          </div>
+
+          <div class="p-6 bg-slate-100 rounded-2xl flex items-center justify-center">
+            <div class="w-full max-w-sm bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl p-2 px-4 shadow-md flex items-center justify-between">
+              
+              <!-- Tab 1: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-400 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">grid_view</span>
+                <span class="text-[10px] font-medium">Inicio</span>
+              </div>
+
+              <!-- Tab 2: Activo (Acústica) -->
+              <div class="flex flex-col items-center gap-1 text-amber-600 cursor-pointer">
+                <span class="material-symbols-outlined text-xl fill text-amber-600">graphic_eq</span>
+                <span class="text-[10px] font-bold">Acústica</span>
+              </div>
+
+              <!-- Tab 3: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-400 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">favorite</span>
+                <span class="text-[10px] font-medium">Diagnóstico</span>
+              </div>
+
+              <!-- Tab 4: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-400 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">settings</span>
+                <span class="text-[10px] font-medium">Ajustes</span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 text-xs font-label">
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+              <span class="font-bold text-amber-900 block mb-1">Estado Seleccionado:</span>
+              <p class="text-slate-600 text-[11px]">Color: <code class="text-amber-700 font-mono">text-amber-600</code><br>Icono: <code class="text-amber-700 font-mono">FILL: 1</code><br>Texto: <code class="text-amber-700 font-mono">font-bold (11px)</code></p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <span class="font-bold text-slate-800 block mb-1">Estado Inactivo:</span>
+              <p class="text-slate-600 text-[11px]">Color: <code class="text-slate-500 font-mono">text-slate-400</code><br>Icono: <code class="text-slate-500 font-mono">FILL: 0</code><br>Texto: <code class="text-slate-500 font-mono">font-medium (11px)</code></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODO OSCURO BOTTOM BAR -->
+        <div class="bg-[#0B0F17] p-6 rounded-2xl border border-slate-800 shadow-sm space-y-4">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-200">Barra Inferior — Modo Oscuro</span>
+            <span class="text-slate-500 font-mono">Fixed Mobile Bar (Dark)</span>
+          </div>
+
+          <div class="p-6 bg-[#070A0F] rounded-2xl flex items-center justify-center">
+            <div class="w-full max-w-sm bg-[#162032]/95 backdrop-blur-md border border-slate-800 rounded-2xl p-2 px-4 shadow-lg flex items-center justify-between">
+              
+              <!-- Tab 1: Activo (Inicio) -->
+              <div class="flex flex-col items-center gap-1 text-amber-400 cursor-pointer">
+                <span class="material-symbols-outlined text-xl fill text-amber-400">grid_view</span>
+                <span class="text-[10px] font-bold">Inicio</span>
+              </div>
+
+              <!-- Tab 2: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-500 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">graphic_eq</span>
+                <span class="text-[10px] font-medium">Acústica</span>
+              </div>
+
+              <!-- Tab 3: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-500 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">favorite</span>
+                <span class="text-[10px] font-medium">Diagnóstico</span>
+              </div>
+
+              <!-- Tab 4: Inactivo -->
+              <div class="flex flex-col items-center gap-1 text-slate-500 cursor-pointer">
+                <span class="material-symbols-outlined text-xl">settings</span>
+                <span class="text-[10px] font-medium">Ajustes</span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 text-xs font-label">
+            <div class="p-3 bg-amber-950/40 rounded-xl border border-amber-800/50">
+              <span class="font-bold text-amber-400 block mb-1">Estado Seleccionado (Dark):</span>
+              <p class="text-slate-400 text-[11px]">Color: <code class="text-amber-400 font-mono">text-amber-400</code><br>Icono: <code class="text-amber-400 font-mono">FILL: 1</code><br>Texto: <code class="text-amber-400 font-mono">font-bold</code></p>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800">
+              <span class="font-bold text-slate-300 block mb-1">Estado Inactivo (Dark):</span>
+              <p class="text-slate-400 text-[11px]">Color: <code class="text-slate-400 font-mono">text-slate-500</code><br>Icono: <code class="text-slate-400 font-mono">FILL: 0</code><br>Texto: <code class="text-slate-400 font-mono">font-medium</code></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 6: TOKENS DE DISEÑO & GUÍA DE EXPORTACIÓN FIGMA -->
+    <section class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-3">
+        <span class="material-symbols-outlined text-slate-700">token</span>
+        <h2 class="text-xl font-bold text-slate-900">6. Tabla de Tokens y Propiedades para Figma</h2>
+        <span class="text-xs text-slate-500 font-label ml-auto">Especificación Técnica Nielsen Norman & Figma</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-label border-collapse">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider">
+              <th class="p-3 font-bold">Elemento / Variante</th>
+              <th class="p-3 font-bold">Color / Background</th>
+              <th class="p-3 font-bold">Tipografía / Icono</th>
+              <th class="p-3 font-bold">Radio de Borde (Corner)</th>
+              <th class="p-3 font-bold">Padding & Altura</th>
+              <th class="p-3 font-bold">Función en Apisense</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-600">
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Botón Primario (Login)</td>
+              <td class="p-3 font-mono text-amber-700">#F59E0B (Amber 500)</td>
+              <td class="p-3">Plus Jakarta Sans 14px / Bold 700</td>
+              <td class="p-3 font-mono">16px (rounded-2xl)</td>
+              <td class="p-3 font-mono">py: 14px • px: 24px (h: 52px)</td>
+              <td class="p-3">Ingreso y acción prioritaria</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Botón Campo (+ Inspección)</td>
+              <td class="p-3 font-mono text-amber-700">#F59E0B (Amber 500)</td>
+              <td class="p-3">Plus Jakarta Sans 13px / Bold + Add Icon</td>
+              <td class="p-3 font-mono">16px (rounded-2xl)</td>
+              <td class="p-3 font-mono">py: 12px • px: 20px (h: 48px)</td>
+              <td class="p-3">Registro de colmena y bitácora</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Botón Audio Acústico</td>
+              <td class="p-3 font-mono text-amber-800">#B45309 (Amber 700)</td>
+              <td class="p-3">Plus Jakarta Sans 12px / Bold + Volume Icon</td>
+              <td class="p-3 font-mono">16px (rounded-2xl)</td>
+              <td class="p-3 font-mono">py: 12px • px: 20px (h: 48px)</td>
+              <td class="p-3">Reproducir muestra de zumbido</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Botón Sincronización Nube</td>
+              <td class="p-3 font-mono text-amber-900">#92400E (Amber 800)</td>
+              <td class="p-3">Plus Jakarta Sans 12px / Bold + Cloud Icon</td>
+              <td class="p-3 font-mono">16px (rounded-2xl)</td>
+              <td class="p-3 font-mono">py: 12px • px: 20px (h: 48px)</td>
+              <td class="p-3">Sincronización local SQLite / LoRa</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Botón Secundario (Descartar)</td>
+              <td class="p-3 font-mono text-slate-600">#FFFFFF / Stroke #E2E8F0</td>
+              <td class="p-3">Plus Jakarta Sans 12px / Semibold 600</td>
+              <td class="p-3 font-mono">12px (rounded-xl)</td>
+              <td class="p-3 font-mono">py: 10px • px: 16px (h: 42px)</td>
+              <td class="p-3">Cierre o descarte de alerta</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Toggle Switch Offline</td>
+              <td class="p-3 font-mono text-amber-700">Activo: #F59E0B / Inactivo: #CBD5E1</td>
+              <td class="p-3">Icon Check 13px</td>
+              <td class="p-3 font-mono">9999px (Pill Full)</td>
+              <td class="p-3 font-mono">w: 48px • h: 28px (Knob 20px)</td>
+              <td class="p-3">Guardado local sin conexión</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-slate-900">Item Bottom Bar</td>
+              <td class="p-3 font-mono text-slate-600">Transparente / Fondo de barra con Blur</td>
+              <td class="p-3">Material Symbol 24px + Inter 11px</td>
+              <td class="p-3 font-mono">12px</td>
+              <td class="p-3 font-mono">p: 8px (Hit target 48x48px)</td>
+              <td class="p-3">Navegación general entre pantallas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
