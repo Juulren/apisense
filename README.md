@@ -6,9 +6,9 @@ Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincr
 
 ## Estado del proyecto
 
-La implementación actual está en la rama [`feat/supabase-integration`](https://github.com/Juulren/apisense/tree/feat/supabase-integration), disponible en el [PR #21](https://github.com/Juulren/apisense/pull/21). Incluye las pantallas del [PR #19](https://github.com/Juulren/apisense/pull/19) y el backend del [Issue #13](https://github.com/Juulren/apisense/issues/13), ya instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción; la integración del código en `main` se revisa mediante PR.**
+La implementación está consolidada en **`main`** mediante el [PR #21](https://github.com/Juulren/apisense/pull/21). Incluye las pantallas y el backend de Supabase, instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
 
-El trabajo se organiza por Issues y se revisa por bloques. El [plan de implementación](IMPLEMENTATION_PLAN.md) registra lo implementado, las verificaciones realizadas y los pendientes. El bloque de Supabase se detiene al entregar su PR para revisión.
+El trabajo se organiza en el [tablero de Apisense](https://github.com/users/Juulren/projects/2): **Pendiente → En curso → En revisión → Terminado**. Cada tarea parte de `main`, usa una rama temporal y se integra tras revisión y checks. Consulta [cómo colaborar](CONTRIBUTING.md) y el [plan de implementación](IMPLEMENTATION_PLAN.md) para ver los avances y pendientes.
 
 La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, monitor acústico, historial, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
 
@@ -26,7 +26,7 @@ La demo no necesita credenciales de Supabase, broker MQTT, dispositivos BLE ni u
 ```bash
 git clone https://github.com/Juulren/apisense.git
 cd apisense
-git switch feat/supabase-integration
+git switch main
 npm ci
 npm run web
 ```
@@ -118,4 +118,4 @@ El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](doc
 | `supabase/`         | Migraciones, políticas y funciones del backend          |
 | `design-reference/` | Referencias visuales del diseño                         |
 
-Estas carpetas están disponibles en la rama de implementación; `main` incorpora el código conforme se revisan e integran los PR.
+Estas carpetas están disponibles en `main`. Para contribuir, sigue [CONTRIBUTING.md](CONTRIBUTING.md).
