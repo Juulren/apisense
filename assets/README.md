@@ -1,0 +1,1 @@
+brand-logo.png: recorte exacto de la marca visible en la exportación PNG de login (región x=303, y=51, 101×101 del original 706×1600). El enlace de imagen del HTML devuelve HTTP 403. Se conserva el recurso raster de referencia; sustituir por el SVG original cuando esté disponible. No es una marca redibujada.

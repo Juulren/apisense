@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Apisense",
+    "slug": "apisense",
+    "scheme": "apisense",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.apisense.app"
+    },
+    "android": {
+      "package": "com.apisense.app",
+      "allowBackup": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
+      "expo-secure-store",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "modes": ["central"],
+          "bluetoothAlwaysPermission": "Apisense usa Bluetooth para recibir telemetría de tus micrófonos de colmena."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

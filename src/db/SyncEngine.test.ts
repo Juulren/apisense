@@ -1,0 +1,257 @@
+import { DatabaseSync } from "node:sqlite";
+import { randomUUID } from "node:crypto";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Repository } from "./Repository";
+import { SyncEngine, type RemotePort } from "./SyncEngine";
+import {
+  TABLES,
+  type Apiary,
+  type AudioSample,
+  type EntityMap,
+  type SqlPort,
+  type Table,
+} from "./types";
+
+const fixed = new Date("2026-10-20T12:00:00.000Z");
+const repositories: Repository[] = [];
+const engines: SyncEngine[] = [];
+async function setup() {
+  const db = new DatabaseSync(":memory:");
+  const port: SqlPort = {
+    exec: async (sql) => {
+      db.exec(sql);
+    },
+    run: async (sql, params = []) => ({
+      changes: Number(db.prepare(sql).run(...params).changes),
+    }),
+    all: async <T>(sql: string, params: (string | number | null)[] = []) =>
+      db.prepare(sql).all(...params) as T[],
+    close: async () => db.close(),
+  };
+  const local = new Repository(port, randomUUID, () => fixed);
+  await local.initialize();
+  repositories.push(local);
+  const apiary = await local.save("apiaries", {
+    user_id: "owner",
+    name: "Maní",
+    latitude: null,
+    longitude: null,
+    check_interval_minutes: 15,
+  });
+  const hive = await local.save("hives", {
+    apiary_id: apiary.id,
+    code: "C-01",
+    queen_status: "unknown",
+    health_score: null,
+    last_audio_check_at: null,
+  });
+  const mic = await local.save("iot_microphones", {
+    hive_id: hive.id,
+    mac_address: "sim-1",
+    firmware_version: "sim",
+    battery_level: 90,
+    sampling_rate_hz: 16000,
+    is_online: 1,
+    last_seen_at: fixed.toISOString(),
+    calibration_db: 0,
+  });
+  let online: (v: boolean) => void = () => {};
+  const remote: RemotePort = {
+    identity: vi.fn(async () => "owner"),
+    clock: vi.fn(async () => fixed.toISOString()),
+    uploadAudio: vi.fn(async () => "owner/hive/audio.wav"),
+    upsert: vi.fn(async () => {}),
+    page: vi.fn(async () => []),
+  };
+  const engine = new SyncEngine(
+    local,
+    remote,
+    "owner",
+    {
+      subscribe: (listener) => {
+        online = listener;
+        return () => {};
+      },
+    },
+    () => fixed,
+  );
+  engines.push(engine);
+  engine.start();
+  return {
+    local,
+    apiary,
+    hive,
+    mic,
+    remote,
+    engine,
+    connect: () => online(true),
+  };
+}
+afterEach(async () => {
+  for (const engine of engines.splice(0)) await engine.stop();
+  for (const repository of repositories.splice(0)) await repository.close();
+});
+async function sample(f: Awaited<ReturnType<typeof setup>>) {
+  return f.local.save("audio_samples", {
+    hive_id: f.hive.id,
+    device_id: f.mic.id,
+    recorded_at: fixed.toISOString(),
+    duration_seconds: 5,
+    dominant_freq_hz: 250,
+    amplitude_db: -30,
+    mfcc_features_json: "[]",
+    audio_file_url: null,
+    local_audio_uri: "file:///durable.wav",
+    acoustic_classification: "unknown",
+    confidence_score: 0,
+    source: "simulator",
+    classifier_version: "unclassified",
+  });
+}
+
+describe("SQLite transactions and synchronization", () => {
+  it("rolls back invalid writes together with their queue entry", async () => {
+    const f = await setup();
+    const count = await f.local.pendingCount();
+    await expect(
+      f.local.save("hives", {
+        apiary_id: "missing-parent",
+        code: "bad",
+        queen_status: "unknown",
+        health_score: null,
+        last_audio_check_at: null,
+      }),
+    ).rejects.toThrow();
+    expect(await f.local.pendingCount()).toBe(count);
+    expect(await f.local.list("hives")).toHaveLength(1);
+  });
+  it("keeps writes offline and recovers a missing queue entry after restart", async () => {
+    const f = await setup();
+    await f.engine.sync();
+    expect(f.remote.upsert).not.toHaveBeenCalled();
+    await f.local.sql.exec("DELETE FROM sync_queue");
+    await f.local.recoverQueue();
+    expect(await f.local.pendingCount()).toBe(3);
+  });
+  it("uploads audio before its row, pushes parents first and drains only successful writes", async () => {
+    const f = await setup();
+    await sample(f);
+    const calls: string[] = [];
+    vi.mocked(f.remote.uploadAudio).mockImplementation(async () => {
+      calls.push("upload");
+      return "owner/clip.wav";
+    });
+    vi.mocked(f.remote.upsert).mockImplementation(async (table, row) => {
+      calls.push(table);
+      if (table === "audio_samples")
+        expect((row as AudioSample).audio_file_url).toBe("owner/clip.wav");
+    });
+    f.connect();
+    await f.engine.sync();
+    expect(calls).toEqual([
+      "apiaries",
+      "hives",
+      "iot_microphones",
+      "upload",
+      "audio_samples",
+    ]);
+    expect(await f.local.pendingCount()).toBe(0);
+  });
+  it("keeps failed audio uploads queued with backoff and never uploads a broken reference", async () => {
+    const f = await setup();
+    const audio = await sample(f);
+    vi.mocked(f.remote.uploadAudio).mockRejectedValue(new Error("no storage"));
+    f.connect();
+    await expect(f.engine.sync()).rejects.toThrow("pendientes");
+    expect(
+      vi
+        .mocked(f.remote.upsert)
+        .mock.calls.some(([table]) => table === "audio_samples"),
+    ).toBe(false);
+    const pending = await f.local.pending("2026-10-20T13:00:00.000Z");
+    expect(pending).toHaveLength(1);
+    expect(pending[0]?.record_id).toBe(audio.id);
+    expect(pending[0]?.attempts).toBe(1);
+    expect(await f.local.pending(fixed.toISOString())).toHaveLength(0);
+  });
+  it("does not acknowledge or overwrite a newer edit made while an old row was in flight", async () => {
+    const f = await setup();
+    vi.mocked(f.remote.upsert).mockImplementation(async (table) => {
+      if (table === "apiaries")
+        await f.local.save("apiaries", { ...f.apiary, name: "Edición nueva" });
+    });
+    f.connect();
+    await f.engine.sync();
+    const apiary = await f.local.get("apiaries", f.apiary.id);
+    expect(apiary?.name).toBe("Edición nueva");
+    expect(apiary?.synced_at).toBeNull();
+    expect(await f.local.pendingCount()).toBe(1);
+    await f.local.applyRemote("apiaries", [
+      { ...f.apiary, name: "Remoto antiguo" },
+    ]);
+    expect((await f.local.get("apiaries", f.apiary.id))?.name).toBe(
+      "Edición nueva",
+    );
+  });
+  it("does not advance the checkpoint after a partial download fails", async () => {
+    const f = await setup();
+    vi.mocked(f.remote.page).mockImplementation(async (table) => {
+      if (table === "ai_summaries") throw new Error("network");
+      return [];
+    });
+    f.connect();
+    await expect(f.engine.sync()).rejects.toThrow("network");
+    expect(await f.local.checkpoint()).toBeNull();
+  });
+  it("paginates equal-timestamp rows and preserves the two-minute overlap", async () => {
+    const f = await setup();
+    const rows: Apiary[] = Array.from({ length: 201 }, (_, i) => ({
+      ...f.apiary,
+      id: `remote-${i}`,
+      name: `Apiario ${i}`,
+    }));
+    const pages: { table: Table; offset: number; since: string | null }[] = [];
+    vi.mocked(f.remote.page).mockImplementation(
+      async <K extends Table>(
+        table: K,
+        since: string | null,
+        _until: string,
+        offset: number,
+      ): Promise<EntityMap[K][]> => {
+        pages.push({ table, offset, since });
+        return (
+          table === "apiaries" ? rows.slice(offset, offset + 200) : []
+        ) as EntityMap[K][];
+      },
+    );
+    await f.local.setCheckpoint(fixed.toISOString());
+    f.connect();
+    await f.engine.sync();
+    expect(
+      pages.filter((p) => p.table === "apiaries").map((p) => p.offset),
+    ).toEqual([0, 200]);
+    expect(pages[0]?.since).toBe("2026-10-20T11:58:00.000Z");
+    expect(await f.local.list("apiaries")).toHaveLength(202);
+    expect(await f.local.checkpoint()).toBe(fixed.toISOString());
+  });
+  it("refuses to push data under a different authenticated identity", async () => {
+    const f = await setup();
+    vi.mocked(f.remote.identity).mockResolvedValue("someone-else");
+    f.connect();
+    await expect(f.engine.sync()).rejects.toThrow("cuenta");
+    expect(f.remote.upsert).not.toHaveBeenCalled();
+    expect(await f.local.pendingCount()).toBe(3);
+  });
+  it("coalesces overlapping sync requests into one run", async () => {
+    const f = await setup();
+    f.connect();
+    const first = f.engine.sync();
+    const second = f.engine.sync();
+    expect(first).toBe(second);
+    await first;
+    expect(f.remote.identity).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(f.remote.page).mock.calls.map((c) => c[0])).toEqual(
+      TABLES,
+    );
+  });
+});

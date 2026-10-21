@@ -6,9 +6,9 @@ Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincr
 
 ## Estado del proyecto
 
-La implementación local está en la rama [`feat/screens-implementation`](https://github.com/Juulren/apisense/tree/feat/screens-implementation), disponible para revisión en el [PR #19](https://github.com/Juulren/apisense/pull/19). **Todavía no está integrada en `main` ni desplegada en producción.** Para ejecutar la app, utiliza esa rama como se indica abajo.
+La implementación actual está en la rama [`feat/supabase-integration`](https://github.com/Juulren/apisense/tree/feat/supabase-integration), disponible en el [PR #21](https://github.com/Juulren/apisense/pull/21). Incluye las pantallas del [PR #19](https://github.com/Juulren/apisense/pull/19) y el backend del [Issue #13](https://github.com/Juulren/apisense/issues/13), ya instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción; la integración del código en `main` se revisa mediante PR.**
 
-El trabajo se organiza por Issues y se revisa por bloques. El [plan de implementación](https://github.com/Juulren/apisense/blob/feat/screens-implementation/IMPLEMENTATION_PLAN.md) registra lo implementado, las verificaciones realizadas y los pendientes.
+El trabajo se organiza por Issues y se revisa por bloques. El [plan de implementación](IMPLEMENTATION_PLAN.md) registra lo implementado, las verificaciones realizadas y los pendientes. El bloque de Supabase se detiene al entregar su PR para revisión.
 
 La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, monitor acústico, historial, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
 
@@ -26,7 +26,7 @@ La demo no necesita credenciales de Supabase, broker MQTT, dispositivos BLE ni u
 ```bash
 git clone https://github.com/Juulren/apisense.git
 cd apisense
-git switch feat/screens-implementation
+git switch feat/supabase-integration
 npm ci
 npm run web
 ```
@@ -64,7 +64,7 @@ Para probar cuentas y servicios propios, copia `.env.example` como `.env` en la 
 
 ```dotenv
 EXPO_PUBLIC_SUPABASE_URL=https://TU_PROYECTO.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=TU_CLAVE_PUBLICA_ANON
+EXPO_PUBLIC_SUPABASE_ANON_KEY=TU_CLAVE_PUBLICA_PUBLISHABLE_O_ANON
 EXPO_PUBLIC_MQTT_URL=wss://TU_BROKER
 EXPO_PUBLIC_BLE_SERVICE_UUID=TU_UUID_DE_SERVICIO
 EXPO_PUBLIC_BLE_CHARACTERISTIC_UUID=TU_UUID_DE_CARACTERISTICA
@@ -72,7 +72,17 @@ EXPO_PUBLIC_BLE_CHARACTERISTIC_UUID=TU_UUID_DE_CARACTERISTICA
 
 Reinicia Expo después de cambiar la configuración. Los valores `EXPO_PUBLIC_*` se incluyen en el cliente: utiliza únicamente la clave pública de Supabase y no coloques contraseñas, claves `service_role` ni secretos del servidor en estas variables. Las credenciales MQTT se introducen en el flujo de conexión y se mantienen en memoria.
 
-La conexión con Supabase requiere aplicar las migraciones, políticas RLS, bucket privado y funciones de la carpeta `supabase/`. Elegir y validar ese backend es un bloque pendiente en el [Issue #13](https://github.com/Juulren/apisense/issues/13); rellenar `.env` por sí solo no configura el servidor. Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
+La URL y la clave pública se obtienen desde **Connect** en el proyecto de Supabase. Aunque la variable se llama `ANON_KEY`, acepta la clave Publishable actual. `.env` está excluido de Git; no subas sus valores.
+
+En el proyecto de desarrollo ya se aplicaron las migraciones, RLS en las seis tablas, el bucket privado y la función con cron. Para otro proyecto, sigue [la guía de backend](docs/SUPABASE.md). Puedes comprobar tu configuración sin mostrar las claves con:
+
+```bash
+npm run backend:check
+```
+
+El cron procesa una cola con lotes de diez colmenas, reservas temporales y reintentos. Las muestras se recorren por páginas de 200, sin el anterior corte de 1000 clips. Las solicitudes manuales sin `hive_id` devuelven hasta 50 colmenas y un `next_hive_id` para continuar con `after_hive_id`.
+
+Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
 
 ### Cifrado y acceso offline
 
@@ -80,7 +90,9 @@ En las cuentas reales, la implementación nativa utiliza SQLCipher y SecureStore
 
 El acceso web real requiere HTTPS o localhost y un navegador con Web Crypto, IndexedDB y Web Locks. El hosting debe servir las cabeceras de aislamiento incluidas en `public/_headers`; el servidor `npm run preview` ya las configura. La demo utiliza un almacén separado de datos sintéticos.
 
-La validación del cifrado en dispositivos, la integración cloud y la revisión de dependencias siguen abiertas. Consulta la [arquitectura de seguridad](https://github.com/Juulren/apisense/blob/feat/screens-implementation/docs/SECURITY_ARCHITECTURE.md) y el [plan](https://github.com/Juulren/apisense/blob/feat/screens-implementation/IMPLEMENTATION_PLAN.md) antes de usar datos reales o preparar una publicación.
+La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
+
+La validación del cifrado en dispositivos y la revisión de dependencias siguen abiertas. Consulta la [arquitectura de seguridad](docs/SECURITY_ARCHITECTURE.md) y el [plan](IMPLEMENTATION_PLAN.md) antes de preparar una publicación.
 
 ## Comprobar el proyecto
 
@@ -92,18 +104,18 @@ npm test
 npm run build:web
 ```
 
-El [reporte de validación](https://github.com/Juulren/apisense/blob/feat/screens-implementation/docs/VALIDATION.md) documenta las comprobaciones realizadas y sus límites. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
+El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
 
 ## Organización del código
 
-| Ruta | Contenido |
-| --- | --- |
-| `src/app/` | Pantallas y navegación con Expo Router |
-| `src/components/` | Componentes de interfaz |
-| `src/db/` | SQLite, almacenamiento local y sincronización |
-| `src/services/iot/` | BLE, MQTT y simulación de audio |
-| `src/services/ai/` | Extracción acústica, reglas y adaptadores de inferencia |
-| `supabase/` | Migraciones, políticas y funciones del backend |
-| `design-reference/` | Referencias visuales del diseño |
+| Ruta                | Contenido                                               |
+| ------------------- | ------------------------------------------------------- |
+| `src/app/`          | Pantallas y navegación con Expo Router                  |
+| `src/components/`   | Componentes de interfaz                                 |
+| `src/db/`           | SQLite, almacenamiento local y sincronización           |
+| `src/services/iot/` | BLE, MQTT y simulación de audio                         |
+| `src/services/ai/`  | Extracción acústica, reglas y adaptadores de inferencia |
+| `supabase/`         | Migraciones, políticas y funciones del backend          |
+| `design-reference/` | Referencias visuales del diseño                         |
 
 Estas carpetas están disponibles en la rama de implementación; `main` incorpora el código conforme se revisan e integran los PR.
