@@ -11,7 +11,10 @@ major_version = 17
 [auth]
 enabled = true
 site_url = "http://localhost:8081"
-additional_redirect_urls = ["apisense://login"]
+additional_redirect_urls = ["http://localhost:4173", "apisense://login"]
+
+[auth.email]
+enable_confirmations = true
 
 [storage]
 enabled = true

@@ -11,6 +11,9 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "backend:check": "node --env-file=.env scripts/check-supabase.mjs",
+    "test:backend": "vitest run supabase/tests",
+    "test:backend:live": "node --env-file=.env --env-file-if-exists=.env.backend node_modules/vitest/vitest.mjs run --config supabase/vitest.live.config.mts",
     "build:web": "expo export --platform web && node scripts/prepare-offline.mjs",
     "check": "npm run typecheck && npm test",
     "format": "prettier --write src supabase/functions *.json *.js",
@@ -53,10 +56,12 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
     "@types/node": "^24.0.0",
     "@types/react": "~19.2.0",
     "babel-preset-expo": "~57.0.0",
     "prettier": "^3.9.10",
+    "supabase": "2.121.0",
     "tailwindcss": "^3.4.19",
     "typescript": "~6.0.3",
     "vitest": "^5.0.5"

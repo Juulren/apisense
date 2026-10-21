@@ -9,6 +9,8 @@ web-build/
 .tools/
 .artifacts/
 coverage/
+supabase/.temp/
+supabase/.branches/
 android/
 ios/
 *.log
