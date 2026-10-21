@@ -1,86 +1,121 @@
 # Apisense Smart Apiary App
 
-Aplicación Expo para iOS, Android y Web. Guarda primero en SQLite, recibe telemetría IoT y genera resúmenes acústicos orientativos en español.
+Apisense es una aplicación multiplataforma para el seguimiento de apiarios y colmenas, desarrollada con **Expo, React Native y TypeScript para Web, Android e iOS**. Reúne telemetría de sensores, grabaciones acústicas y observaciones del apicultor en una misma bitácora.
 
-**Estado: implementación local para revisión, sin despliegue de producción.** El bloque actual es el [Issue #4](https://github.com/Juulren/apisense/issues/4). El trabajo se continuará por Issues, con revisión entre bloques. Consulta [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) para distinguir código implementado, validaciones y pendientes. Los PR son acumulativos y apuntan a `main`; no se han fusionado.
+Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
-## Ejecutar y verificar
+## Estado del proyecto
 
-Requiere Node 24 y npm. La demo no necesita credenciales.
+La implementación actual está en la rama [`feat/supabase-integration`](https://github.com/Juulren/apisense/tree/feat/supabase-integration). Incluye las pantallas del [PR #19](https://github.com/Juulren/apisense/pull/19) y el backend del [Issue #13](https://github.com/Juulren/apisense/issues/13), ya instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción; la integración del código en `main` se revisa mediante PR.**
 
-```powershell
+El trabajo se organiza por Issues y se revisa por bloques. El [plan de implementación](IMPLEMENTATION_PLAN.md) registra lo implementado, las verificaciones realizadas y los pendientes. El bloque de Supabase se detiene al entregar su PR para revisión.
+
+La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, monitor acústico, historial, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
+
+## Requisitos
+
+- **Node.js 24** y npm.
+- Git para descargar el repositorio.
+- Para Android: Android Studio, Android SDK, JDK y un emulador o dispositivo configurados para compilar con Expo.
+- Para iOS: macOS, Xcode y un simulador o dispositivo configurado para desarrollo.
+
+La demo no necesita credenciales de Supabase, broker MQTT, dispositivos BLE ni un modelo de IA.
+
+## Descargar y ejecutar en Web
+
+```bash
+git clone https://github.com/Juulren/apisense.git
+cd apisense
+git switch feat/supabase-integration
 npm ci
 npm run web
 ```
 
-Abre la URL que imprime Expo y selecciona **Probar modo demo**. Sus ocho colmenas, clips y resúmenes son sintéticos; la demo no sincroniza ni se conecta al hardware. La bitácora y ajustes se conservan en la base de demo al reabrirla.
+Abre la URL que indique Expo y selecciona **Probar modo demo**. Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de rama y ejecuta `git fetch origin` para actualizar las referencias.
 
-```powershell
-npm run typecheck
-npm test
+Para comprobar la versión web exportada, con el servidor local que configura las cabeceras necesarias para SQLite:
+
+```bash
 npm run build:web
 npm run preview
 ```
 
-La versión estática se sirve en `http://localhost:4173`. Incluye un service worker para conservar el shell después de la primera carga completa. Los datos reales web requieren una clave local de al menos 16 caracteres, distinta de la contraseña de Supabase. Para abrirlos sin conexión se usa el correo y esa clave. La clave no se envía ni se guarda; perderla impide recuperar los cambios locales que aún no se hayan sincronizado.
+Abre [http://localhost:4173](http://localhost:4173). Después de la primera carga, el service worker permite abrir la interfaz sin conexión; los mapas externos siguen necesitando red.
 
-Web requiere HTTPS (o loopback en desarrollo), Web Crypto, IndexedDB, Web Locks, workers, WASM y SharedArrayBuffer. Mantén estas cabeceras en el hosting:
+## Ejecutar en Android e iOS
 
-```text
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: credentialless
+Después de descargar la rama e instalar las dependencias, ejecuta el comando de tu plataforma:
+
+```bash
+# Android
+npm run android
+
+# iOS: requiere macOS y Xcode
+npm run ios
 ```
 
-`public/_headers` contiene las cabeceras recomendadas para proveedores que soportan ese formato. Configúralas explícitamente en cualquier otro servidor. Ajusta la CSP para un dominio Supabase personalizado. El mapa web usa un iframe sin credenciales y necesita red; las coordenadas y la lista siguen disponibles localmente.
+Estos comandos generan y ejecutan la compilación nativa de desarrollo. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
-## iOS y Android
+Las exportaciones JavaScript de ambas plataformas se han verificado; la compilación y ejecución de APK/IPA y las pruebas en dispositivos físicos siguen pendientes en el [Issue #15](https://github.com/Juulren/apisense/issues/15).
 
-Se necesita un **build nativo**, no Expo Go: SQLCipher, BLE y ONNX incluyen módulos nativos.
+## Configuración de servicios reales
 
-```powershell
-npx expo run:android
-# En macOS con Xcode:
-npx expo run:ios
+Para probar cuentas y servicios propios, copia `.env.example` como `.env` en la raíz de la rama de implementación y completa los valores que correspondan:
+
+```dotenv
+EXPO_PUBLIC_SUPABASE_URL=https://TU_PROYECTO.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=TU_CLAVE_PUBLICA_PUBLISHABLE_O_ANON
+EXPO_PUBLIC_MQTT_URL=wss://TU_BROKER
+EXPO_PUBLIC_BLE_SERVICE_UUID=TU_UUID_DE_SERVICIO
+EXPO_PUBLIC_BLE_CHARACTERISTIC_UUID=TU_UUID_DE_CARACTERISTICA
 ```
 
-SQLCipher está activado en `app.json`. La app comprueba `cipher_version` y rechaza abrir una base real sin cifrado. Las claves por cuenta y los tokens nativos usan SecureStore. Los clips permanentes viven dentro de la base cifrada. La exportación de bundles JS/Hermes iOS/Android se verificó en Windows; esto no equivale a compilar y ejecutar APK/IPA. Verificar permisos BLE, SQLCipher y reproducción de audio en dispositivos físicos sigue pendiente (#8 y #15). Android Maps necesita una clave restringida configurada para el paquete del build; las coordenadas y la lista no dependen de esa clave.
+Reinicia Expo después de cambiar la configuración. Los valores `EXPO_PUBLIC_*` se incluyen en el cliente: utiliza únicamente la clave pública de Supabase y no coloques contraseñas, claves `service_role` ni secretos del servidor en estas variables. Las credenciales MQTT se introducen en el flujo de conexión y se mantienen en memoria.
 
-## Configuración de Supabase e IoT
+La URL y la clave pública se obtienen desde **Connect** en el proyecto de Supabase. Aunque la variable se llama `ANON_KEY`, acepta la clave Publishable actual. `.env` está excluido de Git; no subas sus valores.
 
-Copia `.env.example` a `.env` y configura la URL HTTPS y la clave pública/anon del proyecto. Nunca pongas `service_role`, contraseñas MQTT o secretos cron en variables `EXPO_PUBLIC_*`. Las credenciales MQTT se introducen en memoria durante la sesión; el transporte exige WSS y el broker debe aplicar ACL por usuario.
+En el proyecto de desarrollo ya se aplicaron las migraciones, RLS en las seis tablas, el bucket privado y la función con cron. Para otro proyecto, sigue [la guía de backend](docs/SUPABASE.md). Puedes comprobar tu configuración sin mostrar las claves con:
 
-Cuando se haya elegido un proyecto y revisado el bloque de backend:
-
-```powershell
-npx supabase link --project-ref TU_PROJECT_REF
-npx supabase db push
-npx supabase functions deploy generate-hive-summary
+```bash
+npm run backend:check
 ```
 
-Configura `CRON_SECRET` en las variables de la función y el mismo valor de alta entropía en Supabase Vault como `apisense_cron_secret`; añade `apisense_project_url`. Sin estos secretos el cron permanece inactivo. La función valida JWT/RLS para usuarios o el secreto de cron para el proceso servidor. El bucket `hive-audio` es privado; los registros conservan rutas y la reproducción remota usa URLs firmadas de duración corta.
+El cron procesa una cola con lotes de diez colmenas, reservas temporales y reintentos. Las muestras se recorren por páginas de 200, sin el anterior corte de 1000 clips. Las solicitudes manuales sin `hive_id` devuelven hasta 50 colmenas y un `next_hive_id` para continuar con `after_hive_id`.
 
-No se eligió todavía un proyecto Supabase ni se desplegaron migraciones, función o cron. Docker está instalado, pero su daemon no está activo: la validación de RLS/Storage y ejecución cloud sigue en #13.
+Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
 
-## Rutas y módulos
+### Cifrado y acceso offline
 
-| Pantalla | Ruta |
-|---|---|
-| Onboarding y estado local | `/` |
-| Login / registro / sesión offline | `/login` |
-| Dashboard | `/dashboard` |
-| Lista / mapa / alta de apiario y colmena | `/hives` |
-| Detalle y resumen de colmena | `/hive/[id]` |
-| Monitor, audio y espectrograma | `/monitor` |
-| Historial y filtros | `/history` |
-| Vinculación / calibración BLE / MQTT | `/pairing` |
-| Bitácora manual | `/inspection` |
-| Apariencia, intervalos, avisos y sync | `/settings` |
-| Catálogo del Design System | `/ui-catalog` |
+En las cuentas reales, la implementación nativa utiliza SQLCipher y SecureStore. La versión web cifra las copias locales con AES-GCM y solicita una clave local de al menos 16 caracteres, distinta de la contraseña de Supabase. Esa clave no se guarda: perderla impide recuperar los datos locales sin sincronizar.
 
-`src/db/` contiene esquema, migración local, repositorios y SyncEngine; `src/services/iot/` contiene transportes, validación y simulador; `src/services/ai/` contiene FFT/MFCC, ONNX y resúmenes. `supabase/` contiene SQL, función y cron. [DESIGN_MAP.md](DESIGN_MAP.md) registra las referencias y las adaptaciones pendientes de cotejo con los IDs originales.
+El acceso web real requiere HTTPS o localhost y un navegador con Web Crypto, IndexedDB y Web Locks. El hosting debe servir las cabeceras de aislamiento incluidas en `public/_headers`; el servidor `npm run preview` ya las configura. La demo utiliza un almacén separado de datos sintéticos.
 
-## Límites de esta entrega
+La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
-La frecuencia no diagnostica reina, enjambrazón o plagas. No se suministró modelo entrenado ni dataset validado: la app usa reglas experimentales y conserva fuente/versión del clasificador. El runtime ONNX está preparado para un modelo con manifiesto y checksum compatibles. El análisis periódico local se ejecuta en primer plano; el cron cloud requiere configuración y pruebas.
+La validación del cifrado en dispositivos y la revisión de dependencias siguen abiertas. Consulta la [arquitectura de seguridad](docs/SECURITY_ARCHITECTURE.md) y el [plan](IMPLEMENTATION_PLAN.md) antes de preparar una publicación.
 
-La auditoría pasó de 39 avisos (2 críticos) a 22 entradas high que derivan de dos avisos upstream sin versión corregida publicada al verificar: `braces` y `node-forge`, en rutas de build/CLI. No se declara una versión segura para producción. El seguimiento está en [#16](https://github.com/Juulren/apisense/issues/16), y la arquitectura y validaciones de cifrado en [docs/SECURITY_ARCHITECTURE.md](docs/SECURITY_ARCHITECTURE.md).
+## Comprobar el proyecto
+
+En la rama de implementación:
+
+```bash
+npm run typecheck
+npm test
+npm run build:web
+```
+
+El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
+
+## Organización del código
+
+| Ruta                | Contenido                                               |
+| ------------------- | ------------------------------------------------------- |
+| `src/app/`          | Pantallas y navegación con Expo Router                  |
+| `src/components/`   | Componentes de interfaz                                 |
+| `src/db/`           | SQLite, almacenamiento local y sincronización           |
+| `src/services/iot/` | BLE, MQTT y simulación de audio                         |
+| `src/services/ai/`  | Extracción acústica, reglas y adaptadores de inferencia |
+| `supabase/`         | Migraciones, políticas y funciones del backend          |
+| `design-reference/` | Referencias visuales del diseño                         |
+
+Estas carpetas están disponibles en la rama de implementación; `main` incorpora el código conforme se revisan e integran los PR.
