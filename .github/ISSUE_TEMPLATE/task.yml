@@ -1,0 +1,24 @@
+name: Tarea de Apisense
+description: Definir un cambio pequeño, con alcance y criterios claros.
+title: ""
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo y alcance
+      description: Qué problema resuelve y qué comportamiento debe cambiar.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      description: Lista comprobaciones concretas para dar la tarea por terminada.
+      placeholder: "- [ ] Resultado esperado y cómo comprobarlo"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto y dependencias
+      description: Enlaces, capturas, Issues relacionados o recursos que falten. Nunca pegues secretos.
