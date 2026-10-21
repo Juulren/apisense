@@ -6,7 +6,7 @@ Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincr
 
 ## Estado del proyecto
 
-La implementación actual está en la rama [`feat/supabase-integration`](https://github.com/Juulren/apisense/tree/feat/supabase-integration). Incluye las pantallas del [PR #19](https://github.com/Juulren/apisense/pull/19) y el backend del [Issue #13](https://github.com/Juulren/apisense/issues/13), ya instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción; la integración del código en `main` se revisa mediante PR.**
+La implementación actual está en la rama [`feat/supabase-integration`](https://github.com/Juulren/apisense/tree/feat/supabase-integration), disponible en el [PR #21](https://github.com/Juulren/apisense/pull/21). Incluye las pantallas del [PR #19](https://github.com/Juulren/apisense/pull/19) y el backend del [Issue #13](https://github.com/Juulren/apisense/issues/13), ya instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción; la integración del código en `main` se revisa mediante PR.**
 
 El trabajo se organiza por Issues y se revisa por bloques. El [plan de implementación](IMPLEMENTATION_PLAN.md) registra lo implementado, las verificaciones realizadas y los pendientes. El bloque de Supabase se detiene al entregar su PR para revisión.
 

@@ -6,7 +6,7 @@ La solicitud inicial produjo trabajo de las fases 0–5 antes de acordar este fl
 
 ## Bloque actual — Issue #13
 
-Rama: `feat/supabase-integration`. Alcance autorizado al configurar `.env` e iniciar sesión en la CLI: instalar y validar el backend real, comprobar aislamiento y eliminar los cortes de 500 colmenas y 1000 muestras. [Evidencia y comandos](docs/SUPABASE.md).
+Rama: `feat/supabase-integration`. [PR #21](https://github.com/Juulren/apisense/pull/21). Alcance autorizado al configurar `.env` e iniciar sesión en la CLI: instalar y validar el backend real, comprobar aislamiento y eliminar los cortes de 500 colmenas y 1000 muestras. [Evidencia y comandos](docs/SUPABASE.md).
 
 - [x] Corregir nombres `NEXT_PUBLIC_*` a `EXPO_PUBLIC_*` en el `.env` local sin mostrar valores.
 - [x] Confirmar que la cuenta de la CLI tiene acceso al proyecto de la URL configurada.

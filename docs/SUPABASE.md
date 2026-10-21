@@ -64,6 +64,8 @@ La suite live lee `.env` y, opcionalmente, `.env.backend`. Este último archivo 
 
 La suite crea dos cuentas con marcador `apisense_test_run`, genera WAV de prueba, sincroniza desde SQLite, comprueba políticas y elimina sus clips, filas y cuentas al finalizar. Solo limpia los UUID que creó. Si se interrumpe el proceso antes de su limpieza, revisa esas cuentas marcadas y sus datos antes de repetirlo.
 
+Resultado de esta entrega: **43 pruebas locales y 6 pruebas live correctas**, TypeScript, Deno y exportación web correctos. El dry run final no mostró migraciones pendientes y se comprobaron cero cuentas de prueba, apiarios temporales y clips restantes en el bucket.
+
 | Comprobación del 21/10/2026                                                     | Resultado                                                      |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | URL y clave pública locales; Auth disponible                                    | Correcto                                                       |
