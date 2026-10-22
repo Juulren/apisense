@@ -46,7 +46,7 @@ Navegador Chromium integrado de Codex, dos documentos en `http://localhost:8081/
 | `npm run check` | TypeScript y 47 pruebas correctos |
 | `npm run build:web` | Exportación, worker/WASM y shell offline correctos |
 
-No se verifican aquí Safari/Firefox, navegadores móviles, cierre forzado del proceso, recuperación del sistema operativo ni SQLCipher nativo. No se despliega ni cambia Supabase. El Issue queda pendiente de revisión e integración del PR.
+No se verifican aquí Safari/Firefox, navegadores móviles, cierre forzado del proceso, recuperación del sistema operativo ni SQLCipher nativo. No se despliega ni cambia Supabase. Esta evidencia corresponde al [PR #24](https://github.com/Juulren/apisense/pull/24); GitHub registra su integración y el cierre del Issue.
 
 ![Segunda pestaña bloqueada mientras la primera conserva el almacén](qa/issue18-blocked.jpg)
 
