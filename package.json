@@ -4,6 +4,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
+    "postinstall": "node scripts/patch-expo-sqlite.mjs",
     "start": "expo start",
     "dev": "expo start --web --port 8081",
     "android": "expo run:android",
