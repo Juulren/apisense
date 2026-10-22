@@ -1,6 +1,6 @@
 # Plan de implementación por bloques
 
-Actualizado: 21 de octubre de 2026. La base de la app está consolidada en **`main`**. El usuario autorizó integrar el PR #21 y aplicar el flujo de colaboración en el [Issue #22](https://github.com/Juulren/apisense/issues/22). No se ha iniciado otro bloque de producto ni publicado una app de producción.
+Actualizado: 22 de octubre de 2026. La base de la app y el flujo de colaboración están consolidados en **`main`**. El último bloque es el [Issue #18](https://github.com/Juulren/apisense/issues/18), validado y autorizado por el usuario para integrarse mediante el [PR #24](https://github.com/Juulren/apisense/pull/24). No se ha publicado una app de producción.
 
 El [tablero de Apisense](https://github.com/users/Juulren/projects/2) muestra el trabajo activo. Los Issues contienen responsables, criterios y evidencia; este archivo conserva el resumen de hitos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para trabajar desde `main` sin acumular ramas dependientes.
 
@@ -17,6 +17,7 @@ El [PR #21](https://github.com/Juulren/apisense/pull/21) se fusionó conservando
 | [#5](https://github.com/Juulren/apisense/issues/5)   | BLE/MQTT configurables, protocolo y simulador WAV                                                      | [PR #12](https://github.com/Juulren/apisense/pull/12), 7 pruebas IoT. Issue de implementación cerrado; hardware pendiente en #8.         |
 | [#6](https://github.com/Juulren/apisense/issues/6)   | FFT/MFCC, reglas con abstención, adaptadores ONNX y resúmenes                                          | [PR #14](https://github.com/Juulren/apisense/pull/14), 7 pruebas IA. Issue de implementación cerrado; modelo científico pendiente en #8. |
 | [#13](https://github.com/Juulren/apisense/issues/13) | Supabase real, seis tablas con RLS, audio privado, función, Vault/cron, cola con reservas y paginación | [PR #21](https://github.com/Juulren/apisense/pull/21), [evidencia](docs/SUPABASE.md). Issue cerrado.                                     |
+| [#18](https://github.com/Juulren/apisense/issues/18) | Exclusión por cuenta y apertura del almacén cifrado entre pestañas; inicialización diferida de OPFS | [PR #24](https://github.com/Juulren/apisense/pull/24), 47 pruebas y [validación entre pestañas](docs/WEB_STORAGE_QA.md). |
 | Documentación                                        | Contexto multiplataforma y ejecución                                                                   | [PR #20](https://github.com/Juulren/apisense/pull/20), integrado en `main`.                                                              |
 
 ## Validación del último bloque de producto
@@ -39,7 +40,19 @@ La prueba SQL con 503 colmenas valida la cola; no es un benchmark cloud. No se v
 - Usar plantillas breves de tarea/PR y registrar validación y pendientes.
 - Evitar duplicar CI en push de rama y PR; cancelar ejecuciones anteriores del mismo PR.
 
-El Issue #22 se cierra al integrar el PR de estas instrucciones y su configuración. Esta autorización corresponde a la consolidación y al flujo de trabajo; no inicia automáticamente la siguiente tarea de producto.
+El [PR #23](https://github.com/Juulren/apisense/pull/23) integró estas instrucciones y su configuración; el Issue #22 está cerrado.
+
+## Último bloque — Issue #18
+
+- [x] Catálogo de desarrollo con sesiones sintéticas para probar el almacén cifrado en dos pestañas reales.
+- [x] Cuatro pruebas nuevas con Web Locks real; 47 pruebas locales y TypeScript correctos.
+- [x] Corregida la inicialización ansiosa del VFS de Expo, que impedía abrir el worker desde otra pestaña incluso después de liberar el bloqueo.
+- [x] Dos pestañas: rechazo simultáneo, transferencia A → B → A con la última marca, sesiones independientes y recuperación tras cerrar directamente la pestaña propietaria.
+- [x] Instalación limpia con parche reproducible y exportación web correctas.
+- [x] Procedimiento, resultados y capturas en [WEB_STORAGE_QA.md](docs/WEB_STORAGE_QA.md).
+- [x] Revisión en la conversación y autorización del usuario para integrar el [PR #24](https://github.com/Juulren/apisense/pull/24) en `main`; GitHub cierra #18 al fusionarlo.
+
+El parche está limitado a `expo-sqlite` 57.0.4 y verifica el hash del worker. Revisarlo al actualizar Expo y retirarlo cuando una solución upstream pase la misma prueba. La validación corresponde al navegador Chromium integrado; no certifica otros navegadores ni builds nativos.
 
 ## Pendientes de producto
 
@@ -50,7 +63,6 @@ El Issue #22 se cierra al integrar el PR de estas instrucciones y su configuraci
 | [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                       | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                |
 | [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                   | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                        |
 | [#17](https://github.com/Juulren/apisense/issues/17)                                                   | Cerrar la revisión de accesibilidad del cambio ya integrado                       | Estados ARIA comprobados en DOM; completar la comprobación de navegación por teclado antes de cerrar el Issue.                                                                         |
-| [#18](https://github.com/Juulren/apisense/issues/18)                                                   | Cerrar la validación de exclusión mutua web del cambio ya integrado               | Web Locks y rechazo simultáneo incluidos en el catálogo; ampliar la comprobación entre pestañas reales antes de cerrar.                                                                |
 
 ## Flujo siguiente
 
@@ -59,4 +71,4 @@ El Issue #22 se cierra al integrar el PR de estas instrucciones y su configuraci
 3. Se abre un PR pequeño con criterios cumplidos, evidencia y `Closes #NUMERO`.
 4. Se revisa y, con autorización y checks correctos, se integra; después se elige el siguiente Issue.
 
-No hay un próximo bloque seleccionado. Los Issues pendientes conservan su alcance; organizar el repositorio no los marca como resueltos.
+No hay otro Issue seleccionado. La autorización de integración del PR #24 corresponde únicamente a #18; los demás pendientes conservan su alcance.

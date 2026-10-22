@@ -90,6 +90,8 @@ En las cuentas reales, la implementación nativa utiliza SQLCipher y SecureStore
 
 El acceso web real requiere HTTPS o localhost y un navegador con Web Crypto, IndexedDB y Web Locks. El hosting debe servir las cabeceras de aislamiento incluidas en `public/_headers`; el servidor `npm run preview` ya las configura. La demo utiliza un almacén separado de datos sintéticos.
 
+`npm ci` aplica una corrección local del worker de `expo-sqlite` 57.0.4 para que las bases en memoria no retengan handles del almacenamiento persistente entre pestañas. Si omites los scripts de instalación, ejecuta `node scripts/patch-expo-sqlite.mjs` antes de compilar. Al actualizar Expo se debe revisar esta corrección; consulta la [prueba del almacén entre pestañas](docs/WEB_STORAGE_QA.md).
+
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
 La validación del cifrado en dispositivos y la revisión de dependencias siguen abiertas. Consulta la [arquitectura de seguridad](docs/SECURITY_ARCHITECTURE.md) y el [plan](IMPLEMENTATION_PLAN.md) antes de preparar una publicación.

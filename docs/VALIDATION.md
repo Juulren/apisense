@@ -4,6 +4,8 @@ Fecha: 20 de octubre de 2026. Los datos de las pruebas de UI pertenecen exclusiv
 
 Actualización del 21 de octubre: el backend real del Issue #13 ya se instaló y verificó; ver [SUPABASE.md](SUPABASE.md). Este documento conserva la evidencia del bloque de pantallas.
 
+Actualización del 22 de octubre: el Issue #18 añade la prueba con dos pestañas reales, corrige la inicialización del VFS web de Expo y eleva la suite local a 47 pruebas. Procedimiento, límites y capturas en [WEB_STORAGE_QA.md](WEB_STORAGE_QA.md).
+
 | Comprobación                                   | Resultado                                                                                                                              |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | TypeScript estricto (`npx tsc --noEmit`)       | Correcto                                                                                                                               |
