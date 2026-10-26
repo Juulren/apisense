@@ -4,6 +4,8 @@ Proyecto: [Apisense Smart Apiary App](https://stitch.withgoogle.com/projects/146
 
 Los **11 IDs originales están vinculados a sus 11 pares HTML/PNG**. Son cinco familias de pantallas con variantes claro/oscuro y una spec de componentes: no son once pantallas funcionales diferentes. Diez etiquetas del brief inicial asociaban un ID con otra vista. Este mapa corrige la asociación sin renombrar ni modificar los exports.
 
+El producto objetivo, confirmado el 26 de octubre, es **Android nativo e iOS nativo**. Los HTML son referencias exportadas de Stitch; no implican entregar una página web. La aceptación de la implementación debe verificarse en ambas apps móviles.
+
 Los 23 archivos de `design-reference/stitch/exports/` coinciden byte a byte con el ZIP del usuario del 16 de octubre. El cuerpo HTML de cada export coincide exactamente, después de normalizar las adiciones del preview, con el `iframe.srcdoc` del nodo identificado en el proyecto autenticado. La exportación ZIP nueva y Code to Clipboard fallaron; no se afirma haber descargado un ZIP nuevo. Método y límites: [STITCH_PROVENANCE.md](docs/STITCH_PROVENANCE.md), [manifest.json](design-reference/stitch/manifest.json).
 
 ## Correspondencia comprobada por ID

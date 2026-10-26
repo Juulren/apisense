@@ -1,5 +1,7 @@
 # Almacén web entre pestañas — Issue #18
 
+**Historial técnico fuera del alcance del producto desde el 26 de octubre de 2026.** El producto se entrega para Android e iOS nativos. Los comandos y resultados siguientes describen la validación anterior del PR #24; no son instrucciones actuales de ejecución ni pruebas de una app móvil.
+
 ## Repetir la comprobación
 
 Requiere Node.js 24, `npm ci` y un navegador con Web Locks, Web Crypto e IndexedDB. Ejecuta `npm run dev` y abre `http://localhost:8081/ui-catalog` en dos pestañas del mismo perfil y origen. Al final del catálogo aparece **Prueba entre pestañas (solo desarrollo)**.

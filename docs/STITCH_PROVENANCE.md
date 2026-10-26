@@ -8,6 +8,8 @@ Los 11 IDs existen en el lienzo autenticado y cada uno coincide con un único HT
 
 Las fuentes son cinco familias claro/oscuro y una spec. Las cinco rutas adicionales siguen siendo adaptaciones. Su aceptación y la comparación visual de la app se conservan en [#25](https://github.com/Juulren/apisense/issues/25).
 
+El producto se entrega exclusivamente como app Android e iOS nativa, según la aclaración del usuario del 26 de octubre. Estos HTML acreditan las fuentes de diseño de Stitch; no definen una versión web del producto.
+
 ## Adquisición y comparación
 
 1. Se abrió el proyecto con la sesión autenticada existente del navegador integrado. No se generaron ni editaron pantallas.
@@ -44,7 +46,7 @@ El verificador comprueba cobertura exacta de IDs, correspondencia uno a uno, int
 
 ## Límites
 
-Validación local del bloque: TypeScript y 47 pruebas de la app correctos; exportación web y shell offline correctos. El verificador pasó con y sin el ZIP y rechazó HTML alterado, un ID duplicado, asociaciones intercambiadas y una captura modificada en copias temporales. Los 23 originales permanecieron intactos durante esas comprobaciones.
+Validación local del bloque: TypeScript y 47 pruebas de la app correctos; bundles JavaScript/Hermes para Android e iOS correctos, sin certificar todavía binarios nativos. El verificador pasó con y sin el ZIP y rechazó HTML alterado, un ID duplicado, asociaciones intercambiadas y una captura modificada en copias temporales. Los 23 originales permanecieron intactos durante esas comprobaciones.
 
 La igualdad del cuerpo normalizado acredita la identidad de la vista; no prueba igualdad binaria del preview y el export, ni igualdad de sus cabeceras, CSS remoto, fuentes descargadas o píxeles renderizados. La captura DOM es un registro local de la sesión, no una firma de Google ni una consulta online durante cada ejecución de CI.
 

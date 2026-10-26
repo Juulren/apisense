@@ -1,5 +1,7 @@
 # Validación del bloque de pantallas
 
+Alcance confirmado por el usuario el 26 de octubre de 2026: **Android nativo e iOS nativo**. Las comprobaciones de navegador y exportación web descritas aquí son históricas. No sustituyen compilaciones nativas ni recorridos en emulador, simulador o dispositivo, pendientes en #15/#8.
+
 Fecha: 20 de octubre de 2026. Los datos de las pruebas de UI pertenecen exclusivamente a la demo.
 
 Actualización del 21 de octubre: el backend real del Issue #13 ya se instaló y verificó; ver [SUPABASE.md](SUPABASE.md). Este documento conserva la evidencia del bloque de pantallas.

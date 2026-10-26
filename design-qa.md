@@ -2,6 +2,8 @@
 
 final result: blocked
 
+Alcance confirmado el 26 de octubre: Android nativo e iOS nativo. La evidencia de navegador descrita aquí es histórica y parcial; #25 requiere comparar y recorrer las apps en emulador/simulador y dispositivo, incluyendo áreas seguras, navegación, teclado y permisos de cada plataforma.
+
 Actualización del 26 de octubre de 2026: **procedencia de fuentes verificada** para los 11 IDs de #1/#7; ver [DESIGN_MAP.md](DESIGN_MAP.md) y [STITCH_PROVENANCE.md](docs/STITCH_PROVENANCE.md). Diez etiquetas iniciales de ID/pantalla eran incorrectas. El resultado visual de la app sigue pendiente por las adaptaciones y la comparación incompleta, ahora registradas en [#25](https://github.com/Juulren/apisense/issues/25).
 
 ## Fuentes y normalización

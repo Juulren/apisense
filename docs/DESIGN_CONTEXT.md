@@ -6,7 +6,9 @@ Brief reconstruido el 26 de octubre de 2026 a partir de la solicitud del usuario
 
 Apisense es una aplicación de campo para un apicultor que necesita consultar sus colmenas a distancia y trabajar en el apiario sin conexión. Reúne patrones acústicos orientativos, lecturas disponibles, inspecciones manuales e historial. Debe ayudar a decidir qué colmena revisar y conservar el trabajo local hasta poder sincronizarlo.
 
-La implementación existente usa Expo/React Native para Web, Android e iOS. Este bloque, Issues #1 y #7, recupera y verifica fuentes; no inicia un prototipo alternativo ni cambia la interfaz, el acceso, la sincronización o el backend.
+El usuario confirmó el 26 de octubre de 2026 que el producto es para **Android nativo e iOS nativo**, con Expo/React Native. No se entregará una página web. Esta decisión sustituye el alcance anterior que incluía Web. Los HTML de Stitch son fuentes de diseño para la app móvil.
+
+Este bloque, Issues #1 y #7, recupera y verifica fuentes; no inicia un prototipo alternativo ni modifica los flujos, el acceso, la sincronización o el backend. La configuración y la CI se alinean con las dos plataformas móviles; compilar bundles no certifica una compilación nativa.
 
 ## Fuentes y dirección existente
 
@@ -20,6 +22,7 @@ La dirección conservada combina ámbar/miel, verde y azul, superficies claras o
 - Navegación consistente entre Inicio, Acústica, Diagnóstico y Ajustes.
 - Estado local/sincronización comprensible y conservación de cambios sin señal.
 - Temas claro, oscuro y del sistema; controles táctiles derivados de la spec.
+- Revisar el resultado en Android e iOS, con navegación, permisos y áreas seguras propios de cada plataforma.
 - Separación de datos reales, demo, observaciones manuales e hipótesis acústicas experimentales. Las afirmaciones científicas y cifras ficticias del diseño no son observaciones de campo.
 
 ## Decisiones abiertas
