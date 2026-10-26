@@ -37,6 +37,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - run: npm ci
       - run: npx expo prebuild --platform android --no-install
       - name: Build standalone demo APK
@@ -46,6 +48,7 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --max-workers=2 --console=plain -x lint -x test 2>&1 | tee ../.artifacts/android-build.log
+          ./gradlew --stop
       - name: Install Maestro
         run: bash scripts/install-maestro.sh
       - name: Enable KVM
@@ -61,11 +64,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: |
-            adb install -r android/app/build/outputs/apk/release/app-release.apk
-            adb shell svc wifi disable
-            adb shell svc data disable
-            "$HOME/.maestro/bin/maestro" test --format junit --output .artifacts/android-demo.xml .maestro/demo.yaml
+          script: bash scripts/test-demo-android.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -109,7 +108,7 @@ jobs:
           xcrun simctl boot "$DEVICE_ID"
           xcrun simctl bootstatus "$DEVICE_ID" -b
           xcrun simctl install "$DEVICE_ID" .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app
-          "$HOME/.maestro/bin/maestro" --device "$DEVICE_ID" test --format junit --output .artifacts/ios-demo.xml .maestro/demo.yaml
+          "$HOME/.maestro/bin/maestro" --device "$DEVICE_ID" test --format junit --output .artifacts/ios-demo.xml --test-output-dir .artifacts/ios-maestro .maestro/demo.yaml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -119,5 +118,6 @@ jobs:
             .artifacts/*.log
             .artifacts/*.xml
             .artifacts/*.png
+            .artifacts/ios-maestro/
           retention-days: 14
           include-hidden-files: true

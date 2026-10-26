@@ -3,6 +3,9 @@ name: Demo nativa offline, audio y persistencia
 ---
 - launchApp:
     clearState: true
+- scrollUntilVisible:
+    element:
+      text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
@@ -51,6 +54,9 @@ name: Demo nativa offline, audio y persistencia
     element:
       text: "Guardar inspección"
 - tapOn: "Guardar inspección"
+- scrollUntilVisible:
+    element:
+      text: "Inspección de demo guardada localmente."
 - assertVisible: "Inspección de demo guardada localmente."
 - scrollUntilVisible:
     element:
@@ -62,6 +68,9 @@ name: Demo nativa offline, audio y persistencia
 - takeScreenshot: .artifacts/demo-inspection
 - stopApp
 - launchApp
+- scrollUntilVisible:
+    element:
+      text: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
     visible: "Datos de demostración · Sin envío a nube"
@@ -80,4 +89,7 @@ name: Demo nativa offline, audio y persistencia
     element:
       text: "Salir de la demo"
 - tapOn: "Salir de la demo"
+- scrollUntilVisible:
+    element:
+      text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"

@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
 const packagePath = require.resolve("onnxruntime-react-native/package.json");
@@ -8,10 +9,7 @@ if (packageInfo.version !== "1.24.3")
   throw new Error(
     "Revisa la compatibilidad Gradle de ONNX antes de cambiar su versión.",
   );
-const path = new URL(
-  "android/build.gradle",
-  `file://${packagePath.replaceAll("\\", "/")}`,
-);
+const path = new URL("android/build.gradle", pathToFileURL(packagePath));
 const source = await readFile(path, "utf8");
 const previous =
   'if (VersionNumber.parse(REACT_NATIVE_VERSION) < VersionNumber.parse("0.71")) {';
