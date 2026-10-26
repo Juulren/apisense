@@ -114,7 +114,7 @@ export default function Hives() {
               Los mapas base necesitan red.
             </Label>
           ) : (
-            <ApiaryMap apiary={apiary} />
+            <ApiaryMap apiary={apiary} demo={app.workspace?.demo} />
           )}
           <Label muted size={12}>
             {apiary.latitude ?? "—"}, {apiary.longitude ?? "—"} · Ubicación del

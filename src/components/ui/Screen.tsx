@@ -172,6 +172,7 @@ export function Screen({
               return (
                 <Pressable
                   key={item.label}
+                  testID={`nav-${item.label}`}
                   accessibilityRole="tab"
                   accessibilityLabel={item.label}
                   accessibilityState={{ selected }}

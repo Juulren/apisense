@@ -8,6 +8,8 @@
     "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "demo:android": "node scripts/native-demo.mjs android",
+    "demo:ios": "node scripts/native-demo.mjs ios",
     "bundle:android": "expo export --platform android --output-dir .artifacts/bundles/android",
     "bundle:ios": "expo export --platform ios --output-dir .artifacts/bundles/ios",
     "check:bundles": "npm run bundle:android && npm run bundle:ios",

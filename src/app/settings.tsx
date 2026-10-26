@@ -172,12 +172,12 @@ export default function Settings() {
         onPress={() => router.push("/ui-catalog")}
       />
       <Button
-        label="Cerrar sesión local"
+        label={app.workspace?.demo ? "Salir de la demo" : "Cerrar sesión local"}
         variant="secondary"
         onPress={() =>
           task.run(async () => {
             await app.logout();
-            router.replace("/login");
+            router.replace("/");
           })
         }
       />

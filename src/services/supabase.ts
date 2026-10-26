@@ -1,6 +1,7 @@
 import "react-native-url-polyfill/auto";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import { DEMO_ONLY } from "../config/runtime";
 
 const storage = {
   async getItem(key: string) {
@@ -22,7 +23,7 @@ const secureUrl =
   (url.startsWith("https://") ||
     (__DEV__ && /^http:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(url)));
 export const supabase =
-  secureUrl && key
+  !DEMO_ONLY && secureUrl && key
     ? createClient(url, key, {
         auth: {
           storage,

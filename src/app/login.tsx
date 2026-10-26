@@ -15,6 +15,7 @@ import {
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { DEMO_ONLY } from "../config/runtime";
 export default function Login() {
   const app = useApp(),
     task = useTask();
@@ -24,6 +25,7 @@ export default function Login() {
     [offline, setOffline] = useState(false),
     [mode, setMode] = useState<"login" | "register">("login");
   if (app.workspace) return <Redirect href="/dashboard" />;
+  if (DEMO_ONLY) return <Redirect href="/" />;
   const submit = () =>
     task.run(async () => {
       if (offline) {
