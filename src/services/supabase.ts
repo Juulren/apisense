@@ -1,25 +1,18 @@
 import "react-native-url-polyfill/auto";
 import { createClient } from "@supabase/supabase-js";
-import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
-const webAuthMemory = new Map<string, string>();
 const storage = {
   async getItem(key: string) {
-    return Platform.OS === "web"
-      ? (webAuthMemory.get(key) ?? null)
-      : SecureStore.getItemAsync(key);
+    return SecureStore.getItemAsync(key);
   },
   async setItem(key: string, value: string) {
-    if (Platform.OS === "web") webAuthMemory.set(key, value);
-    else
-      await SecureStore.setItemAsync(key, value, {
-        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-      });
+    await SecureStore.setItemAsync(key, value, {
+      keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    });
   },
   async removeItem(key: string) {
-    if (Platform.OS === "web") webAuthMemory.delete(key);
-    else await SecureStore.deleteItemAsync(key);
+    await SecureStore.deleteItemAsync(key);
   },
 };
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -35,7 +28,7 @@ export const supabase =
           storage,
           autoRefreshToken: true,
           persistSession: true,
-          detectSessionInUrl: Platform.OS === "web",
+          detectSessionInUrl: false,
         },
       })
     : null;

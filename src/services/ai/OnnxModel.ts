@@ -1,4 +1,4 @@
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-react-native";
 import { CryptoDigestAlgorithm, digest } from "expo-crypto";
 import {
   modelResult,
@@ -9,7 +9,6 @@ import type { InferenceModel } from "./Classifier";
 export async function loadOnnxModel(
   bytes: Uint8Array,
   manifest: ModelManifest,
-  wasmBaseUrl: string,
 ): Promise<InferenceModel> {
   const checksum = Array.from(
     new Uint8Array(
@@ -20,11 +19,7 @@ export async function loadOnnxModel(
   if (checksum !== manifest.sha256.toLowerCase())
     throw new Error("SHA-256 del modelo no coincide");
   normalizeMfcc(new Array(13).fill(0), manifest);
-  ort.env.wasm.numThreads = 1;
-  ort.env.wasm.wasmPaths = wasmBaseUrl;
-  const session = await ort.InferenceSession.create(bytes, {
-    executionProviders: ["wasm"],
-  });
+  const session = await ort.InferenceSession.create(bytes);
   return {
     async predict(mfcc) {
       const results = await session.run({

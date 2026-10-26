@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Pressable, View, Platform } from "react-native";
+import { Image, Pressable, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import {
   Badge,
@@ -18,8 +18,7 @@ import { useTask } from "../state/useTask";
 export default function Login() {
   const app = useApp(),
     task = useTask();
-  const [localKey, setLocalKey] = useState(""),
-    [email, setEmail] = useState(""),
+  const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [visible, setVisible] = useState(false),
     [offline, setOffline] = useState(false),
@@ -28,7 +27,7 @@ export default function Login() {
   const submit = () =>
     task.run(async () => {
       if (offline) {
-        await app.offlineLogin(email, localKey);
+        await app.offlineLogin();
         router.replace("/dashboard");
         return;
       }
@@ -37,9 +36,9 @@ export default function Login() {
       if (password.length < 8)
         throw new Error("La contraseña debe tener al menos 8 caracteres");
       if (mode === "register") {
-        task.setMessage(await app.register(email, password, localKey));
+        task.setMessage(await app.register(email, password));
       } else {
-        await app.login(email, password, localKey);
+        await app.login(email, password);
         router.replace("/dashboard");
       }
     });
@@ -86,7 +85,7 @@ export default function Login() {
           placeholder="apicultor@colmena.bio"
           value={email}
           onChangeText={setEmail}
-          editable={!offline || Platform.OS === "web"}
+          editable={!offline}
         />
         <View style={{ gap: 8 }}>
           <Field
@@ -119,23 +118,6 @@ export default function Login() {
             </Row>
           </Pressable>
         </View>
-        {Platform.OS === "web" ? (
-          <View style={{ gap: 8 }}>
-            <Field
-              label="Clave local de datos"
-              secureTextEntry
-              value={localKey}
-              onChangeText={setLocalKey}
-              placeholder="Mínimo 16 caracteres"
-              autoComplete="off"
-            />
-            <Label muted size={11}>
-              Elige una frase distinta de tu contraseña. Cifra los datos de este
-              navegador y no se envía. Guárdala: se necesita para abrir tus
-              datos sin internet y no puede recuperarse desde el servidor.
-            </Label>
-          </View>
-        ) : null}
         <Card>
           <Toggle
             label="Modo sin internet (Campo)"

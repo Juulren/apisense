@@ -7,8 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AppState, Platform } from "react-native";
-import { findWebPrincipal, rememberWebPrincipal } from "../db/webVault";
+import { AppState } from "react-native";
 import { openRepository } from "../db/openRepository";
 import type { Repository } from "../db/Repository";
 import { SyncEngine, type SyncState } from "../db/SyncEngine";
@@ -71,17 +70,9 @@ type State = {
   error: string | null;
   syncState: SyncState;
   enterDemo: () => Promise<void>;
-  login: (
-    email: string,
-    password: string,
-    passphrase?: string,
-  ) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    passphrase?: string,
-  ) => Promise<string>;
-  offlineLogin: (email?: string, passphrase?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<string>;
+  offlineLogin: () => Promise<void>;
   logout: () => Promise<void>;
   saveSetting: (key: string, value: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -102,7 +93,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     desired = useRef<string | null>(null),
     activation = useRef<Promise<void> | null>(null);
   const { setPreference } = useTheme();
-  const webKey = useRef<string | undefined>(undefined);
   const refresh = useCallback(async () => {
     const w = current.current;
     if (!w) return;
@@ -148,12 +138,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
   }, []);
   const activate = useCallback(
-    (
-      userId: string,
-      demo: boolean,
-      passphrase?: string,
-      forceOffline = false,
-    ): Promise<void> => {
+    (userId: string, demo: boolean, forceOffline = false): Promise<void> => {
       const key = `${demo ? "demo" : "user"}:${userId}`;
       if (desired.current === key)
         return activation.current ?? Promise.resolve();
@@ -169,7 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         await old?.dispose();
         let repo: Repository | undefined;
         try {
-          repo = await openRepository(userId, passphrase);
+          repo = await openRepository(userId);
           const classifier = new AcousticClassifier();
           const ingestion = new AudioIngestionService(
               repo,
@@ -273,8 +258,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .then(({ data, error: authError }) => {
           if (!mounted) return;
           if (authError) setError(authError.message);
-          if (data.session && Platform.OS !== "web")
-            return activate(data.session.user.id, false);
+          if (data.session) return activate(data.session.user.id, false);
           setBusy(false);
         })
         .catch((e) => {
@@ -285,12 +269,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((event, session) => {
         if (!mounted) return;
-        if (
-          event === "SIGNED_IN" &&
-          session &&
-          (Platform.OS !== "web" || webKey.current)
-        )
-          void activate(session.user.id, false, webKey.current).catch((e) =>
+        if (event === "SIGNED_IN" && session)
+          void activate(session.user.id, false).catch((e) =>
             setError(String(e)),
           );
       });
@@ -324,73 +304,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     return () => sub.remove();
   }, []);
-  const login = async (
-    email: string,
-    password: string,
-    passphrase?: string,
-  ) => {
+  const login = async (email: string, password: string) => {
     if (!supabase)
       throw new Error(
         "Configura Supabase en .env para iniciar sesión. Puedes explorar la demo local.",
       );
-    if (Platform.OS === "web" && (!passphrase || passphrase.length < 16))
-      throw new Error(
-        "Introduce una clave local de al menos 16 caracteres para cifrar tus datos",
-      );
-    webKey.current = passphrase;
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
     if (error) throw error;
     if (!data.user) throw new Error("No se pudo iniciar sesión");
-    await activate(data.user.id, false, passphrase);
-    if (Platform.OS === "web") await rememberWebPrincipal(email, data.user.id);
+    await activate(data.user.id, false);
   };
-  const register = async (
-    email: string,
-    password: string,
-    passphrase?: string,
-  ) => {
+  const register = async (email: string, password: string) => {
     if (!supabase) throw new Error("Configura Supabase en .env");
-    if (Platform.OS === "web" && (!passphrase || passphrase.length < 16))
-      throw new Error("Introduce una clave local de al menos 16 caracteres");
-    webKey.current = passphrase;
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
     });
     if (error) throw error;
     if (data.session && data.user) {
-      await activate(data.user.id, false, passphrase);
-      if (Platform.OS === "web")
-        await rememberWebPrincipal(email, data.user.id);
+      await activate(data.user.id, false);
       return "Cuenta creada";
     }
     return "Revisa tu correo para confirmar la cuenta y después inicia sesión.";
   };
-  const offlineLogin = async (email?: string, passphrase?: string) => {
-    if (Platform.OS === "web") {
-      if (!email?.trim())
-        throw new Error(
-          "Introduce el correo de la cuenta que guardaste en este navegador",
-        );
-      const id = await findWebPrincipal(email);
-      if (!id)
-        throw new Error(
-          "No hay datos guardados de esa cuenta en este navegador",
-        );
-      await activate(id, false, passphrase, true);
-    } else {
-      if (!supabase)
-        throw new Error(
-          "Primero inicia sesión en línea en este dispositivo o usa la demo",
-        );
-      const { data } = await supabase.auth.getSession();
-      if (!data.session)
-        throw new Error("No hay una sesión guardada en este dispositivo");
-      await activate(data.session.user.id, false, undefined, true);
-    }
+  const offlineLogin = async () => {
+    if (!supabase)
+      throw new Error(
+        "Primero inicia sesión en línea en este dispositivo o usa la demo",
+      );
+    const { data } = await supabase.auth.getSession();
+    if (!data.session)
+      throw new Error("No hay una sesión guardada en este dispositivo");
+    await activate(data.session.user.id, false, true);
     current.current?.gate.setOffline(true);
     await current.current?.repo.setSetting("offline", "1");
     await refresh();
@@ -398,7 +346,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     ++epoch.current;
     desired.current = null;
-    webKey.current = undefined;
     const w = current.current;
     current.current = null;
     setWorkspace(null);

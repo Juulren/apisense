@@ -1,6 +1,6 @@
 # Plan de implementación por bloques
 
-Actualizado: 26 de octubre de 2026. La base de la app, el flujo de colaboración y el [PR #24](https://github.com/Juulren/apisense/pull/24) están integrados en **`main`**; #18 está cerrado. El bloque actual es exclusivamente la recuperación y verificación de fuentes de los Issues [#1](https://github.com/Juulren/apisense/issues/1) y [#7](https://github.com/Juulren/apisense/issues/7). No se ha publicado una app de producción.
+Actualizado: 26 de octubre de 2026. La base de la app, el flujo de colaboración y el [PR #24](https://github.com/Juulren/apisense/pull/24) están integrados en **`main`**; #18 está cerrado. El [PR #28](https://github.com/Juulren/apisense/pull/28) ya actualizó el README de `main` para Android/iOS exclusivamente. El bloque activo es [#27](https://github.com/Juulren/apisense/issues/27), retirada de soporte web heredado. [#1/#7](https://github.com/Juulren/apisense/pull/26) están implementados y pendientes de revisión e integración. No se ha publicado una app de producción.
 
 El [tablero de Apisense](https://github.com/users/Juulren/projects/2) muestra el trabajo activo. Los Issues contienen responsables, criterios y evidencia; este archivo conserva el resumen de hitos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para trabajar desde `main` sin acumular ramas dependientes.
 
@@ -10,7 +10,7 @@ El 26 de octubre el usuario excluyó la página web del producto. Expo/React Nat
 
 La aceptación móvil requiere compilar y ejecutar en emulador/simulador y dispositivo, verificar SQLCipher/SecureStore, permisos, clips, BLE y sincronización, y preparar firma/distribución. #15 y #8 conservan esos pendientes. La comparación visual de #25 debe hacerse en las apps nativas.
 
-Los resultados web de secciones anteriores son históricos y no acreditan el producto móvil. #27 registra la retirada del código y las dependencias exclusivas de web después de validar la base nativa; no se ejecuta esa limpieza completa dentro de #1/#7.
+Los resultados web de secciones anteriores son históricos y no acreditan el producto móvil. La limpieza cliente de #27 está implementada en una rama dependiente del PR #26. Su cierre exige compilaciones y recorridos nativos coordinados con #15; los bundles y las pruebas con dobles no completan ese criterio.
 
 ## Trabajo integrado
 
@@ -75,23 +75,34 @@ El parche está limitado a `expo-sqlite` 57.0.4 y verifica el hash del worker. R
 
 La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o cabeceras. ZIP y Code to Clipboard no entregaron una exportación nueva; la entrega acredita los originales ya conservados con el lienzo actual. No altera los flujos de la app ni certifica su aceptación visual completa. La configuración y la CI se alinean con Android/iOS por indicación del usuario.
 
+## Bloque activo — Issue #27
+
+- [x] Inventariados y retirados almacén, mapa, ONNX/WASM, herramientas QA, hosting y scripts exclusivos de navegador.
+- [x] Conservados SQLCipher/SecureStore, Maps, BLE, ONNX nativo, clips inline y módulos compartidos con Supabase/MQTT.
+- [x] Eliminadas tres dependencias directas de web y 33 paquetes del lockfile sin actualizar las versiones restantes; dependencias transitivas requeridas por Expo Router conservadas.
+- [x] Demo comprobada con SQLite real: ocho colmenas, WAVs, resúmenes e inspección persistente, sin red ni duplicación al reabrir.
+- [x] TypeScript y 49 pruebas; bundles Android/iOS correctos. Inventario, evidencia y límites en [NATIVE_CLEANUP.md](docs/NATIVE_CLEANUP.md).
+- [x] README de `main` sin instrucciones de página web, integrado por separado en PR #28 a petición del usuario.
+- [ ] Compilaciones y recorridos Android/iOS con SQLCipher/SecureStore, permisos, acceso, demo, inspección, audio y sincronización; depende de #15/#8.
+- [ ] Revisión e integración de la limpieza después de su base #26. #27 continúa abierto hasta completar los criterios.
+
 ## Pendientes de producto
 
-| Issue                                                                                                  | Trabajo restante                                                                 | Criterio de aceptación                                                                                                                                                                                |
-| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [#1](https://github.com/Juulren/apisense/issues/1), [#7](https://github.com/Juulren/apisense/issues/7) | Fuentes y procedencia verificadas; pendiente revisar e integrar el bloque actual | Validar el PR con evidencia de los 11 IDs y cerrar al integrarlo.                                                                                                                                     |
-| [#25](https://github.com/Juulren/apisense/issues/25)                                                   | Aprobar adaptaciones y completar la comparación visual por ruta                  | Decidir sobre las cinco vistas sin fuente independiente y comparar las apps Android/iOS con fuentes aprobadas al mismo viewport, tema y estado.                                                       |
-| [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                   | Compilar y ejecutar Android/iOS con SQLCipher/SecureStore; probar cierre/apertura, bloqueo, permisos y audio. Revisar firma, enlaces de autenticación, distribución, backups y acceso administrativo. |
-| [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                      | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                               |
-| [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                  | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                                       |
-| [#17](https://github.com/Juulren/apisense/issues/17)                                                   | Reclasificar la validación ARIA web heredada, fuera del alcance móvil            | Conservar el historial web y revisar su seguimiento; la accesibilidad nativa se comprueba en #25 con TalkBack/VoiceOver.                                                                              |
-| [#27](https://github.com/Juulren/apisense/issues/27)                                                   | Retirar soporte web heredado después de validar las apps nativas                 | Retirar únicamente módulos, pruebas, dependencias y scripts exclusivos de web sin afectar al producto móvil ni al backend.                                                                            |
+| Issue                                                                                                  | Trabajo restante                                                                    | Criterio de aceptación                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#1](https://github.com/Juulren/apisense/issues/1), [#7](https://github.com/Juulren/apisense/issues/7) | Fuentes y procedencia verificadas; pendiente revisar e integrar el bloque actual    | Validar el PR con evidencia de los 11 IDs y cerrar al integrarlo.                                                                                                                                     |
+| [#25](https://github.com/Juulren/apisense/issues/25)                                                   | Aprobar adaptaciones y completar la comparación visual por ruta                     | Decidir sobre las cinco vistas sin fuente independiente y comparar las apps Android/iOS con fuentes aprobadas al mismo viewport, tema y estado.                                                       |
+| [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                      | Compilar y ejecutar Android/iOS con SQLCipher/SecureStore; probar cierre/apertura, bloqueo, permisos y audio. Revisar firma, enlaces de autenticación, distribución, backups y acceso administrativo. |
+| [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                         | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                               |
+| [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                     | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                                       |
+| [#17](https://github.com/Juulren/apisense/issues/17)                                                   | Reclasificar la validación ARIA web heredada, fuera del alcance móvil               | Conservar el historial web y revisar su seguimiento; la accesibilidad nativa se comprueba en #25 con TalkBack/VoiceOver.                                                                              |
+| [#27](https://github.com/Juulren/apisense/issues/27)                                                   | Limpieza cliente implementada; pendientes validación nativa, revisión e integración | Código exclusivo de web retirado; demostrar compilaciones y recorridos móviles coordinados con #15 antes del cierre.                                                                                  |
 
 ## Flujo siguiente
 
 1. El usuario elige un Issue; se delimita el alcance y se asigna un responsable.
-2. Se crea una rama desde `main` actualizado y se implementa solo ese bloque.
-3. Se abre un PR pequeño con criterios cumplidos, evidencia y `Closes #NUMERO`.
+2. Se crea una rama desde `main` actualizado y se implementa solo ese bloque. Excepción actual: #27 depende de #26, que permanece abierto sin autorización de integración; la base del PR refleja esa dependencia.
+3. Se abre un PR pequeño con evidencia y criterios pendientes explícitos. Se usa `Closes #NUMERO` solo cuando se cumplen todos los criterios; de lo contrario se enlaza con `Refs #NUMERO`.
 4. Se revisa y, con autorización y checks correctos, se integra; después se elige el siguiente Issue.
 
-El bloque seleccionado es #1/#7. Se entrega para revisión y no se integra ni se inicia #25 automáticamente. Los demás pendientes conservan su alcance.
+El bloque seleccionado es #27. Se entrega para revisión y no se integra automáticamente ni inicia #15/#25. Solo la actualización documental del README de `main` del PR #28 fue autorizada e integrada por separado. Los demás pendientes conservan su alcance.

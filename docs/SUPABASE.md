@@ -9,10 +9,10 @@ Copia `.env.example` como `.env` y configura `EXPO_PUBLIC_SUPABASE_URL` y `EXPO_
 ```powershell
 npm ci
 npm run backend:check
-npm run web
+npm run android
 ```
 
-El preflight solo realiza lecturas y una invocación sin sesión que debe ser rechazada. No imprime valores de configuración ni sustituye la prueba de aislamiento. Si cambias `.env`, reinicia Expo. El modo demo sigue separado y no sincroniza.
+En macOS con Xcode puedes usar `npm run ios`. La app se entrega únicamente en Android e iOS. El preflight solo realiza lecturas y una invocación sin sesión que debe ser rechazada. No imprime valores de configuración ni sustituye la prueba de aislamiento. Si cambias `.env`, reinicia Expo. El modo demo sigue separado y no sincroniza.
 
 ## Instalar en otro proyecto
 
@@ -29,7 +29,7 @@ npx supabase functions deploy generate-hive-summary --use-api
 npx supabase db lint --linked --level warning
 ```
 
-Las migraciones crean seis tablas con RLS, funciones de propiedad, Storage privado, pg_cron/pg_net y la cola privada de resúmenes. No ejecutes un reset sobre un proyecto con datos. Revisa el diff antes de aplicar la configuración: las URLs de Auth actuales son para desarrollo local, con confirmación de correo habilitada y redirecciones para localhost:8081, localhost:4173 y `apisense://login`. Antes de publicar, configura el dominio HTTPS y los enlaces nativos definitivos.
+Las migraciones crean seis tablas con RLS, funciones de propiedad, Storage privado, pg_cron/pg_net y la cola privada de resúmenes. No ejecutes un reset sobre un proyecto con datos. Revisa el diff antes de aplicar la configuración: el backend de desarrollo conserva las URLs de Auth históricas de localhost y `apisense://login`. La limpieza cliente de #27 no modifica ni despliega ese backend. #15 debe sustituir las redirecciones heredadas por los enlaces nativos definitivos y comprobar confirmación y retorno a la app antes de publicar; no hay hosting frontend que preparar.
 
 Para habilitar el cron, genera un secreto aleatorio y guárdalo como `CRON_SECRET` en los secretos de la función. Guarda **el mismo valor** en Supabase Vault con nombre `apisense_cron_secret`, y la URL HTTPS del proyecto con nombre `apisense_project_url`. Usa el dashboard o una sesión administrativa; no pegues valores reales en SQL versionado, argumentos de terminal ni variables `EXPO_PUBLIC_*`. El job queda sin llamadas útiles mientras esos dos secretos de Vault no existan.
 

@@ -175,7 +175,6 @@ export function Screen({
                   accessibilityRole="tab"
                   accessibilityLabel={item.label}
                   accessibilityState={{ selected }}
-                  aria-selected={selected}
                   onPress={() => router.navigate(item.route)}
                   style={{
                     flex: 1,
