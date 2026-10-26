@@ -6,6 +6,8 @@ Actualización del 21 de octubre: el backend real del Issue #13 ya se instaló y
 
 Actualización del 22 de octubre: el Issue #18 añade la prueba con dos pestañas reales, corrige la inicialización del VFS web de Expo y eleva la suite local a 47 pruebas. Procedimiento, límites y capturas en [WEB_STORAGE_QA.md](WEB_STORAGE_QA.md).
 
+Actualización del 26 de octubre: procedencia de los 11 IDs de Stitch acreditada con el lienzo autenticado y el ZIP original. El mapeo corregido y sus límites están en [STITCH_PROVENANCE.md](STITCH_PROVENANCE.md). Esto no amplía la revisión visual parcial descrita aquí; la aceptación completa sigue en #25.
+
 | Comprobación                                   | Resultado                                                                                                                              |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | TypeScript estricto (`npx tsc --noEmit`)       | Correcto                                                                                                                               |

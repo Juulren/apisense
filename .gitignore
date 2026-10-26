@@ -9,6 +9,7 @@ web-build/
 .tools/
 .artifacts/
 coverage/
+__pycache__/
 supabase/.temp/
 supabase/.branches/
 android/

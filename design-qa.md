@@ -2,6 +2,8 @@
 
 final result: blocked
 
+Actualización del 26 de octubre de 2026: **procedencia de fuentes verificada** para los 11 IDs de #1/#7; ver [DESIGN_MAP.md](DESIGN_MAP.md) y [STITCH_PROVENANCE.md](docs/STITCH_PROVENANCE.md). Diez etiquetas iniciales de ID/pantalla eran incorrectas. El resultado visual de la app sigue pendiente por las adaptaciones y la comparación incompleta, ahora registradas en [#25](https://github.com/Juulren/apisense/issues/25).
+
 ## Fuentes y normalización
 
 Fuente: `design-reference/stitch/exports/dashboard_simplificado_user_friendly_apisense/screen.png` (466×1600) y HTML de la spec de componentes. Implementación: `docs/qa/dashboard-light.png`, con captura de navegador a 466×1060, modo claro y demo con ocho colmenas. El navegador in-app limita la altura efectiva a 1060 aunque se solicitó 1600; no se afirma una comparación completa al mismo viewport.
@@ -10,7 +12,7 @@ Comparación parcial conjunta: `docs/qa/dashboard-comparison.png`, fuente recort
 
 ## Superficies revisadas
 
-- Tipografía: Jakarta/Inter empaquetadas; jerarquía, pesos y etiquetas legibles en claro/oscuro. No se certifican todos los saltos de línea contra las fuentes faltantes.
+- Tipografía: Jakarta/Inter empaquetadas; jerarquía, pesos y etiquetas legibles en claro/oscuro. No se certifican todos los saltos de línea de las adaptaciones ni de las comparaciones incompletas.
 - Espaciado/layout: márgenes móviles, tarjetas redondeadas y navegación persistente comprobados. El layout adapta formularios reales, estado demo y clave de cifrado, ausentes de parte de las maquetas.
 - Tokens: miel, verde, azul y superficies claras/oscuras derivados de la spec. Se corrigió texto verde de bajo contraste en tema oscuro.
 - Recursos: marca raster extraída del PNG original; iconos Material. Espectrograma y FFT representan el clip real, en lugar de reutilizar un dibujo sin relación con la muestra.
@@ -25,7 +27,7 @@ Comparación parcial conjunta: `docs/qa/dashboard-comparison.png`, fuente recort
 
 ## Bloqueos restantes
 
-- #7: los exports actuales son variantes de seis vistas y no acreditan los 11 IDs originales. Las pantallas adaptadas no pueden certificarse fieles a una fuente ausente.
+- #25: los 11 IDs ya están acreditados, pero corresponden a cinco familias claro/oscuro y una spec. Onboarding, lista/mapa, historial, vinculación y formulario de inspección no tienen una fuente independiente entre ellos; falta aprobar sus adaptaciones o aportar diseños adicionales.
 - Comparación completa al mismo viewport/estado para todas las pantallas pendiente. La evidencia capturada valida uso y revisión parcial, no aceptación visual integral.
 - Builds nativos físicos pendientes en #8/#15.
 

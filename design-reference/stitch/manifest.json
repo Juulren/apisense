@@ -1,7 +1,7 @@
 {
   "project_id": "14657518597972503903",
-  "source": "user-provided local Stitch export",
-  "verified_screen_ids": false,
+  "source": "Original user-provided ZIP (2026-10-16), matched to authenticated Stitch canvas (2026-10-26)",
+  "verified_screen_ids": true,
   "files": [
     {
       "path": "exports/ac_stica_ia_modo_oscuro_apisense/code.html",
@@ -95,5 +95,134 @@
       "path": "exports/spec_de_botones_y_componentes_ui_apisense_figma/screen.png",
       "sha256": "fc02226602993fa8ae24432232a19a0b980ca2f18dd3dfc50cac5b904721d1dd"
     }
+  ],
+  "schema_version": 2,
+  "screens": [
+    {
+      "id": "4ddc4e1cd1d94c95bc9a96bd4506140d",
+      "requested_route": "/",
+      "actual_route": "/settings",
+      "family": "Ajustes",
+      "theme": "oscuro",
+      "export_directory": "exports/ajustes_y_configuraci_n_modo_oscuro_apisense",
+      "body_sha256": "659263a2ed4e8dc550a5e0002aea6ff1ab1090e32cb2c244be9e7e9f735a88bf",
+      "png_dimensions": [298, 1600]
+    },
+    {
+      "id": "0b3c11bfb4874a0bbf758415fde95bc0",
+      "requested_route": "/login",
+      "actual_route": "/monitor",
+      "family": "Acústica IA",
+      "theme": "oscuro",
+      "export_directory": "exports/ac_stica_ia_modo_oscuro_apisense",
+      "body_sha256": "89764884cdb9846fa1160f1ef71da1932989063639bd92bc1ee3f9385bf74c31",
+      "png_dimensions": [378, 1600]
+    },
+    {
+      "id": "81a455bf1b6546dcb69422fb93eb9815",
+      "requested_route": "/dashboard",
+      "actual_route": "/hive/[id]",
+      "family": "Diagnóstico y ciclo",
+      "theme": "oscuro",
+      "export_directory": "exports/diagn_stico_y_ciclo_modo_oscuro_apisense",
+      "body_sha256": "5ab8cc6a4d5f348b2922d68c0a46bf1f3ba74cde934c60409209df2082695efc",
+      "png_dimensions": [337, 1600]
+    },
+    {
+      "id": "2866b2f10dd941b1b45449c881f2f906",
+      "requested_route": "/hives",
+      "actual_route": "/dashboard",
+      "family": "Dashboard",
+      "theme": "oscuro",
+      "export_directory": "exports/dashboard_modo_oscuro_apisense",
+      "body_sha256": "c243ab49472785aca15ed7d22fa1666b5b237af9e5ad68a38ec5701708c2522b",
+      "png_dimensions": [430, 1600]
+    },
+    {
+      "id": "9219c95b429f4b69b120299875a6a659",
+      "requested_route": "/ui-catalog",
+      "actual_route": "/ui-catalog",
+      "family": "Spec de componentes",
+      "theme": "mixto",
+      "export_directory": "exports/spec_de_botones_y_componentes_ui_apisense_figma",
+      "body_sha256": "249308cd38a0d725de07de427a4ea5fcece91ba5316572c5d01812f59408a0be",
+      "png_dimensions": [721, 1600]
+    },
+    {
+      "id": "8b522e6fd6c4496c8b4322ffa25359cb",
+      "requested_route": "/hive/[id]",
+      "actual_route": "/settings",
+      "family": "Ajustes",
+      "theme": "claro",
+      "export_directory": "exports/ajustes_y_configuraci_n_simplificada_apisense",
+      "body_sha256": "0e22804750f45b490388cd6453ebb6830f5ab6568b8cd7fa51b257a0ad343e99",
+      "png_dimensions": [332, 1600]
+    },
+    {
+      "id": "594626aefe1d4d62be0199116b847dc8",
+      "requested_route": "/monitor",
+      "actual_route": "/login",
+      "family": "Login",
+      "theme": "oscuro",
+      "export_directory": "exports/inicio_de_sesi_n_modo_oscuro_apisense",
+      "body_sha256": "c7734d87619a533804ebf2351a059068eaff531ce7dfae44d25330f765d5842d",
+      "png_dimensions": [706, 1600]
+    },
+    {
+      "id": "15f5ffbe4079404d9e31504985a22c57",
+      "requested_route": "/history",
+      "actual_route": "/hive/[id]",
+      "family": "Diagnóstico y ciclo",
+      "theme": "claro",
+      "export_directory": "exports/diagn_stico_y_ciclo_simplificado_apisense",
+      "body_sha256": "c7b5825943539fb732cb3a39bf0a7cf14ca62bb74f5927b2cbbd98b3808f5ca3",
+      "png_dimensions": [359, 1600]
+    },
+    {
+      "id": "075860fb08504a389181206213e52cbf",
+      "requested_route": "/pairing",
+      "actual_route": "/monitor",
+      "family": "Acústica IA",
+      "theme": "claro",
+      "export_directory": "exports/ac_stica_ia_simplificada_apisense",
+      "body_sha256": "073355da4ad15e250716b504cfa1ea8ca8a52959739ec1b7dd1b67b8aa4d504b",
+      "png_dimensions": [402, 1600]
+    },
+    {
+      "id": "0e200552364542faa7ee9ae0a15069c5",
+      "requested_route": "/inspection",
+      "actual_route": "/dashboard",
+      "family": "Dashboard",
+      "theme": "claro",
+      "export_directory": "exports/dashboard_simplificado_user_friendly_apisense",
+      "body_sha256": "6552a53b7d3fe3eeab30280b64efc4481d82565907f4549f191267a0f2706eb6",
+      "png_dimensions": [466, 1600]
+    },
+    {
+      "id": "5c34c4004aba4e95b023dbc433532e0a",
+      "requested_route": "/settings",
+      "actual_route": "/login",
+      "family": "Login",
+      "theme": "claro",
+      "export_directory": "exports/inicio_de_sesi_n_simplificado_apisense",
+      "body_sha256": "6d266e07ed71caf9fa0b37dcc31e8271d2dcd5969498510e2e29b4728611924b",
+      "png_dimensions": [706, 1600]
+    }
+  ],
+  "verification": {
+    "captured_on": "2026-10-26",
+    "capture_file": "provenance/2026-10-26/canvas-capture.json.gz",
+    "capture_sha256": "16ed508a12b25c89ea9e2f9dac44040375c77dbac8bad9103021356ae49d716e",
+    "comparison": "Exact normalized HTML body token equality; injected preview nodes removed and data-stitch-vh substitutions reversed. Not a full-file or rendered-pixel comparison.",
+    "original_archive_name": "stitch_apisense_smart_apiary_app.zip",
+    "original_archive_sha256": "41761a50daf9361c222fd4c321474972cec3cd7e7fdf38200184a9ada39423f7",
+    "original_archive_entries_verified": 23
+  },
+  "routes_without_dedicated_source": [
+    "/",
+    "/hives",
+    "/history",
+    "/pairing",
+    "/inspection"
   ]
 }
