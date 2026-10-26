@@ -46,7 +46,7 @@ npm run android
 npm run ios
 ```
 
-Estos comandos generan y ejecutan la compilación nativa de desarrollo. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
+Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Probar modo demo** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
 Selecciona **Probar modo demo** dentro de la app instalada para recorrerla con datos sintéticos. Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
 
@@ -80,7 +80,7 @@ Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de a
 
 ### Cifrado y acceso offline
 
-En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con claves por cuenta y rechazo de apertura si SQLCipher no está disponible. La demo utiliza un almacén separado con datos sintéticos. El cifrado, la reapertura y el manejo de clips deben verificarse en builds nativos antes de declararlos validados.
+En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con claves por cuenta y rechazo de apertura si SQLCipher no está disponible. La demo utiliza otra base SQLCipher con su propia clave de SecureStore y datos sintéticos, sin sincronización. El cifrado, la reapertura y el manejo de clips deben verificarse en builds nativos antes de declararlos validados.
 
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
