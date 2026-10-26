@@ -41,6 +41,7 @@ jobs:
       - run: npx expo prebuild --platform android --no-install
       - name: Build standalone demo APK
         run: |
+          set -o pipefail
           mkdir -p .artifacts
           cd android
           chmod +x gradlew
@@ -73,8 +74,11 @@ jobs:
             android/app/build/outputs/apk/release/*.apk
             .artifacts/
           retention-days: 14
+          include-hidden-files: true
   ios:
     runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +91,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
+      - run: xcodebuild -version
       - run: npx expo prebuild --platform ios --no-install
       - name: Install native pods
         run: pod install --project-directory=ios
@@ -115,3 +120,4 @@ jobs:
             .artifacts/*.xml
             .artifacts/*.png
           retention-days: 14
+          include-hidden-files: true

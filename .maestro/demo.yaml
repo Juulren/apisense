@@ -14,7 +14,7 @@ name: Demo nativa offline, audio y persistencia
 - assertVisible: "Monitoreo acústico"
 - scrollUntilVisible:
     element:
-      text: "Escuchar zumbido"
+      text: "Audio detenido"
 - tapOn: "Escuchar zumbido"
 - extendedWaitUntil:
     visible: "Audio en reproducción"
@@ -43,7 +43,8 @@ name: Demo nativa offline, audio y persistencia
     element:
       text: "Anotar inspección"
 - tapOn: "Anotar inspección"
-- tapOn: "Observaciones de campo"
+- tapOn:
+    id: "inspection-notes"
 - inputText: "Inspeccion de prueba nativa persistente"
 - hideKeyboard
 - scrollUntilVisible:
