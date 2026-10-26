@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Platform } from "react-native";
 import { verifyEncryptedStorage } from "../db/verifyEncryptedStorage";
+import { WebStorageQA } from "../components/dev/WebStorageQA";
 import {
   Badge,
   Button,
@@ -123,6 +124,7 @@ export default function Catalog() {
           {notice ? <Label>{notice}</Label> : null}
         </Card>
       ) : null}
+      <WebStorageQA />
     </Screen>
   );
 }
