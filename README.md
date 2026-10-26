@@ -1,6 +1,6 @@
 # Apisense Smart Apiary App
 
-Apisense es una aplicación multiplataforma para el seguimiento de apiarios y colmenas, desarrollada con **Expo, React Native y TypeScript para Web, Android e iOS**. Reúne telemetría de sensores, grabaciones acústicas y observaciones del apicultor en una misma bitácora.
+Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, desarrollada con **Expo, React Native y TypeScript para Android nativo e iOS nativo**. El producto no tendrá página ni versión web. Reúne telemetría de sensores, grabaciones acústicas y observaciones del apicultor en una misma bitácora.
 
 Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
@@ -21,26 +21,16 @@ La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle
 
 La demo no necesita credenciales de Supabase, broker MQTT, dispositivos BLE ni un modelo de IA.
 
-## Descargar y ejecutar en Web
+## Descargar e instalar
 
 ```bash
 git clone https://github.com/Juulren/apisense.git
 cd apisense
 git switch main
 npm ci
-npm run web
 ```
 
-Abre la URL que indique Expo y selecciona **Probar modo demo**. Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de rama y ejecuta `git fetch origin` para actualizar las referencias.
-
-Para comprobar la versión web exportada, con el servidor local que configura las cabeceras necesarias para SQLite:
-
-```bash
-npm run build:web
-npm run preview
-```
-
-Abre [http://localhost:4173](http://localhost:4173). Después de la primera carga, el service worker permite abrir la interfaz sin conexión; los mapas externos siguen necesitando red.
+Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de rama y ejecuta `git fetch origin` para actualizar las referencias.
 
 ## Ejecutar en Android e iOS
 
@@ -54,7 +44,7 @@ npm run android
 npm run ios
 ```
 
-Estos comandos generan y ejecutan la compilación nativa de desarrollo. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
+Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Probar modo demo** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
 Las exportaciones JavaScript de ambas plataformas se han verificado; la compilación y ejecución de APK/IPA y las pruebas en dispositivos físicos siguen pendientes en el [Issue #15](https://github.com/Juulren/apisense/issues/15).
 
@@ -86,11 +76,9 @@ Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de a
 
 ### Cifrado y acceso offline
 
-En las cuentas reales, la implementación nativa utiliza SQLCipher y SecureStore. La versión web cifra las copias locales con AES-GCM y solicita una clave local de al menos 16 caracteres, distinta de la contraseña de Supabase. Esa clave no se guarda: perderla impide recuperar los datos locales sin sincronizar.
+Las apps nativas utilizan SQLCipher y SecureStore, con una clave por cuenta y rechazo de apertura si SQLCipher no está disponible. Los clips se conservan dentro de la base cifrada. La demo utiliza otro almacén, separado de las cuentas reales, con datos sintéticos y sin sincronización.
 
-El acceso web real requiere HTTPS o localhost y un navegador con Web Crypto, IndexedDB y Web Locks. El hosting debe servir las cabeceras de aislamiento incluidas en `public/_headers`; el servidor `npm run preview` ya las configura. La demo utiliza un almacén separado de datos sintéticos.
-
-`npm ci` aplica una corrección local del worker de `expo-sqlite` 57.0.4 para que las bases en memoria no retengan handles del almacenamiento persistente entre pestañas. Si omites los scripts de instalación, ejecuta `node scripts/patch-expo-sqlite.mjs` antes de compilar. Al actualizar Expo se debe revisar esta corrección; consulta la [prueba del almacén entre pestañas](docs/WEB_STORAGE_QA.md).
+La ejecución del cifrado, la reapertura y el audio en Android e iOS siguen pendientes de validación en el [Issue #15](https://github.com/Juulren/apisense/issues/15).
 
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
@@ -103,8 +91,11 @@ En la rama de implementación:
 ```bash
 npm run typecheck
 npm test
-npm run build:web
+npx expo export --platform android --output-dir .artifacts/bundles/android
+npx expo export --platform ios --output-dir .artifacts/bundles/ios
 ```
+
+Los comandos `expo export` comprueban bundles JavaScript/Hermes; no generan APK/AAB/IPA ni prueban la app en dispositivos. El soporte web heredado del repositorio se retira en el [Issue #27](https://github.com/Juulren/apisense/issues/27); no forma parte de la entrega.
 
 El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
 
