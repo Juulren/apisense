@@ -1,6 +1,6 @@
 # Plan de implementación por bloques
 
-Actualizado: 26 de octubre de 2026. La base de la app, el flujo de colaboración y el [PR #24](https://github.com/Juulren/apisense/pull/24) están integrados en **`main`**; #18 está cerrado. El [PR #28](https://github.com/Juulren/apisense/pull/28) ya actualizó el README de `main` para Android/iOS exclusivamente. El bloque activo es [#27](https://github.com/Juulren/apisense/issues/27), retirada de soporte web heredado. [#1/#7](https://github.com/Juulren/apisense/pull/26) están implementados y pendientes de revisión e integración. No se ha publicado una app de producción.
+Actualizado: 27 de octubre de 2026. La base de la app, el flujo de colaboración y el [PR #24](https://github.com/Juulren/apisense/pull/24) están integrados en **`main`**; #18 está cerrado. El [PR #28](https://github.com/Juulren/apisense/pull/28) ya actualizó el README de `main` para Android/iOS exclusivamente. La demo nativa del [PR #30](https://github.com/Juulren/apisense/pull/30) está comprobada en Android/iOS Simulator y preparada para revisión. La limpieza [#27](https://github.com/Juulren/apisense/pull/29) y las fuentes [#1/#7](https://github.com/Juulren/apisense/pull/26) están implementadas y pendientes de validación/revisión e integración según su alcance. No se ha publicado una app de producción.
 
 El [tablero de Apisense](https://github.com/users/Juulren/projects/2) muestra el trabajo activo. Los Issues contienen responsables, criterios y evidencia; este archivo conserva el resumen de hitos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para trabajar desde `main` sin acumular ramas dependientes.
 
@@ -75,7 +75,7 @@ El parche está limitado a `expo-sqlite` 57.0.4 y verifica el hash del worker. R
 
 La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o cabeceras. ZIP y Code to Clipboard no entregaron una exportación nueva; la entrega acredita los originales ya conservados con el lienzo actual. No altera los flujos de la app ni certifica su aceptación visual completa. La configuración y la CI se alinean con Android/iOS por indicación del usuario.
 
-## Bloque activo — Issue #27
+## Limpieza implementada — Issue #27
 
 - [x] Inventariados y retirados almacén, mapa, ONNX/WASM, herramientas QA, hosting y scripts exclusivos de navegador.
 - [x] Conservados SQLCipher/SecureStore, Maps, BLE, ONNX nativo, clips inline y módulos compartidos con Supabase/MQTT.
@@ -85,6 +85,21 @@ La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o ca
 - [x] README de `main` sin instrucciones de página web, integrado por separado en PR #28 a petición del usuario.
 - [ ] Compilaciones y recorridos Android/iOS con SQLCipher/SecureStore, permisos, acceso, demo, inspección, audio y sincronización; depende de #15/#8.
 - [ ] Revisión e integración de la limpieza después de su base #26. #27 continúa abierto hasta completar los criterios.
+
+## Demo nativa implementada — Android/iOS
+
+- [x] Perfil de demo con identificador propio, sin cliente Supabase y con recursos locales incluidos en Release.
+- [x] Comandos de compilación de demo para Android e iOS; mapa SVG ilustrativo sin claves ni red y estado nativo de reproducción.
+- [x] Corrección acotada de ONNX 1.24.3 para Gradle 9; Xcode 26.2/Swift 6.2 e identidad de simulador para Keychain.
+- [x] Flujo Maestro para entrada, audio, mapa, inspección persistente, reapertura y salida; conservación de logs y capturas.
+- [x] Ambos binarios Release compilados e instalados en emulador Android/simulador iOS en Actions.
+- [x] Recorrido Maestro Android sin red correcto; APK entregado con checksum e instrucciones.
+- [x] Recorrido completo iOS Simulator correcto, incluida inspección persistente tras cerrar y reabrir.
+- [x] Demo instalada, abierta y dashboard verificado visualmente en el emulador Android local solicitado por el usuario.
+- [x] Binarios, checksums, instrucciones y evidencia final en [NATIVE_DEMO.md](docs/NATIVE_DEMO.md); PR #30 preparado para revisión.
+- [ ] Revisión e integración autorizada del PR #30 tras sus bases #26/#29; no se fusiona automáticamente.
+
+Las pruebas locales de la base de demo permanecen correctas. La aceptación nativa se registra en [NATIVE_DEMO.md](docs/NATIVE_DEMO.md), que distingue APK, simulador iOS y firma para iPhone físico.
 
 ## Pendientes de producto
 
@@ -105,4 +120,4 @@ La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o ca
 3. Se abre un PR pequeño con evidencia y criterios pendientes explícitos. Se usa `Closes #NUMERO` solo cuando se cumplen todos los criterios; de lo contrario se enlaza con `Refs #NUMERO`.
 4. Se revisa y, con autorización y checks correctos, se integra; después se elige el siguiente Issue.
 
-El bloque seleccionado es #27. Se entrega para revisión y no se integra automáticamente ni inicia #15/#25. Solo la actualización documental del README de `main` del PR #28 fue autorizada e integrada por separado. Los demás pendientes conservan su alcance.
+El usuario pidió después completar la demo Android/iOS. El bloque activo se limita ahora a esa demo nativa en [PR #30](https://github.com/Juulren/apisense/pull/30), sobre #29/#26, sin integrar automáticamente esas ramas. Añade builds Release, aislamiento de servicios, mapa local y prueba Maestro; la ejecución de Gradle/Xcode y de los dispositivos virtuales se registra en [NATIVE_DEMO.md](docs/NATIVE_DEMO.md). No cierra todo #15/#27: cuentas reales, firma/distribución, dispositivos físicos y hardware conservan sus criterios. Solo la actualización documental de `main` del PR #28 fue autorizada e integrada por separado.
