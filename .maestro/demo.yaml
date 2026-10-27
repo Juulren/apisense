@@ -5,7 +5,7 @@ name: Demo nativa offline, audio y persistencia
 # Maestro clearState reinstalls a copy and loses the simulator signature.
 - launchApp
 - scrollUntilVisible:
-    centerElement: true
+    centerElement: false
     element:
       text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"
@@ -83,7 +83,7 @@ name: Demo nativa offline, audio y persistencia
 - stopApp
 - launchApp
 - scrollUntilVisible:
-    centerElement: true
+    centerElement: false
     element:
       text: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
@@ -108,7 +108,7 @@ name: Demo nativa offline, audio y persistencia
       text: "Salir de la demo"
 - tapOn: "Salir de la demo"
 - scrollUntilVisible:
-    centerElement: true
+    centerElement: false
     element:
       text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"
