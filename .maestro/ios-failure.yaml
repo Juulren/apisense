@@ -1,0 +1,8 @@
+appId: com.apisense.demo
+name: Captura de diagnóstico iOS sin reiniciar ni borrar datos
+---
+- swipe:
+    direction: UP
+- swipe:
+    direction: UP
+- takeScreenshot: .artifacts/ios-error-detail

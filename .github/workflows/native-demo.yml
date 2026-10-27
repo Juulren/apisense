@@ -12,8 +12,19 @@ on:
       - "package*.json"
       - "*.config.js"
   workflow_dispatch:
+    inputs:
+      platform:
+        description: Plataforma a verificar
+        type: choice
+        options: [all, android, ios]
+        default: all
+      ios_artifact_run_id:
+        description: Reutilizar el binario iOS de una ejecución anterior (vacío para compilar)
+        type: string
+        default: ""
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: native-demo-${{ github.ref }}
   cancel-in-progress: true
@@ -24,6 +35,7 @@ env:
   MAESTRO_VERSION: cli-2.12.0
 jobs:
   android:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'ios'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -75,6 +87,7 @@ jobs:
           retention-days: 14
           include-hidden-files: true
   ios:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'android'
     runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
@@ -90,16 +103,34 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
+        if: inputs.ios_artifact_run_id == ''
       - run: xcodebuild -version
       - run: npx expo prebuild --platform ios --no-install
+        if: inputs.ios_artifact_run_id == ''
       - name: Install native pods
+        if: inputs.ios_artifact_run_id == ''
         run: pod install --project-directory=ios
       - name: Build standalone simulator app
+        if: inputs.ios_artifact_run_id == ''
         run: |
           mkdir -p .artifacts
           set -o pipefail
           xcodebuild -workspace ios/ApisenseDemo.xcworkspace -scheme ApisenseDemo -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .artifacts/ios-build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .artifacts/ios-build.log
           ditto -c -k --sequesterRsrc --keepParent .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app .artifacts/ApisenseDemo-simulator.zip
+      - uses: actions/download-artifact@v4
+        if: inputs.ios_artifact_run_id != ''
+        with:
+          name: apisense-demo-ios-simulator
+          run-id: ${{ inputs.ios_artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: .artifacts/ios-source
+      - name: Prepare simulator app
+        run: |
+          mkdir -p .artifacts/ios-app
+          if [ -f .artifacts/ios-source/ApisenseDemo-simulator.zip ]; then
+            cp .artifacts/ios-source/ApisenseDemo-simulator.zip .artifacts/
+          fi
+          ditto -x -k .artifacts/ApisenseDemo-simulator.zip .artifacts/ios-app
       - name: Install Maestro
         run: bash scripts/install-maestro.sh
       - name: Run demo in iOS Simulator
@@ -107,8 +138,7 @@ jobs:
           DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for group in json.load(sys.stdin)["devices"].values() for d in group if d["name"].startswith("iPhone")))')
           xcrun simctl boot "$DEVICE_ID"
           xcrun simctl bootstatus "$DEVICE_ID" -b
-          xcrun simctl install "$DEVICE_ID" .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app
-          "$HOME/.maestro/bin/maestro" --device "$DEVICE_ID" test --format junit --output .artifacts/ios-demo.xml --test-output-dir .artifacts/ios-maestro .maestro/demo.yaml
+          bash scripts/test-demo-ios.sh "$DEVICE_ID"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -119,5 +149,6 @@ jobs:
             .artifacts/*.xml
             .artifacts/*.png
             .artifacts/ios-maestro/
+            .artifacts/ios-diagnostics/
           retention-days: 14
           include-hidden-files: true
