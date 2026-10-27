@@ -11,5 +11,7 @@ collect_diagnostics() {
   exit "$task_status"
 }
 trap collect_diagnostics EXIT
+xcrun simctl uninstall "$device_id" com.apisense.demo || true
 xcrun simctl install "$device_id" .artifacts/ios-app/ApisenseDemo.app
+xcrun simctl launch "$device_id" com.apisense.demo
 "$HOME/.maestro/bin/maestro" --device "$device_id" test --format junit --output .artifacts/ios-demo.xml --test-output-dir .artifacts/ios-maestro .maestro/demo.yaml

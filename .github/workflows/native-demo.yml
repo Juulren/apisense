@@ -22,6 +22,10 @@ on:
         description: Reutilizar el binario iOS de una ejecución anterior (vacío para compilar)
         type: string
         default: ""
+      android_artifact_run_id:
+        description: Reutilizar el APK de una ejecución anterior (vacío para compilar)
+        type: string
+        default: ""
 permissions:
   contents: read
   actions: read
@@ -52,8 +56,11 @@ jobs:
         with:
           cache-read-only: false
       - run: npm ci
+        if: inputs.android_artifact_run_id == ''
       - run: npx expo prebuild --platform android --no-install
+        if: inputs.android_artifact_run_id == ''
       - name: Build standalone demo APK
+        if: inputs.android_artifact_run_id == ''
         run: |
           set -o pipefail
           mkdir -p .artifacts
@@ -61,6 +68,18 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --max-workers=2 --console=plain -x lint -x test 2>&1 | tee ../.artifacts/android-build.log
           ./gradlew --stop
+      - uses: actions/download-artifact@v4
+        if: inputs.android_artifact_run_id != ''
+        with:
+          name: apisense-demo-android
+          run-id: ${{ inputs.android_artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: .artifacts/android-source
+      - name: Prepare existing APK
+        if: inputs.android_artifact_run_id != ''
+        run: |
+          mkdir -p android/app/build/outputs/apk/release
+          cp .artifacts/android-source/android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/
       - name: Install Maestro
         run: bash scripts/install-maestro.sh
       - name: Enable KVM

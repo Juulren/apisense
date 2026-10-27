@@ -1,8 +1,9 @@
 appId: com.apisense.demo
 name: Demo nativa offline, audio y persistencia
 ---
-- launchApp:
-    clearState: true
+# The platform scripts install/reset the demo before this flow. On iOS,
+# Maestro clearState reinstalls a copy and loses the simulator signature.
+- launchApp
 - scrollUntilVisible:
     element:
       text: "Entrar a la demo"
