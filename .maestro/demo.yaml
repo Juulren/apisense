@@ -103,7 +103,7 @@ name: Demo nativa offline, audio y persistencia
 - tapOn:
     id: "nav-Ajustes"
 - scrollUntilVisible:
-    centerElement: true
+    centerElement: false
     element:
       text: "Salir de la demo"
 - tapOn: "Salir de la demo"
