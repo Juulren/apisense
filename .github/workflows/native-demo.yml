@@ -131,6 +131,8 @@ jobs:
             cp .artifacts/ios-source/ApisenseDemo-simulator.zip .artifacts/
           fi
           ditto -x -k .artifacts/ApisenseDemo-simulator.zip .artifacts/ios-app
+      - name: Sign simulator demo for Keychain access
+        run: bash scripts/sign-demo-simulator.sh
       - name: Install Maestro
         run: bash scripts/install-maestro.sh
       - name: Run demo in iOS Simulator
@@ -148,6 +150,7 @@ jobs:
             .artifacts/*.log
             .artifacts/*.xml
             .artifacts/*.png
+            .artifacts/*.plist
             .artifacts/ios-maestro/
             .artifacts/ios-diagnostics/
           retention-days: 14
