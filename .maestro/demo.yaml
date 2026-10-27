@@ -5,6 +5,7 @@ name: Demo nativa offline, audio y persistencia
 # Maestro clearState reinstalls a copy and loses the simulator signature.
 - launchApp
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"
@@ -17,6 +18,7 @@ name: Demo nativa offline, audio y persistencia
     id: "nav-Acústica"
 - assertVisible: "Monitoreo acústico"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Audio detenido"
 - tapOn: "Escuchar zumbido"
@@ -29,21 +31,28 @@ name: Demo nativa offline, audio y persistencia
 - tapOn:
     id: "nav-Inicio"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Ver lista / mapa"
 - tapOn: "Ver lista / mapa"
+- extendedWaitUntil:
+    visible: "Mis colmenas"
+    timeout: 15000
 - tapOn: "Mapa"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Ubicación de referencia · Demo"
 - takeScreenshot: .artifacts/demo-map
 - tapOn:
     id: "nav-Inicio"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Abrir Colmena 01"
 - tapOn: "Abrir Colmena 01"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Anotar inspección"
 - tapOn: "Anotar inspección"
@@ -52,24 +61,29 @@ name: Demo nativa offline, audio y persistencia
 - inputText: "Inspeccion de prueba nativa persistente"
 - hideKeyboard
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Guardar inspección"
 - tapOn: "Guardar inspección"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Inspección de demo guardada localmente."
 - assertVisible: "Inspección de demo guardada localmente."
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Volver al detalle de colmena"
 - tapOn: "Volver al detalle de colmena"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Inspeccion de prueba nativa persistente"
 - takeScreenshot: .artifacts/demo-inspection
 - stopApp
 - launchApp
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
@@ -77,20 +91,24 @@ name: Demo nativa offline, audio y persistencia
     visible: "Datos de demostración · Sin envío a nube"
     timeout: 60000
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Abrir Colmena 01"
 - tapOn: "Abrir Colmena 01"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Inspeccion de prueba nativa persistente"
 - takeScreenshot: .artifacts/demo-reopened
 - tapOn:
     id: "nav-Ajustes"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Salir de la demo"
 - tapOn: "Salir de la demo"
 - scrollUntilVisible:
+    centerElement: true
     element:
       text: "Entrar a la demo"
 - assertVisible: "Entrar a la demo"
