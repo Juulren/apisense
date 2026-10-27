@@ -129,12 +129,17 @@ jobs:
       - name: Install native pods
         if: inputs.ios_artifact_run_id == ''
         run: pod install --project-directory=ios
+      - name: Prepare simulator identity for Keychain
+        if: inputs.ios_artifact_run_id == ''
+        run: bash scripts/prepare-demo-simulator.sh
       - name: Build standalone simulator app
         if: inputs.ios_artifact_run_id == ''
         run: |
           mkdir -p .artifacts
           set -o pipefail
-          xcodebuild -workspace ios/ApisenseDemo.xcworkspace -scheme ApisenseDemo -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .artifacts/ios-build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .artifacts/ios-build.log
+          xcodebuild -workspace ios/ApisenseDemo.xcworkspace -scheme ApisenseDemo -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .artifacts/ios-build CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual build 2>&1 | tee .artifacts/ios-build.log
+          codesign --verify --deep --strict .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app
+          cp ios/ApisenseDemo/ApisenseDemo.entitlements .artifacts/ios-simulator-entitlements.plist
           ditto -c -k --sequesterRsrc --keepParent .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app .artifacts/ApisenseDemo-simulator.zip
       - uses: actions/download-artifact@v4
         if: inputs.ios_artifact_run_id != ''
@@ -150,8 +155,6 @@ jobs:
             cp .artifacts/ios-source/ApisenseDemo-simulator.zip .artifacts/
           fi
           ditto -x -k .artifacts/ApisenseDemo-simulator.zip .artifacts/ios-app
-      - name: Sign simulator demo for Keychain access
-        run: bash scripts/sign-demo-simulator.sh
       - name: Install Maestro
         run: bash scripts/install-maestro.sh
       - name: Run demo in iOS Simulator
