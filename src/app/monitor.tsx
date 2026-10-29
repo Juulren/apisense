@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { useAudioPlayer } from "expo-audio";
+import {
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+} from "expo-audio";
 import { router, useLocalSearchParams } from "expo-router";
 import { randomUUID } from "expo-crypto";
 import { AppScreen, Empty } from "../components/AppScreen";
@@ -30,7 +34,8 @@ export default function Monitor() {
   const params = useLocalSearchParams<{ hiveId?: string }>(),
     app = useApp(),
     task = useTask(),
-    player = useAudioPlayer(null);
+    player = useAudioPlayer(null),
+    playback = useAudioPlayerStatus(player);
   const [selected, setSelected] = useState(params.hiveId ?? ""),
     [technical, setTechnical] = useState(false),
     [pattern, setPattern] = useState<SimulationPattern>("healthy");
@@ -50,6 +55,7 @@ export default function Monitor() {
         uri = data.signedUrl;
       }
       if (!uri) throw new Error("Esta muestra no tiene un clip disponible");
+      await setAudioModeAsync({ playsInSilentMode: true });
       player.replace({ uri });
       player.play();
     }, "Reproduciendo clip");
@@ -134,6 +140,9 @@ export default function Monitor() {
                 player.seekTo(0);
               }}
             />
+            <Label muted size={12}>
+              {playback.playing ? "Audio en reproducción" : "Audio detenido"}
+            </Label>
           </Card>
           <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
             <Metric

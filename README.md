@@ -46,11 +46,15 @@ npm run android
 npm run ios
 ```
 
-Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Probar modo demo** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
+Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Explorar demo local** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
-Selecciona **Probar modo demo** dentro de la app instalada para recorrerla con datos sintéticos. Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
+Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
 
-Los bundles JavaScript/Hermes de ambas plataformas se comprueban en CI. Esto no genera un APK, AAB ni una app iOS firmada: las compilaciones nativas y sus pruebas siguen pendientes en el [Issue #15](https://github.com/Juulren/apisense/issues/15). La entrega móvil requiere esas comprobaciones, además de la validación física de sensores en #8.
+Los bundles JavaScript/Hermes de ambas plataformas se comprueban en CI. Son una comprobación adicional a las compilaciones y pruebas nativas. El [Issue #15](https://github.com/Juulren/apisense/issues/15) conserva la aceptación de dispositivos físicos, firma y distribución; la validación física de sensores sigue en #8.
+
+### Demo nativa independiente de Metro
+
+La rama del [PR #30](https://github.com/Juulren/apisense/pull/30) añade una compilación de demo aislada de Supabase, con identificador propio, datos sintéticos y mapa ilustrativo local. Usa `npm run demo:android` o, en un Mac, `npm run demo:ios`. Generan builds Release con recursos incluidos; no necesitan Expo Go ni Metro. El [recorrido nativo completo pasó en ambas plataformas](https://github.com/Juulren/apisense/actions/runs/40532601817). Consulta las [instrucciones de instalación y los artefactos](docs/NATIVE_DEMO.md) para probarlos. El artefacto iOS es para simulador; un iPhone físico necesita firma de Apple.
 
 ## Configuración de servicios reales
 

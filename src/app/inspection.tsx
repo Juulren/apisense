@@ -65,6 +65,7 @@ export default function Inspection() {
       <Card>
         <Field
           label="Observaciones de campo"
+          testID="inspection-notes"
           placeholder="Describe cría, piquera, alimentación, ventilación o posibles plagas…"
           multiline
           numberOfLines={6}

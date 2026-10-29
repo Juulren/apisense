@@ -4,6 +4,7 @@ import { Badge, Button, Card, Icon, Label } from "../components/ui";
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { DEMO_ONLY } from "../config/runtime";
 export default function Welcome() {
   const app = useApp(),
     task = useTask();
@@ -40,13 +41,17 @@ export default function Welcome() {
         <ActivityIndicator accessibilityLabel="Restaurando sesión" />
       ) : (
         <>
+          {!DEMO_ONLY ? (
+            <Button
+              label="Comenzar"
+              icon="arrow-forward"
+              onPress={() => router.push("/login")}
+            />
+          ) : (
+            <Badge label="Demo sin conexión · Datos sintéticos" tone="blue" />
+          )}
           <Button
-            label="Comenzar"
-            icon="arrow-forward"
-            onPress={() => router.push("/login")}
-          />
-          <Button
-            label="Explorar demo local"
+            label={DEMO_ONLY ? "Entrar a la demo" : "Explorar demo local"}
             variant="ghost"
             icon="eco"
             loading={task.busy}

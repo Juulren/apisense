@@ -1,0 +1,114 @@
+appId: com.apisense.demo
+name: Demo nativa offline, audio y persistencia
+---
+# The platform scripts install/reset the demo before this flow. On iOS,
+# Maestro clearState reinstalls a copy and loses the simulator signature.
+- launchApp
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Entrar a la demo"
+- assertVisible: "Entrar a la demo"
+- tapOn: "Entrar a la demo"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- takeScreenshot: .artifacts/demo-dashboard
+- tapOn:
+    id: "nav-Acústica"
+- assertVisible: "Monitoreo acústico"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Audio detenido"
+- tapOn: "Escuchar zumbido"
+- extendedWaitUntil:
+    visible: "Audio en reproducción"
+    timeout: 15000
+- tapOn: "Detener audio"
+- assertVisible: "Audio detenido"
+- takeScreenshot: .artifacts/demo-audio
+- tapOn:
+    id: "nav-Inicio"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Ver lista / mapa"
+- tapOn: "Ver lista / mapa"
+- extendedWaitUntil:
+    visible: "Mis colmenas"
+    timeout: 15000
+- tapOn: "Mapa"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Ubicación de referencia · Demo"
+- takeScreenshot: .artifacts/demo-map
+- tapOn:
+    id: "nav-Inicio"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir Colmena 01"
+- tapOn: "Abrir Colmena 01"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Anotar inspección"
+- tapOn: "Anotar inspección"
+- tapOn:
+    id: "inspection-notes"
+- inputText: "Inspeccion de prueba nativa persistente"
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Guardar inspección"
+- tapOn: "Guardar inspección"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Inspección de demo guardada localmente."
+- assertVisible: "Inspección de demo guardada localmente."
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Volver al detalle de colmena"
+- tapOn: "Volver al detalle de colmena"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Inspeccion de prueba nativa persistente"
+- takeScreenshot: .artifacts/demo-inspection
+- stopApp
+- launchApp
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Entrar a la demo"
+- tapOn: "Entrar a la demo"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir Colmena 01"
+- tapOn: "Abrir Colmena 01"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Inspeccion de prueba nativa persistente"
+- takeScreenshot: .artifacts/demo-reopened
+- tapOn:
+    id: "nav-Ajustes"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Salir de la demo"
+- tapOn: "Salir de la demo"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Entrar a la demo"
+- assertVisible: "Entrar a la demo"

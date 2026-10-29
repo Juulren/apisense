@@ -1,0 +1,179 @@
+name: Native demo
+on:
+  push:
+    branches: [codex/native-demo]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - ".maestro/**"
+      - ".github/workflows/native-demo.yml"
+      - "app.config.js"
+      - "app.json"
+      - "package*.json"
+      - "*.config.js"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Plataforma a verificar
+        type: choice
+        options: [all, android, ios]
+        default: all
+      ios_artifact_run_id:
+        description: Reutilizar el binario iOS de una ejecución anterior (vacío para compilar)
+        type: string
+        default: ""
+      android_artifact_run_id:
+        description: Reutilizar el APK de una ejecución anterior (vacío para compilar)
+        type: string
+        default: ""
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: native-demo-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CI: "1"
+  EXPO_NO_DOTENV: "1"
+  EXPO_PUBLIC_DEMO_ONLY: "1"
+  MAESTRO_VERSION: cli-2.12.0
+jobs:
+  android:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'ios'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - run: npm ci
+        if: inputs.android_artifact_run_id == ''
+      - run: npx expo prebuild --platform android --no-install
+        if: inputs.android_artifact_run_id == ''
+      - name: Build standalone demo APK
+        if: inputs.android_artifact_run_id == ''
+        run: |
+          set -o pipefail
+          mkdir -p .artifacts
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --max-workers=2 --console=plain -x lint -x test 2>&1 | tee ../.artifacts/android-build.log
+          ./gradlew --stop
+      - uses: actions/download-artifact@v4
+        if: inputs.android_artifact_run_id != ''
+        with:
+          name: apisense-demo-android
+          run-id: ${{ inputs.android_artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: .artifacts/android-source
+      - name: Prepare existing APK
+        if: inputs.android_artifact_run_id != ''
+        run: |
+          mkdir -p android/app/build/outputs/apk/release
+          cp .artifacts/android-source/android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/
+      - name: Install Maestro
+        run: bash scripts/install-maestro.sh
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash scripts/test-demo-android.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apisense-demo-android
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            .artifacts/
+          retention-days: 14
+          include-hidden-files: true
+  ios:
+    if: github.event_name != 'workflow_dispatch' || inputs.platform != 'android'
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+        if: inputs.ios_artifact_run_id == ''
+      - run: xcodebuild -version
+      - run: npx expo prebuild --platform ios --no-install
+        if: inputs.ios_artifact_run_id == ''
+      - name: Install native pods
+        if: inputs.ios_artifact_run_id == ''
+        run: pod install --project-directory=ios
+      - name: Prepare simulator identity for Keychain
+        if: inputs.ios_artifact_run_id == ''
+        run: bash scripts/prepare-demo-simulator.sh
+      - name: Build standalone simulator app
+        if: inputs.ios_artifact_run_id == ''
+        run: |
+          mkdir -p .artifacts
+          set -o pipefail
+          xcodebuild -workspace ios/ApisenseDemo.xcworkspace -scheme ApisenseDemo -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .artifacts/ios-build CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual build 2>&1 | tee .artifacts/ios-build.log
+          codesign --verify --deep --strict .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app
+          cp ios/ApisenseDemo/ApisenseDemo.entitlements .artifacts/ios-simulator-entitlements.plist
+          ditto -c -k --sequesterRsrc --keepParent .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app .artifacts/ApisenseDemo-simulator.zip
+      - uses: actions/download-artifact@v4
+        if: inputs.ios_artifact_run_id != ''
+        with:
+          name: apisense-demo-ios-simulator
+          run-id: ${{ inputs.ios_artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: .artifacts/ios-source
+      - name: Prepare simulator app
+        run: |
+          mkdir -p .artifacts/ios-app
+          if [ -f .artifacts/ios-source/ApisenseDemo-simulator.zip ]; then
+            cp .artifacts/ios-source/ApisenseDemo-simulator.zip .artifacts/
+          fi
+          ditto -x -k .artifacts/ApisenseDemo-simulator.zip .artifacts/ios-app
+      - name: Install Maestro
+        run: bash scripts/install-maestro.sh
+      - name: Run demo in iOS Simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for group in json.load(sys.stdin)["devices"].values() for d in group if d["name"].startswith("iPhone")))')
+          xcrun simctl boot "$DEVICE_ID"
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          bash scripts/test-demo-ios.sh "$DEVICE_ID"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apisense-demo-ios-simulator
+          path: |
+            .artifacts/ApisenseDemo-simulator.zip
+            .artifacts/*.log
+            .artifacts/*.xml
+            .artifacts/*.png
+            .artifacts/*.plist
+            .artifacts/ios-maestro/
+            .artifacts/ios-diagnostics/
+          retention-days: 14
+          include-hidden-files: true
