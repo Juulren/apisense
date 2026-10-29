@@ -4,14 +4,14 @@ La demo usa datos sintéticos, SQLCipher y SecureStore. No necesita Supabase, un
 
 ## Estado y límites
 
-Entrega en [PR #30](https://github.com/Juulren/apisense/pull/30), basada en #29 y #26, pendiente de revisión e integración. **La demo pasó el recorrido completo en Android Emulator e iOS Simulator el 27 de octubre de 2026.** Ambos verificaron entrada, reproducción y parada de audio, mapa local, guardado de inspección, cierre/reapertura con inspección persistente y salida.
+Integrada en `main` mediante el [PR #30](https://github.com/Juulren/apisense/pull/30), después de #26 y #29, con autorización del usuario el 28 de octubre de 2026. **La demo pasó el recorrido completo en Android Emulator e iOS Simulator el 27 de octubre de 2026.** Ambos verificaron entrada, reproducción y parada de audio, mapa local, guardado de inspección, cierre/reapertura con inspección persistente y salida.
 
 | Plataforma | Compilación Release | Prueba nativa final | Artefacto validado |
 | --- | --- | --- | --- |
 | Android | [40372388813, app `bdceeca`](https://github.com/Juulren/apisense/actions/runs/40372388813) | [Maestro correcto, sin red](https://github.com/Juulren/apisense/actions/runs/40532601817/job/122289569881) | [APK, capturas, JUnit y logs](https://github.com/Juulren/apisense/actions/runs/40532601817/artifacts/12747660284) |
 | iOS Simulator | [40522176345, `f2fa9a9`, identidad incorporada por Xcode](https://github.com/Juulren/apisense/actions/runs/40522176345) | [Maestro correcto](https://github.com/Juulren/apisense/actions/runs/40532601817/job/122289569631) | [App, capturas, JUnit y logs](https://github.com/Juulren/apisense/actions/runs/40532601817/artifacts/12747646325) |
 
-La comprobación final del flujo `7cc9a80` reutilizó esos binarios: los cambios posteriores a sus compilaciones afectan a CI, pruebas y documentación. El APK también se instaló y abrió en el emulador Android local de Windows; su dashboard quedó verificado visualmente. TypeScript y las 49 pruebas locales/CI son correctos. La aceptación de dispositivos físicos y producción sigue pendiente en #15/#8/#25.
+La comprobación final del flujo `7cc9a80` reutilizó esos binarios: los cambios posteriores a sus compilaciones afectan a CI, pruebas y documentación. El APK también se instaló y abrió en el emulador Android local de Windows; su dashboard quedó verificado visualmente. TypeScript y las 49 pruebas locales/CI son correctos. El 28 de octubre el usuario confirmó que el APK funciona en Android; no se aportaron modelo, versión del sistema ni resultados de un protocolo físico completo. La aceptación de dispositivos físicos, cuentas reales y producción mantiene los criterios restantes de #15/#8/#25.
 
 La primera ejecución detectó que ONNX 1.24.3 usaba `VersionNumber`, retirado en Gradle 9, y que el Xcode seleccionado por defecto tenía Swift 6.1 mientras Expo requería 6.2. `npm ci` aplica ahora un parche nativo acotado a esa versión de ONNX, que reutiliza su comparación numérica existente; no es el antiguo parche de SQLite web. La compilación iOS usa Xcode 26.2.
 

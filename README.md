@@ -6,7 +6,7 @@ Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincr
 
 ## Estado del proyecto
 
-La implementación está consolidada en **`main`** mediante el [PR #21](https://github.com/Juulren/apisense/pull/21). Incluye las pantallas y el backend de Supabase, instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
+La implementación está consolidada en **`main`**: incluye la base del [PR #21](https://github.com/Juulren/apisense/pull/21), las fuentes y el alcance móvil del [#26](https://github.com/Juulren/apisense/pull/26), la limpieza web del [#29](https://github.com/Juulren/apisense/pull/29) y la demo nativa del [#30](https://github.com/Juulren/apisense/pull/30). El backend Supabase está instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
 
 El trabajo se organiza en el [tablero de Apisense](https://github.com/users/Juulren/projects/2): **Pendiente → En curso → En revisión → Terminado**. Cada tarea parte de `main`, usa una rama temporal y se integra tras revisión y checks. Consulta [cómo colaborar](CONTRIBUTING.md) y el [plan de implementación](IMPLEMENTATION_PLAN.md) para ver los avances y pendientes.
 
@@ -36,7 +36,7 @@ Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de r
 
 ## Ejecutar en Android e iOS
 
-Después de descargar la rama e instalar las dependencias, ejecuta el comando de tu plataforma:
+Después de clonar el repositorio e instalar las dependencias, ejecuta el comando de tu plataforma:
 
 ```bash
 # Android
@@ -54,11 +54,11 @@ Los bundles JavaScript/Hermes de ambas plataformas se comprueban en CI. Son una 
 
 ### Demo nativa independiente de Metro
 
-La rama del [PR #30](https://github.com/Juulren/apisense/pull/30) añade una compilación de demo aislada de Supabase, con identificador propio, datos sintéticos y mapa ilustrativo local. Usa `npm run demo:android` o, en un Mac, `npm run demo:ios`. Generan builds Release con recursos incluidos; no necesitan Expo Go ni Metro. El [recorrido nativo completo pasó en ambas plataformas](https://github.com/Juulren/apisense/actions/runs/40532601817). Consulta las [instrucciones de instalación y los artefactos](docs/NATIVE_DEMO.md) para probarlos. El artefacto iOS es para simulador; un iPhone físico necesita firma de Apple.
+La demo del [PR #30](https://github.com/Juulren/apisense/pull/30), integrada en `main`, ofrece una compilación de demo aislada de Supabase, con identificador propio, datos sintéticos y mapa ilustrativo local. Usa `npm run demo:android` o, en un Mac, `npm run demo:ios`. Generan builds Release con recursos incluidos; no necesitan Expo Go ni Metro. El [recorrido nativo completo pasó en ambas plataformas](https://github.com/Juulren/apisense/actions/runs/40532601817). Consulta las [instrucciones de instalación y los artefactos](docs/NATIVE_DEMO.md) para probarlos. El artefacto iOS es para simulador; un iPhone físico necesita firma de Apple.
 
 ## Configuración de servicios reales
 
-Para probar cuentas y servicios propios, copia `.env.example` como `.env` en la raíz de la rama de implementación y completa los valores que correspondan:
+Para probar cuentas y servicios propios, copia `.env.example` como `.env` en la raíz del proyecto y completa los valores que correspondan:
 
 ```dotenv
 EXPO_PUBLIC_SUPABASE_URL=https://TU_PROYECTO.supabase.co
@@ -84,7 +84,7 @@ Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de a
 
 ### Cifrado y acceso offline
 
-En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con claves por cuenta y rechazo de apertura si SQLCipher no está disponible. La demo utiliza otra base SQLCipher con su propia clave de SecureStore y datos sintéticos, sin sincronización. El cifrado, la reapertura y el manejo de clips deben verificarse en builds nativos antes de declararlos validados.
+En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con claves por cuenta y rechazo de apertura si SQLCipher no está disponible. La demo utiliza otra base SQLCipher con su propia clave de SecureStore y datos sintéticos, sin sincronización. La demo pasó apertura, reproducción e inspección persistente tras reabrir en Android Emulator/iOS Simulator; el usuario también confirmó el funcionamiento del APK en Android. La aceptación de cuentas reales y dispositivos físicos conserva sus criterios en #15.
 
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
@@ -92,7 +92,7 @@ La validación del cifrado en dispositivos y la revisión de dependencias siguen
 
 ## Comprobar el proyecto
 
-En la rama de implementación:
+Desde la raíz del proyecto:
 
 ```bash
 npm run typecheck
@@ -102,7 +102,7 @@ npm run check:bundles
 
 El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
 
-La rama de limpieza del [Issue #27](https://github.com/Juulren/apisense/issues/27) retira los adaptadores de navegador, el service worker, el hosting y las dependencias directas exclusivas de web. Conserva la demo, el backend y los adaptadores nativos. El [inventario y la validación](docs/NATIVE_CLEANUP.md) distinguen las pruebas automatizadas de la ejecución móvil pendiente. Las comprobaciones web anteriores se conservan como historial técnico; no acreditan Android/iOS ni forman parte de la entrega.
+La limpieza del [PR #29](https://github.com/Juulren/apisense/pull/29), integrada en `main`, retiró los adaptadores de navegador, el service worker, el hosting y las dependencias directas exclusivas de web. Conserva la demo, el backend y los adaptadores nativos. El [inventario y la validación](docs/NATIVE_CLEANUP.md) distinguen la demo nativa ya validada de la aceptación de cuentas reales y sincronización pendiente en #27/#15. Las comprobaciones web anteriores se conservan como historial técnico; no acreditan Android/iOS ni forman parte de la entrega.
 
 ## Organización del código
 
