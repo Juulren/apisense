@@ -2,6 +2,8 @@
 
 Este documento describe controles implementados y validaciones pendientes; no certifica seguridad de producción.
 
+Alcance confirmado el 26 de octubre de 2026: Android nativo e iOS nativo. Los apartados sobre web conservan el historial del código previo y no son requisitos ni evidencia de validación del producto móvil.
+
 ## Almacenamiento local
 
 En builds nativos, SQLite usa SQLCipher con una clave aleatoria de 256 bits por cuenta guardada en SecureStore, accesible con el dispositivo desbloqueado y no migrable por copia de la clave. La app comprueba `PRAGMA cipher_version` y falla sin SQLCipher. Android desactiva backup de aplicación. Debe probarse en builds físicos antes de declarar cifrado nativo verificado.

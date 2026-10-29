@@ -6,6 +6,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "platforms": ["android", "ios"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.apisense.app"
@@ -13,10 +14,6 @@
     "android": {
       "package": "com.apisense.app",
       "allowBackup": false
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "single"
     },
     "plugins": [
       "expo-router",

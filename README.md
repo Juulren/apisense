@@ -1,6 +1,6 @@
 # Apisense Smart Apiary App
 
-Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, desarrollada con **Expo, React Native y TypeScript para Android nativo e iOS nativo**. El producto no tendrá página ni versión web. Reúne telemetría de sensores, grabaciones acústicas y observaciones del apicultor en una misma bitácora.
+Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, desarrollada con **Expo, React Native y TypeScript para Android nativo e iOS nativo**. Reúne telemetría de sensores, grabaciones acústicas y observaciones del apicultor en una misma bitácora. El alcance confirmado el 26 de octubre de 2026 excluye una página o versión web del producto.
 
 Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
@@ -11,6 +11,8 @@ La implementación está consolidada en **`main`** mediante el [PR #21](https://
 El trabajo se organiza en el [tablero de Apisense](https://github.com/users/Juulren/projects/2): **Pendiente → En curso → En revisión → Terminado**. Cada tarea parte de `main`, usa una rama temporal y se integra tras revisión y checks. Consulta [cómo colaborar](CONTRIBUTING.md) y el [plan de implementación](IMPLEMENTATION_PLAN.md) para ver los avances y pendientes.
 
 La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, monitor acústico, historial, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
+
+Los 11 IDs originales de Stitch están identificados en el [mapa de diseño](DESIGN_MAP.md), con [contexto del producto](docs/DESIGN_CONTEXT.md) y [procedencia reproducible](docs/STITCH_PROVENANCE.md). Corresponden a cinco familias claro/oscuro y una spec; varias etiquetas del brief inicial eran incorrectas. La aceptación visual de las vistas adaptadas sigue en el [Issue #25](https://github.com/Juulren/apisense/issues/25). Con Python 3 puedes verificar las referencias mediante `python scripts/verify_stitch_references.py`; Python no se necesita para ejecutar la app.
 
 ## Requisitos
 
@@ -46,7 +48,9 @@ npm run ios
 
 Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Probar modo demo** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
-Las exportaciones JavaScript de ambas plataformas se han verificado; la compilación y ejecución de APK/IPA y las pruebas en dispositivos físicos siguen pendientes en el [Issue #15](https://github.com/Juulren/apisense/issues/15).
+Selecciona **Probar modo demo** dentro de la app instalada para recorrerla con datos sintéticos. Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
+
+Los bundles JavaScript/Hermes de ambas plataformas se comprueban en CI. Esto no genera un APK, AAB ni una app iOS firmada: las compilaciones nativas y sus pruebas siguen pendientes en el [Issue #15](https://github.com/Juulren/apisense/issues/15). La entrega móvil requiere esas comprobaciones, además de la validación física de sensores en #8.
 
 ## Configuración de servicios reales
 
@@ -76,9 +80,7 @@ Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de a
 
 ### Cifrado y acceso offline
 
-Las apps nativas utilizan SQLCipher y SecureStore, con una clave por cuenta y rechazo de apertura si SQLCipher no está disponible. Los clips se conservan dentro de la base cifrada. La demo utiliza otro almacén, separado de las cuentas reales, con datos sintéticos y sin sincronización.
-
-La ejecución del cifrado, la reapertura y el audio en Android e iOS siguen pendientes de validación en el [Issue #15](https://github.com/Juulren/apisense/issues/15).
+En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con claves por cuenta y rechazo de apertura si SQLCipher no está disponible. La demo utiliza otra base SQLCipher con su propia clave de SecureStore y datos sintéticos, sin sincronización. El cifrado, la reapertura y el manejo de clips deben verificarse en builds nativos antes de declararlos validados.
 
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
@@ -91,13 +93,12 @@ En la rama de implementación:
 ```bash
 npm run typecheck
 npm test
-npx expo export --platform android --output-dir .artifacts/bundles/android
-npx expo export --platform ios --output-dir .artifacts/bundles/ios
+npm run check:bundles
 ```
 
-Los comandos `expo export` comprueban bundles JavaScript/Hermes; no generan APK/AAB/IPA ni prueban la app en dispositivos. El soporte web heredado del repositorio se retira en el [Issue #27](https://github.com/Juulren/apisense/issues/27); no forma parte de la entrega.
-
 El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
+
+Las comprobaciones web anteriores se conservan como historial técnico; no acreditan Android/iOS ni forman parte de la entrega. Los comandos públicos y la CI se centran en las dos plataformas nativas.
 
 ## Organización del código
 

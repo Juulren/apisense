@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: python scripts/verify_stitch_references.py
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -23,7 +24,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm audit --audit-level=critical
-      - run: npm run build:web
+      - run: npm run check:bundles
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x

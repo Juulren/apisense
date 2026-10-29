@@ -2,6 +2,8 @@
 
 `main` es la base compartida y ejecutable. El [tablero](https://github.com/users/Juulren/projects/2) es la referencia del trabajo activo; los [Issues](https://github.com/Juulren/apisense/issues) contienen alcance, responsable y criterios de aceptación. [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) resume hitos y pendientes de producto.
 
+El producto tiene dos destinos: **Android nativo e iOS nativo**. La versión web queda fuera del alcance confirmado por el usuario. Conserva los exports HTML de Stitch como fuentes de diseño, sin tratarlos como una plataforma de entrega.
+
 ## Una tarea por entrega
 
 1. Crea o elige un Issue pequeño. Define el resultado comprobable y asigna un responsable antes de empezar. Mueve su tarjeta a **En curso**.
@@ -26,10 +28,10 @@ Antes de una tarea que dependa de otra, integra primero su PR. Las tareas indepe
 ```bash
 npm ci
 npm run check
-npm run build:web
+npm run check:bundles
 ```
 
-La CI comprueba tipos, pruebas locales, auditoría de dependencias, exportación web y Deno. Ejecuta una vez por PR; nuevas subidas cancelan la ejecución anterior de ese PR. También verifica cada actualización de `main`. No despliega servicios ni ejecuta las pruebas live automáticamente.
+La CI comprueba referencias de diseño, tipos, pruebas locales, auditoría, bundles JavaScript/Hermes para Android e iOS y Deno. Los bundles no compilan ni ejecutan APK/AAB o una app iOS; los cambios de comportamiento móvil necesitan validación nativa en simulador/emulador y dispositivo según su alcance. Ejecuta una vez por PR; nuevas subidas cancelan la ejecución anterior. También verifica cada actualización de `main`. No despliega servicios ni ejecuta las pruebas live automáticamente.
 
 `npm run test:backend:live` necesita el proyecto y las credenciales locales descritas en [docs/SUPABASE.md](docs/SUPABASE.md). Ejecuta pruebas con datos temporales y es un paso explícito cuando cambia la integración real.
 

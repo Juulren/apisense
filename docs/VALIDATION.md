@@ -1,10 +1,14 @@
 # Validación del bloque de pantallas
 
+Alcance confirmado por el usuario el 26 de octubre de 2026: **Android nativo e iOS nativo**. Las comprobaciones de navegador y exportación web descritas aquí son históricas. No sustituyen compilaciones nativas ni recorridos en emulador, simulador o dispositivo, pendientes en #15/#8.
+
 Fecha: 20 de octubre de 2026. Los datos de las pruebas de UI pertenecen exclusivamente a la demo.
 
 Actualización del 21 de octubre: el backend real del Issue #13 ya se instaló y verificó; ver [SUPABASE.md](SUPABASE.md). Este documento conserva la evidencia del bloque de pantallas.
 
 Actualización del 22 de octubre: el Issue #18 añade la prueba con dos pestañas reales, corrige la inicialización del VFS web de Expo y eleva la suite local a 47 pruebas. Procedimiento, límites y capturas en [WEB_STORAGE_QA.md](WEB_STORAGE_QA.md).
+
+Actualización del 26 de octubre: procedencia de los 11 IDs de Stitch acreditada con el lienzo autenticado y el ZIP original. El mapeo corregido y sus límites están en [STITCH_PROVENANCE.md](STITCH_PROVENANCE.md). Esto no amplía la revisión visual parcial descrita aquí; la aceptación completa sigue en #25.
 
 | Comprobación                                   | Resultado                                                                                                                              |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
