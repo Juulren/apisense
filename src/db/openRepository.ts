@@ -1,80 +1,46 @@
-import { deserializeDatabaseAsync, openDatabaseAsync } from "expo-sqlite";
-import { randomUUID } from "expo-crypto";
+import { openDatabaseAsync } from "expo-sqlite";
+import { getRandomBytesAsync, randomUUID } from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
 import { Repository } from "./Repository";
-import { deriveLocalKey, sealSnapshot, unsealSnapshot } from "./encryption";
-import { readSnapshot, writeSnapshot } from "./webVault";
-import { acquireWebDatabaseLock } from "./webLock";
-export async function openRepository(userId: string, passphrase?: string) {
+export async function openRepository(userId: string) {
   if (!/^[a-zA-Z0-9-]+$/.test(userId))
     throw new Error("Identidad local inválida");
-  const demo = userId === "00000000-0000-4000-8000-000000000001";
-  const release = demo ? async () => {} : await acquireWebDatabaseLock(userId);
+  const keyName = `apisense.db-key.${userId}`;
+  let key = await SecureStore.getItemAsync(keyName);
+  if (!key) {
+    key = Array.from(await getRandomBytesAsync(32), (x) =>
+      x.toString(16).padStart(2, "0"),
+    ).join("");
+    await SecureStore.setItemAsync(keyName, key, {
+      keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    });
+  }
+  if (!/^[0-9a-f]{64}$/.test(key)) throw new Error("Clave local dañada");
+  const db = await openDatabaseAsync(`apisense-encrypted-v1-${userId}.db`, {
+    useNewConnection: true,
+  });
   try {
-    const snapshot = demo ? undefined : await readSnapshot(userId);
-    const salt = snapshot?.salt ?? crypto.getRandomValues(new Uint8Array(16));
-    const key = demo ? null : await deriveLocalKey(passphrase ?? "", salt);
-    let db =
-      snapshot && key
-        ? await deserializeDatabaseAsync(
-            await unsealSnapshot(snapshot, key, userId),
-          )
-        : await openDatabaseAsync(demo ? `apisense-${userId}.db` : ":memory:", {
-            useNewConnection: !demo,
-          });
-    let backup: Uint8Array | null = null;
+    await db.execAsync(`PRAGMA key = "x'${key}'";`);
+    const cipher = await db.getFirstAsync<{ cipher_version: string }>(
+      "PRAGMA cipher_version",
+    );
+    if (!cipher?.cipher_version)
+      throw new Error(
+        "Se requiere un build de desarrollo con SQLCipher. No se guardarán datos sin cifrar.",
+      );
     const repository = new Repository(
       {
-        exec: async (sql) => {
-          if (!key) {
-            await db.execAsync(sql);
-            return;
-          }
-          if (sql === "BEGIN IMMEDIATE") backup = await db.serializeAsync();
-          if (sql === "ROLLBACK") {
-            if (await db.isInTransactionAsync()) await db.execAsync(sql);
-            backup = null;
-            return;
-          }
-          await db.execAsync(sql);
-          if (sql === "COMMIT") {
-            try {
-              await writeSnapshot(
-                userId,
-                await sealSnapshot(
-                  await db.serializeAsync(),
-                  key,
-                  salt,
-                  userId,
-                ),
-              );
-              backup = null;
-            } catch (error) {
-              if (backup) {
-                await db.closeAsync();
-                db = await deserializeDatabaseAsync(backup);
-                await db.execAsync("PRAGMA foreign_keys=ON");
-                backup = null;
-              }
-              throw error;
-            }
-          }
-        },
+        exec: (sql) => db.execAsync(sql),
         run: (sql, params = []) => db.runAsync(sql, params),
         all: (sql, params = []) => db.getAllAsync(sql, params),
-        close: async () => {
-          try {
-            await db.closeAsync();
-          } finally {
-            await release();
-          }
-        },
+        close: () => db.closeAsync(),
       },
       randomUUID,
     );
     await repository.initialize();
     return repository;
   } catch (error) {
-    await release();
+    await db.closeAsync();
     throw error;
   }
 }

@@ -10,6 +10,8 @@ Actualización del 22 de octubre: el Issue #18 añade la prueba con dos pestaña
 
 Actualización del 26 de octubre: procedencia de los 11 IDs de Stitch acreditada con el lienzo autenticado y el ZIP original. El mapeo corregido y sus límites están en [STITCH_PROVENANCE.md](STITCH_PROVENANCE.md). Esto no amplía la revisión visual parcial descrita aquí; la aceptación completa sigue en #25.
 
+Actualización de #27: se retira el soporte cliente exclusivo de web y sus seis pruebas. Pasan 49 pruebas (41 conservadas y ocho nuevas), TypeScript y bundles Android/iOS. La demo se comprueba con SQLite real de Node, ocho colmenas, audio, resúmenes y reapertura con inspección persistente sin red. Los siete tests del almacenamiento nativo usan dobles de Expo y no ejecutan SQLCipher/SecureStore reales. Ver [inventario y aceptación pendiente](NATIVE_CLEANUP.md). La tabla y los recorridos de navegador siguientes son evidencia histórica, no resultados de la rama actual ni validación móvil.
+
 | Comprobación                                   | Resultado                                                                                                                              |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | TypeScript estricto (`npx tsc --noEmit`)       | Correcto                                                                                                                               |

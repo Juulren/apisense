@@ -1,6 +1,8 @@
 # Persistencia y sincronización
 
-Una base SQLite por cuenta y otra exclusiva para demo; Auth se conserva en SecureStore nativo y almacenamiento de sesión web. Los datos de dominio se leen y escriben exclusivamente en Repository. Cada escritura y su entrada en sync_queue se confirman en una transacción; local_revision impide que un ACK antiguo borre una edición nueva. Borrados se representan con deleted_at.
+Una base SQLCipher por cuenta y otra exclusiva para demo, con claves por cuenta y tokens de Auth en SecureStore. `openRepository.ts` es la implementación para Android e iOS: comprueba SQLCipher antes de inicializar el esquema y rechaza la apertura si no está disponible. La verificación del cifrado y del llavero en dispositivos sigue en #15. Los datos de dominio se leen y escriben exclusivamente en Repository. Cada escritura y su entrada en sync_queue se confirman en una transacción; local_revision impide que un ACK antiguo borre una edición nueva. Borrados se representan con deleted_at.
+
+Los clips WAV se codifican como datos dentro de la misma base cifrada mediante `InlineClipStore`; ese módulo también se usa en nativo. Se retiraron IndexedDB, Web Locks y snapshots del navegador en #27. Su evidencia histórica se conserva en [WEB_STORAGE_QA.md](../../docs/WEB_STORAGE_QA.md).
 
 Se suben padres antes de hijos, con claves UUID e idempotencia por id. Un clip se carga en el bucket privado antes del registro que lo referencia. Los errores conservan la cola y aplican backoff de 1s a 5min. El proceso despierta por cambios de red y cada 15s en primer plano. No se promete ejecución en segundo plano con el proceso suspendido.
 

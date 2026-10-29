@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { View, Platform } from "react-native";
-import { verifyEncryptedStorage } from "../db/verifyEncryptedStorage";
-import { WebStorageQA } from "../components/dev/WebStorageQA";
+import { View } from "react-native";
 import {
   Badge,
   Button,
@@ -106,25 +104,6 @@ export default function Catalog() {
           </Label>
         </Card>
       </Section>
-      {__DEV__ && Platform.OS === "web" ? (
-        <Card>
-          <Label bold>Validación de almacenamiento (desarrollo)</Label>
-          <Button
-            label="Comprobar cifrado local con datos de prueba"
-            variant="secondary"
-            onPress={async () => {
-              setNotice("Comprobando…");
-              try {
-                setNotice(await verifyEncryptedStorage());
-              } catch (error) {
-                setNotice(String(error));
-              }
-            }}
-          />
-          {notice ? <Label>{notice}</Label> : null}
-        </Card>
-      ) : null}
-      <WebStorageQA />
     </Screen>
   );
 }

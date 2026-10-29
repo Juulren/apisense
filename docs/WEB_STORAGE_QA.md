@@ -1,5 +1,7 @@
 # Almacén web entre pestañas — Issue #18
 
+> Archivo histórico. #27 retira este almacén, sus pruebas, el panel del catálogo y los scripts de navegador del producto Android/iOS. Los comandos siguientes describen el estado del [commit a41c1d7](https://github.com/Juulren/apisense/tree/a41c1d72b839b5e6f58608051b7296e488885b65), no se ejecutan en la rama actual. La aceptación nativa sigue en #15.
+
 **Historial técnico fuera del alcance del producto desde el 26 de octubre de 2026.** El producto se entrega para Android e iOS nativos. Los comandos y resultados siguientes describen la validación anterior del PR #24; no son instrucciones actuales de ejecución ni pruebas de una app móvil.
 
 ## Repetir la comprobación
@@ -21,7 +23,7 @@ Los controles usan el mismo `openRepository`, SQLite/WASM y snapshots AES-GCM de
 
 La prueba real detectó que `expo-sqlite` 57.0.4 inicializaba `AccessHandlePoolVFS` incluso para `:memory:`. Su pool retiene handles de OPFS durante la vida del worker: cerrar SQLite y liberar Web Locks no permitía que otra pestaña inicializara su worker. El resultado era `NoModificationAllowedError`, incluso al abrir cuentas diferentes.
 
-`npm ci` ejecuta [el parche local](../scripts/patch-expo-sqlite.mjs). Inicializa una sola vez el runtime y MemoryVFS; solo crea y registra el VFS persistente cuando se abre una base con ruta persistente, se importa un asset o se elimina una base persistente. Mantiene el comportamiento persistente de la demo y no modifica el módulo nativo. Las cuentas cifradas siguen persistiendo exclusivamente snapshots AES-GCM en IndexedDB y conservan su bloqueo exclusivo por principal.
+En ese commit, `npm ci` ejecutaba [el parche local](https://github.com/Juulren/apisense/blob/a41c1d72b839b5e6f58608051b7296e488885b65/scripts/patch-expo-sqlite.mjs). Inicializaba una sola vez el runtime y MemoryVFS; solo creaba y registraba el VFS persistente al abrir una base con ruta persistente, importar un asset o eliminar una base persistente. No modificaba el módulo nativo. Las cuentas cifradas persistían exclusivamente snapshots AES-GCM en IndexedDB y conservaban su bloqueo exclusivo por principal. El parche ya no se incluye ni se aplica en la entrega Android/iOS.
 
 El script comprueba la versión y el hash del fuente original, y es idempotente. Una actualización de Expo requiere revisar el parche y repetir estas pruebas; no se acepta silenciosamente un worker desconocido. Si se instalan dependencias con `--ignore-scripts`, ejecuta manualmente `node scripts/patch-expo-sqlite.mjs` antes de compilar. Retirar el parche cuando upstream resuelva la inicialización ansiosa y la misma prueba confirme el comportamiento.
 
@@ -33,20 +35,20 @@ El script comprueba la versión y el hash del fuente original, y es idempotente.
 
 Navegador Chromium integrado de Codex, dos documentos en `http://localhost:8081/ui-catalog`, después de instalar desde cero y reiniciar Metro con `--clear`.
 
-| Comprobación | Resultado observado |
-| --- | --- |
-| B abre la misma sesión mientras A está abierta | Rechazo inmediato; B permanece cerrada y no puede guardar |
-| A cierra y B abre | B lee `Marca A-20261022`; no aparece el error OPFS original |
-| B guarda y cierra; A reabre | A lee `Marca B-20261022`, descartando su versión anterior |
-| Dos sesiones diferentes | Ambas abiertas a la vez; cambiar B a la sesión de A vuelve a rechazar la apertura |
-| Cierre directo de la pestaña A tras confirmar el guardado | B abre y lee `Marca C-20261022` |
-| Autocomprobación existente de cifrado | Escritura durable, reapertura, clave incorrecta y sesiones simultáneas correctas |
-| Demo abierta en otra pestaña con OPFS | El fixture cifrado puede abrirse y leer C en paralelo |
-| Persistencia de la demo | Intervalo 30 → 45; tras recargar y entrar de nuevo conserva 45; restaurado a 30 al terminar |
-| Catálogo en exportación de producción, puerto 4173 | El fixture de desarrollo no aparece |
-| `npm ci` y segunda ejecución del parche | Aplicación desde fuente limpio e idempotencia correctas |
-| `npm run check` | TypeScript y 47 pruebas correctos |
-| `npm run build:web` | Exportación, worker/WASM y shell offline correctos |
+| Comprobación                                              | Resultado observado                                                                         |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| B abre la misma sesión mientras A está abierta            | Rechazo inmediato; B permanece cerrada y no puede guardar                                   |
+| A cierra y B abre                                         | B lee `Marca A-20261022`; no aparece el error OPFS original                                 |
+| B guarda y cierra; A reabre                               | A lee `Marca B-20261022`, descartando su versión anterior                                   |
+| Dos sesiones diferentes                                   | Ambas abiertas a la vez; cambiar B a la sesión de A vuelve a rechazar la apertura           |
+| Cierre directo de la pestaña A tras confirmar el guardado | B abre y lee `Marca C-20261022`                                                             |
+| Autocomprobación existente de cifrado                     | Escritura durable, reapertura, clave incorrecta y sesiones simultáneas correctas            |
+| Demo abierta en otra pestaña con OPFS                     | El fixture cifrado puede abrirse y leer C en paralelo                                       |
+| Persistencia de la demo                                   | Intervalo 30 → 45; tras recargar y entrar de nuevo conserva 45; restaurado a 30 al terminar |
+| Catálogo en exportación de producción, puerto 4173        | El fixture de desarrollo no aparece                                                         |
+| `npm ci` y segunda ejecución del parche                   | Aplicación desde fuente limpio e idempotencia correctas                                     |
+| `npm run check`                                           | TypeScript y 47 pruebas correctos                                                           |
+| `npm run build:web`                                       | Exportación, worker/WASM y shell offline correctos                                          |
 
 No se verifican aquí Safari/Firefox, navegadores móviles, cierre forzado del proceso, recuperación del sistema operativo ni SQLCipher nativo. No se despliega ni cambia Supabase. Esta evidencia corresponde al [PR #24](https://github.com/Juulren/apisense/pull/24); GitHub registra su integración y el cierre del Issue.
 

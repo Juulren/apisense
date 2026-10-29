@@ -98,7 +98,7 @@ npm run check:bundles
 
 El [reporte de validación](docs/VALIDATION.md) y la [evidencia del backend](docs/SUPABASE.md) documentan las comprobaciones y sus límites. `npm test` ejecuta pruebas locales sin credenciales; `npm run test:backend:live` requiere configuración de servidor local y crea y elimina cuentas y datos temporales en Supabase. La integración física BLE/MQTT y un modelo acústico entrenado y validado todavía requieren recursos y pruebas adicionales.
 
-Las comprobaciones web anteriores se conservan como historial técnico; no acreditan Android/iOS ni forman parte de la entrega. Los comandos públicos y la CI se centran en las dos plataformas nativas.
+La rama de limpieza del [Issue #27](https://github.com/Juulren/apisense/issues/27) retira los adaptadores de navegador, el service worker, el hosting y las dependencias directas exclusivas de web. Conserva la demo, el backend y los adaptadores nativos. El [inventario y la validación](docs/NATIVE_CLEANUP.md) distinguen las pruebas automatizadas de la ejecución móvil pendiente. Las comprobaciones web anteriores se conservan como historial técnico; no acreditan Android/iOS ni forman parte de la entrega.
 
 ## Organización del código
 

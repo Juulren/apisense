@@ -1,7 +1,0 @@
-/*
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Embedder-Policy: credentialless
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss:; worker-src 'self' blob:; frame-src https://www.openstreetmap.org https://openstreetmap.org; media-src 'self' data: blob: https://*.supabase.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
