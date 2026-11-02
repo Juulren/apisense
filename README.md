@@ -4,6 +4,8 @@ Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, d
 
 Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
+**Prioridad actual (2 de noviembre de 2026): Android.** iOS queda en espera por decisión del usuario; se conserva el código multiplataforma y la evidencia anterior. La demo fue confirmada en Samsung Galaxy S21 Ultra con Android 15.
+
 ## Estado del proyecto
 
 La implementación está consolidada en **`main`**: incluye la base del [PR #21](https://github.com/Juulren/apisense/pull/21), las fuentes y el alcance móvil del [#26](https://github.com/Juulren/apisense/pull/26), la limpieza web del [#29](https://github.com/Juulren/apisense/pull/29) y la demo nativa del [#30](https://github.com/Juulren/apisense/pull/30). El backend Supabase está instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
@@ -81,6 +83,8 @@ npm run backend:check
 El cron procesa una cola con lotes de diez colmenas, reservas temporales y reintentos. Las muestras se recorren por páginas de 200, sin el anterior corte de 1000 clips. Las solicitudes manuales sin `hive_id` devuelven hasta 50 colmenas y un `next_hive_id` para continuar con `after_hive_id`.
 
 Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
+
+El bloque #15 prepara pruebas nativas de cifrado, confirmación por correo con PKCE y perfiles de distribución Android. Consulta [pruebas, firma y criterios pendientes](docs/ANDROID_SECURITY_QA.md). Para cuentas nuevas se usa `apisense://auth/callback`; el proyecto Supabase de desarrollo ya tiene esa redirección nativa. La app de campo con este callback debe compilarse desde la rama del bloque hasta integrar el PR.
 
 ### Cifrado y acceso offline
 
