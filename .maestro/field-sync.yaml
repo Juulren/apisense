@@ -1,0 +1,64 @@
+appId: com.apisense.app
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Buenos días, apicultor"
+    timeout: 60000
+- tapOn:
+    id: "nav-Ajustes"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Modo sin conexión"
+- tapOn:
+    id: "offline-toggle"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Forzar sincronización local a nube"
+- tapOn: "Forzar sincronización local a nube"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "0 registros en cola local"
+    timeout: 60000
+- takeScreenshot: .artifacts/field-synchronized
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Cerrar sesión local"
+- tapOn: "Cerrar sesión local"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Comenzar"
+- tapOn: "Comenzar"
+- tapOn:
+    id: "login-email"
+- inputText: ${MAESTRO_QA_B_EMAIL}
+- tapOn:
+    id: "login-password"
+- inputText: ${MAESTRO_QA_B_PASSWORD}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Entrar al Apiario"
+- tapOn: "Entrar al Apiario"
+- extendedWaitUntil:
+    visible: "Buenos días, apicultor"
+    timeout: 60000
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir B-PRIVADA-15"
+    timeout: 60000
+- assertNotVisible: "Abrir QA-CAMPO-15"
+- takeScreenshot: .artifacts/field-account-b
+- tapOn:
+    id: "nav-Ajustes"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Cerrar sesión local"
+- tapOn: "Cerrar sesión local"
