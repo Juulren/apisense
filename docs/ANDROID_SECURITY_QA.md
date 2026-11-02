@@ -89,7 +89,7 @@ La política de backups de PostgreSQL y la del bucket de audio deben verificarse
 
 ## Evidencia y aceptación pendiente
 
-- TypeScript y **75 pruebas locales** correctos, incluidos rechazo por pérdida de clave y callbacks PKCE.
+- TypeScript y **76 pruebas locales** correctos, incluidos rechazo por pérdida de clave y callbacks PKCE.
 - Bundles Android/iOS correctos; el de iOS es solo compatibilidad compartida, sin nueva aceptación nativa Apple.
 - **6 pruebas live** de Supabase correctas el 2 de noviembre: dos cuentas temporales, SQLite/WAV/sincronización, aislamiento, audio privado, JWT/cron e idempotencia. La suite elimina sus datos temporales. No prueba una sesión dentro del APK.
 - Auditoría npm del 2 de noviembre: **0 críticas, 6 high, 9 moderadas y 2 low**. Raíces notificadas: decode-uri-component, deepmerge, glob, minimatch, node-forge y zod. La evaluación de actualizaciones continúa en #16; no se declara aptitud para producción por ausencia de críticas.

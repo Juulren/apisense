@@ -108,7 +108,7 @@ Las pruebas locales de la base de demo permanecen correctas. La aceptación nati
 ## Bloque activo — Issue #15, prioridad Android
 
 - [x] Rechazo sin sobrescritura cuando existe la base cifrada pero falta su clave.
-- [x] Pruebas locales del caso de recuperación y callback PKCE nativo; 75 pruebas y TypeScript correctos.
+- [x] Pruebas locales del caso de recuperación y callback PKCE nativo; 76 pruebas y TypeScript correctos.
 - [x] Perfil QA aislado con comprobaciones SQLCipher/SecureStore, DB/WAL, claves erróneas/perdidas, separación de identidades y WAV tras reabrir.
 - [x] Política Release: backup/HTTP desactivados, sin permisos de grabación ni almacenamiento externo; verificador del APK empaquetado.
 - [x] Callback `apisense://auth/callback` y redirecciones del proyecto Supabase de desarrollo actualizadas; siete ajustes remotos ajenos conservados.

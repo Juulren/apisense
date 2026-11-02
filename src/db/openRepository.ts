@@ -8,11 +8,16 @@ export function repositoryStorage(userId: string) {
     throw new Error("Identidad local inválida");
   if (!defaultDatabaseDirectory)
     throw new Error("Almacén nativo no disponible");
+  // expo-sqlite returns a plain absolute path on Android. FileSystem requires
+  // a file URI; leave SQLite's own directory unchanged for openDatabaseAsync.
+  const directoryUri = defaultDatabaseDirectory.startsWith("file://")
+    ? defaultDatabaseDirectory
+    : `file://${defaultDatabaseDirectory}`;
   const databaseName = `apisense-encrypted-v1-${userId}.db`;
   return {
     databaseName,
     keyName: `apisense.db-key.${userId}`,
-    file: new File(defaultDatabaseDirectory, databaseName),
+    file: new File(directoryUri, databaseName),
   };
 }
 export async function openRepository(userId: string) {
