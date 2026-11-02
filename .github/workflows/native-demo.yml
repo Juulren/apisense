@@ -10,6 +10,10 @@ on:
         description: Probar la app real con las cuentas temporales preparadas previamente
         type: boolean
         default: false
+      field_artifact_run_id:
+        description: APK de campo previo para depurar solo el recorrido (vacío para compilar)
+        type: string
+        default: ""
       platform:
         description: Plataforma a verificar
         type: choice
@@ -198,6 +202,7 @@ jobs:
     uses: ./.github/workflows/native-android.yml
     with:
       live_checks: ${{ inputs.live_checks }}
+      artifact_run_id: ${{ inputs.field_artifact_run_id }}
     secrets:
       APISENSE_NATIVE_QA_A_EMAIL: ${{ secrets.APISENSE_NATIVE_QA_A_EMAIL }}
       APISENSE_NATIVE_QA_A_PASSWORD: ${{ secrets.APISENSE_NATIVE_QA_A_PASSWORD }}

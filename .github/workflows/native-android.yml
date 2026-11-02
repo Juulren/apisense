@@ -5,6 +5,9 @@ on:
       live_checks:
         type: boolean
         default: false
+      artifact_run_id:
+        type: string
+        default: ""
     secrets:
       APISENSE_NATIVE_QA_A_EMAIL:
         required: false
@@ -20,8 +23,13 @@ on:
         description: Probar dos cuentas temporales preparadas previamente (sin credenciales de servidor)
         type: boolean
         default: false
+      artifact_run_id:
+        description: Repetir el recorrido sobre un APK anterior (registra su SHA original)
+        type: string
+        default: ""
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: android-development-${{ github.ref }}
   cancel-in-progress: false
@@ -50,11 +58,15 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+        if: inputs.artifact_run_id == ''
         with:
           cache-read-only: false
       - run: npm ci
+        if: inputs.artifact_run_id == ''
       - run: npx expo prebuild --platform android --no-install
+        if: inputs.artifact_run_id == ''
       - name: Build standalone field APK
+        if: inputs.artifact_run_id == ''
         run: |
           set -o pipefail
           mkdir -p .artifacts
@@ -62,11 +74,36 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease --build-cache -PreactNativeArchitectures=arm64-v8a,x86_64 --max-workers=2 --console=plain -x lint -x test 2>&1 | tee ../.artifacts/android-field-build.log
           ./gradlew --stop
+      - uses: actions/download-artifact@v4
+        if: inputs.artifact_run_id != ''
+        with:
+          name: apisense-android-development
+          run-id: ${{ inputs.artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: .artifacts/source-android
+      - name: Prepare existing field APK
+        if: inputs.artifact_run_id != ''
+        run: |
+          mkdir -p android/app/build/outputs/apk/release
+          cp .artifacts/source-android/android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/
+      - name: Record APK provenance
+        env:
+          SOURCE_RUN: ${{ inputs.artifact_run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .artifacts
+          if [ -n "$SOURCE_RUN" ]; then
+            [[ "$SOURCE_RUN" =~ ^[0-9]+$ ]] || exit 1
+            export APK_SOURCE_SHA=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq .head_sha)
+          else
+            export APK_SOURCE_SHA="$GITHUB_SHA"
+          fi
+          python3 -c 'import json,os; json.dump({"apk_source_sha": os.environ["APK_SOURCE_SHA"], "flow_source_sha": os.environ["GITHUB_SHA"], "reused_from_run": os.environ["SOURCE_RUN"] or None}, open(".artifacts/android-field-provenance.json", "w"))'
       - name: Inspect packaged Android policy
         run: |
           ANALYZER=$(find "$ANDROID_HOME/cmdline-tools" -name apkanalyzer -type f | head -1)
           "$ANALYZER" manifest print android/app/build/outputs/apk/release/app-release.apk > .artifacts/android-field-manifest.xml
-          python3 scripts/verify-native-policy.py android .artifacts/android-field-manifest.xml
+          python3 scripts/verify-native-policy.py android .artifacts/android-field-manifest.xml com.apisense.app
           sha256sum android/app/build/outputs/apk/release/app-release.apk > .artifacts/android-field-apk.sha256
       - name: Install Maestro
         if: inputs.live_checks
@@ -107,6 +144,13 @@ jobs:
           name: apisense-android-development
           path: |
             android/app/build/outputs/apk/release/*.apk
-            .artifacts/
+            .artifacts/*.log
+            .artifacts/*.xml
+            .artifacts/*.json
+            .artifacts/*.png
+            .artifacts/*.sha256
+            .artifacts/android-field-maestro/
+            .artifacts/android-field-offline-maestro/
+            .artifacts/android-field-sync-maestro/
           retention-days: 14
           include-hidden-files: true

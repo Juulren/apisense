@@ -44,6 +44,11 @@ appId: com.apisense.app
 - tapOn:
     id: "login-email"
 - inputText: ${MAESTRO_QA_B_EMAIL}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: "login-password"
 - tapOn:
     id: "login-password"
 - inputText: ${MAESTRO_QA_B_PASSWORD}

@@ -10,6 +10,11 @@ name: App de campo Android con cuentas Supabase, audio privado y sincronización
 - tapOn:
     id: "login-email"
 - inputText: ${MAESTRO_QA_A_EMAIL}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: "login-password"
 - tapOn:
     id: "login-password"
 - inputText: ${MAESTRO_QA_A_PASSWORD}
