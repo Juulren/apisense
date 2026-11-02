@@ -150,7 +150,10 @@ jobs:
             .artifacts/*.png
             .artifacts/*.sha256
             .artifacts/android-field-maestro/
+            .artifacts/android-field-maestro-retry/
             .artifacts/android-field-offline-maestro/
+            .artifacts/android-field-offline-maestro-retry/
             .artifacts/android-field-sync-maestro/
+            .artifacts/android-field-sync-maestro-retry/
           retention-days: 14
           include-hidden-files: true
