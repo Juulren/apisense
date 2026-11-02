@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+if [ "${CI:-}" != "1" ]; then
+  echo "Este recorrido reinicia datos y solo puede ejecutarse en el emulador desechable de CI." >&2
+  exit 1
+fi
+case "$(adb get-serialno)" in
+  emulator-*) ;;
+  *) echo "Se rechazó reiniciar la app de campo en un dispositivo físico." >&2; exit 1 ;;
+esac
 : "${MAESTRO_QA_A_EMAIL:?Prepare disposable QA accounts first}"
 : "${MAESTRO_QA_A_PASSWORD:?Missing temporary account A}"
 : "${MAESTRO_QA_B_EMAIL:?Missing temporary account B}"

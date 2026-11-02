@@ -6,9 +6,11 @@ Alcance confirmado el 26 de octubre de 2026: Android nativo e iOS nativo. #27 re
 
 ## Almacenamiento local
 
-En builds nativos, SQLite usa SQLCipher con una clave aleatoria de 256 bits por cuenta guardada en SecureStore. Keychain aplica `WHEN_UNLOCKED_THIS_DEVICE_ONLY` en iOS; Android utiliza almacenamiento cifrado con Keystore. Esa opción no exige biometría por operación en Android ni elimina claves de RAM al bloquear. La app comprueba `PRAGMA cipher_version` y falla sin SQLCipher. Android desactiva backup de aplicación. Debe probarse en builds físicos antes de declarar cifrado nativo verificado.
+En builds nativos, SQLite usa SQLCipher con una clave aleatoria de 256 bits por cuenta guardada en SecureStore. Keychain aplica `WHEN_UNLOCKED_THIS_DEVICE_ONLY` en iOS; Android utiliza almacenamiento cifrado con Keystore. Esa opción no exige biometría por operación en Android ni elimina claves de RAM al bloquear. La app comprueba `PRAGMA cipher_version` y falla sin SQLCipher. Android desactiva backup de aplicación. Se verificó con módulos nativos reales en Android Emulator/API 35; la aceptación física del S21 Ultra sigue pendiente.
 
 Los WAV permanentes se guardan en la base cifrada como datos mediante `InlineClipStore`. La demo usa otra base SQLCipher con su propia clave de SecureStore y datos públicos sintéticos: no solicita una frase al usuario ni se sincroniza. También requiere una compilación con SQLCipher. No almacenar información real en ella.
+
+El 2 de noviembre, [la prueba nativa](https://github.com/Juulren/apisense/actions/runs/41522494229) rechazó lecturas sin clave/con clave errónea, conservó la base ante pérdida de clave y verificó separación, DB/WAL y WAV al reabrir. También comprobó las primitivas PKCE S256. [La app real de campo](https://github.com/Juulren/apisense/actions/runs/41526370065) pasó acceso con dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización y cierre de sesión. La inspección se confirmó una sola vez en Supabase y se eliminaron los recursos/secretos temporales; ver [procedimiento y límites](ANDROID_SECURITY_QA.md).
 
 ## Comunicación y backend
 

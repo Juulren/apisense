@@ -16,6 +16,9 @@ android/
 ios/
 mockups/
 *.log
+*.tsbuildinfo
+__pycache__/
+expo-env.d.ts
 *.keystore
 *.jks
 *.p12

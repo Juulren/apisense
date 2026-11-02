@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="144.745" timestamp="2026-11-02T21:16:21">
+    <testcase id="App de campo Android con cuentas Supabase, audio privado y sincronización" name="App de campo Android con cuentas Supabase, audio privado y sincronización" classname="App de campo Android con cuentas Supabase, audio privado y sincronización" file=".maestro/field.yaml" time="144.681" timestamp="2026-11-02T21:16:21" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

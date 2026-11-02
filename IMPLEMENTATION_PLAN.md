@@ -12,7 +12,7 @@ La aceptación móvil requiere compilar y ejecutar en emulador/simulador y dispo
 
 Los resultados web de secciones anteriores son históricos y no acreditan el producto móvil. La limpieza cliente de #27 y la demo nativa ya están integradas. La demo tiene compilaciones y recorridos nativos correctos; #27 mantiene pendientes las pruebas de cuentas reales y sincronización coordinadas con #15/#8. Los bundles y las pruebas con dobles no sustituyen esos criterios.
 
-El 2 de noviembre el usuario priorizó Android y dejó iOS en espera. Confirmó la demo en Samsung Galaxy S21 Ultra con Android 15. El bloque activo es #15, desde `codex/15-native-security`; conserva pendientes físicos y de distribución, sin iniciar otro Issue.
+El 2 de noviembre el usuario priorizó Android y dejó iOS en espera. Confirmó la demo en Samsung Galaxy S21 Ultra con Android 15. El bloque #15 entrega el avance Android mediante [PR #32](https://github.com/Juulren/apisense/pull/32), con APK de campo y recorridos nativos correctos. Conserva pendientes físicos y de distribución, sin iniciar otro Issue.
 
 ## Trabajo integrado
 
@@ -116,11 +116,13 @@ Las pruebas locales de la base de demo permanecen correctas. La aceptación nati
 - [x] Perfiles EAS de APK interno/AAB y guía de keystore, backups y aceptación; no se publicaron builds ni se generaron credenciales de firma.
 - [x] Auditoría registrada: 0 críticas, 6 high, 9 moderadas y 2 low. Evaluación/actualizaciones siguen en #16.
 - [x] Comando y workflow de desarrollo Android para `com.apisense.app`, con configuración pública de Supabase y credenciales temporales de prueba separadas del APK.
-- [ ] Compilación Release y recorrido de campo Android 15 con dos cuentas reales temporales, audio privado, reapertura sin red y sincronización: ejecución en curso.
-- [ ] Comprobaciones criptográficas negativas completas en ejecución nativa; la prueba aislada inicial se canceló para priorizar la app de campo.
-- [ ] APK de desarrollo de la app real en el S21 Ultra; correo, bloqueo, permisos y aceptación física de sincronización.
+- [x] APK Release de la app real `com.apisense.app` y tres fases nativas correctas en Android 15: dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización y salida persistente.
+- [x] Ejecución nativa de PKCE S256, claves erróneas/perdidas, separación, DB/WAL y WAV idéntico tras reabrir correcta; mismo repositorio y criptografía de la app de campo. Regresión de demo Android también correcta, sin cambiar la entrega de campo.
+- [x] Inspección del APK confirmada una sola vez en Supabase, cuenta B aislada y cuentas/datos/secretos temporales eliminados.
+- [x] APK de desarrollo, checksum e instrucciones entregados en `dist/development`; evidencia durable en la guía Android.
+- [ ] Validar la nueva app de campo en el S21 Ultra; correo, bloqueo, permisos y aceptación física de sincronización.
 - [ ] Keystore de distribución y restauración de backups en entorno aislado.
-- [ ] Revisión e integración del PR de este bloque.
+- [x] Implementación y evidencias revisadas en PR #32, incorporadas a `main` con checks correctos.
 - iOS permanece en espera por decisión del usuario; no bloquea la prioridad Android ni se declara validado con estos cambios.
 
 Procedimiento, evidencia y límites: [ANDROID_SECURITY_QA.md](docs/ANDROID_SECURITY_QA.md). #15 permanece abierto por sus criterios Android pendientes.

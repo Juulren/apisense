@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="87.795" timestamp="2026-11-02T21:19:37">
+    <testcase id="field-sync" name="field-sync" classname="field-sync" file=".maestro/field-sync.yaml" time="87.767" timestamp="2026-11-02T21:19:37" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

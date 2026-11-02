@@ -8,7 +8,9 @@ Por aclaración del usuario, la entrega activa es **la app real de Android**, co
 
 Con `.env` público configurado y SDK/JDK disponibles, `npm run field:android` genera e instala la app de campo Release con JS incluido y sin Metro. `npm run android` conserva el ciclo de desarrollo con Metro. El comando de campo fija ambos flags en `0` y valida HTTPS/clave pública antes de compilar; nunca carga `.env.backend`.
 
-El workflow **Android development** construye la app de campo y revisa su manifiesto. Mientras se integra por primera vez, se invoca a través del workflow existente **Native validation**:
+La captura de [validación criptográfica correcta en Android 15](evidence/issue15/native-security-android.png) se conserva en el repositorio junto con los JUnit y logs enlazados.
+
+El workflow **Android development** construye la app de campo y revisa su manifiesto. También puede invocarse a través de **Native validation**:
 
 ```powershell
 gh workflow run native-demo.yml --ref TU_RAMA -f field_app=true -f live_checks=true -f platform=android
@@ -18,7 +20,7 @@ Las variables de repositorio `APISENSE_SUPABASE_URL` y `APISENSE_SUPABASE_PUBLIC
 
 El recorrido nativo entra por **Comenzar**, inicia sesión A, descarga y reproduce un WAV del bucket privado, guarda una inspección con la sincronización desactivada, corta Wi-Fi/datos, mata y reabre el proceso, comprueba la nota local, reconecta y sincroniza. Finalmente cambia a B y comprueba que muestra su propia colmena. Una consulta al servidor verifica que la nota del APK llegó una sola vez y sigue aislada de B. Los reportes de texto se limpian de credenciales temporales antes de subirlos como artefactos.
 
-La nueva [compilación y prueba de campo](https://github.com/Juulren/apisense/actions/runs/41516671485) está en curso. La ejecución aislada anterior se canceló al priorizar esta entrega: no se acredita una prueba criptográfica completa por una ejecución cancelada. Al terminar se eliminarán las dos cuentas, sus datos y los secretos temporales de CI. El APK de desarrollo usa firma de prueba y no contiene una sesión ni contraseña embebidas; cada instalación inicia sesión con su propia cuenta.
+La [compilación de campo](https://github.com/Juulren/apisense/actions/runs/41522488669) produjo el APK del código `29b1f13`. El [recorrido completo correcto](https://github.com/Juulren/apisense/actions/runs/41526370065) reutilizó ese binario con los scripts `4d2db94`: tres fases, tres casos y cero fallos. La procedencia de APK y recorrido se conserva en [el registro JSON](evidence/issue15/android-field-provenance.json). La [comprobación criptográfica aislada](https://github.com/Juulren/apisense/actions/runs/41522494229) pasó sobre el mismo código de repositorio y primitivas PKCE, con archivos y claves propios. Se verificó que la inspección creada en el APK llegó una sola vez a Supabase y que la cuenta B no podía leerla. Se eliminaron las dos cuentas, sus filas y WAV, los cuatro secretos temporales de CI y el marcador de ejecución. La lista final de secretos de GitHub quedó vacía; solo se conservaron las dos variables públicas del build. El APK de desarrollo usa firma de prueba y no contiene una sesión ni contraseña embebidas; cada instalación inicia sesión con su propia cuenta.
 
 ## Resultado del bloque
 
@@ -42,7 +44,7 @@ Estas pruebas no certifican resistencia ante un dispositivo comprometido. Las do
 
 ## Ejecutar la prueba nativa
 
-El workflow **Native validation** admite `security_checks=true` y requiere una compilación nueva; no permite reutilizar un APK antiguo para acreditar código nuevo. Android 15/API 35 es el destino automatizado. El flujo usa datos sintéticos y red desactivada.
+Para la comprobación aislada, el workflow **Native validation** admite `security_checks=true` y requiere una compilación nueva; no permite reutilizar un APK antiguo para acreditar código nuevo. Android 15/API 35 es el destino automatizado. El flujo aislado de cifrado usa datos sintéticos y red desactivada. El recorrido de campo usa Supabase y corta Wi-Fi/datos durante la reapertura.
 
 ```powershell
 gh workflow run native-demo.yml --ref TU_RAMA -f field_app=false -f platform=android -f security_checks=true
@@ -58,6 +60,22 @@ Remove-Item Env:EXPO_PUBLIC_SECURITY_QA
 
 En el inicio aparece **Verificar cifrado nativo**. Ejecuta **Comprobar cifrado** y espera **Validación de cifrado completada**. La opción está desactivada en builds normales; la configuración impide habilitarla en una app de campo. El APK QA usa el mismo identificador que la demo (`com.apisense.demo`): es una actualización de prueba, no la app real de campo (`com.apisense.app`). No desinstales una app con cambios pendientes para sustituirla.
 
+## APK de desarrollo entregado
+
+La copia local está en `dist/development/Apisense-Android-Development-0.1.0.apk`, con `LEEME.txt` y su archivo `.sha256`. **Es la app real de campo**, no el APK de demo. El binario incluye configuración pública del Supabase de desarrollo; no contiene sesión, contraseñas de pruebas, clave administrativa ni secreto cron. Se comprobó la ausencia de las dos credenciales de servidor locales en el contenido descomprimido del APK.
+
+| Propiedad | Valor |
+| --- | --- |
+| Identificador | `com.apisense.app` |
+| Versión / código | `0.1.0` / `1` |
+| Android mínimo / target | API 24 / API 36 |
+| Arquitecturas | ARM64 (`arm64-v8a`) y `x86_64` |
+| Tamaño | 165690209 bytes |
+| Código nativo/JS validado | `29b1f13c7315c6fcc30e5547615975bdcb3fd71e` |
+| SHA-256 | `00b87493bc9b8f28010c8e9cafdb985a0d231fa4c12c93c8e5013c115b0c73dd` |
+
+Se conserva evidencia de [la inspección recuperada sin red](evidence/issue15/field-offline-inspection.png) y [la cola sincronizada](evidence/issue15/field-cloud-sync.png). El guardado/borrado de datos del recorrido automatizado está restringido a un emulador desechable con `CI=1`; el script rechaza su ejecución local o en un teléfono físico. El recorrido solo reintenta una pérdida de conexión ADB durante `launchApp`, anterior a toda interacción; conserva el reporte de transporte y hace fallar las aserciones de la app.
+
 ## Confirmación de cuenta
 
 El registro solicita `apisense://auth/callback` y usa PKCE S256. El adaptador de autenticación conecta aleatoriedad y SHA-256 de Expo Crypto cuando Hermes no ofrece esas funciones WebCrypto; no usa la alternativa `Math.random`/challenge plano del SDK. Las implementaciones WebCrypto existentes se conservan. El código se intercambia mediante el verificador conservado en SecureStore en el dispositivo que inició el registro. La ruta rechaza otros esquemas/destinos, códigos duplicados y tokens de sesión importados por URL; no registra códigos ni refleja el detalle de errores remotos. Las entregas simultáneas del mismo enlace comparten un intercambio.
@@ -66,7 +84,7 @@ La configuración local y el proyecto Supabase de desarrollo usan exclusivamente
 
 El enlace debe abrirse en el dispositivo donde se creó la cuenta; si se borra la app/verificador o se abre en otro dispositivo, vuelve a iniciar sesión con la cuenta confirmada o repite el registro según el resultado del servidor. El esquema personalizado no acredita propiedad exclusiva del dominio; PKCE evita canjear el código sin el verificador. Una publicación futura puede adoptar App Links con un dominio propio, sin implementar una página web del producto.
 
-Referencias: [enlaces nativos](https://supabase.com/docs/guides/auth/native-mobile-deep-linking), [PKCE](https://supabase.com/docs/guides/auth/sessions/pkce-flow) y [SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/).
+Referencias: [hooks de build EAS](https://docs.expo.dev/build-reference/npm-hooks/), [exclusiones del archivo EAS](https://docs.expo.dev/build-reference/easignore/), [enlaces nativos](https://supabase.com/docs/guides/auth/native-mobile-deep-linking), [PKCE](https://supabase.com/docs/guides/auth/sessions/pkce-flow) y [SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/).
 
 ## Firma y distribución
 
@@ -93,7 +111,8 @@ La política de backups de PostgreSQL y la del bucket de audio deben verificarse
 - Bundles Android/iOS correctos; el de iOS es solo compatibilidad compartida, sin nueva aceptación nativa Apple.
 - **6 pruebas live** de Supabase correctas el 2 de noviembre: dos cuentas temporales, SQLite/WAV/sincronización, aislamiento, audio privado, JWT/cron e idempotencia. La suite elimina sus datos temporales. No prueba una sesión dentro del APK.
 - Auditoría npm del 2 de noviembre: **0 críticas, 6 high, 9 moderadas y 2 low**. Raíces notificadas: decode-uri-component, deepmerge, glob, minimatch, node-forge y zod. La evaluación de actualizaciones continúa en #16; no se declara aptitud para producción por ausencia de críticas.
-- Compilación y pruebas de campo nuevas: [ejecución Android del bloque](https://github.com/Juulren/apisense/actions/runs/41516671485), resultado pendiente de registrar al finalizar. La prueba aislada anterior fue cancelada al priorizar la app real.
+- Prueba nativa criptográfica: **correcta**, 1 caso/0 fallos en 27,522 s; regresión Android de demo correcta, 1 caso/0 fallos en 152,363 s. [Ejecución 41522494229](https://github.com/Juulren/apisense/actions/runs/41522494229), código `29b1f13`.
+- App de campo: [recorrido completo correcto](https://github.com/Juulren/apisense/actions/runs/41526370065), tres casos/0 fallos: acceso/audio/guardado (144,745 s), reapertura sin red (21,767 s), sincronización/cambio de cuenta/salida (87,795 s). [JUnit de campo](evidence/issue15/android-field.xml), [offline](evidence/issue15/android-field-offline.xml), [sincronización](evidence/issue15/android-field-sync.xml) y [cifrado](evidence/issue15/android-security.xml).
 
 | Aceptación física Android | Estado |
 | --- | --- |

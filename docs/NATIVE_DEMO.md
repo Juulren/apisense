@@ -23,7 +23,7 @@ El APK Android de demo y el archivo `.app` para iOS Simulator incluyen el JavaSc
 
 ## Obtener e instalar
 
-En GitHub abre la ejecución de **Native demo** y revisa el resultado de la plataforma antes de descargar sus artefactos (requiere iniciar sesión para descargar):
+En GitHub abre la ejecución de **Native validation** y revisa el resultado de la plataforma antes de descargar sus artefactos (requiere iniciar sesión para descargar):
 
 - `apisense-demo-android`: contiene `app-release.apk`, logs y resultados Android. Instala el APK en Android, autorizando la instalación desde ese origen, o usa `adb install -r app-release.apk`.
 - `apisense-demo-ios-simulator`: contiene `ApisenseDemo-simulator.zip`, logs y resultados iOS. En un Mac, descomprime y arrastra `ApisenseDemo.app` a un simulador abierto de Xcode. También puedes usar `xcrun simctl install booted ApisenseDemo.app`.
@@ -66,6 +66,8 @@ npm run demo:ios
 Estos comandos generan el proyecto con el identificador de demo y compilan Release sin iniciar Metro. Pueden solicitar seleccionar un emulador/simulador o dispositivo. El comando iOS solo puede ejecutarse en macOS; para un iPhone físico también se necesita configurar la firma.
 
 El wrapper usa `EXPO_PUBLIC_DEMO_ONLY=1`, desactiva la carga de `.env` y elimina los valores de conexión de servicios del entorno de compilación. La app no crea un cliente Supabase ni ofrece acceso de cuentas reales. El modo normal de desarrollo sigue usando `npm run android`/`npm run ios`. Si cambias de demo a la app de campo, regenera antes su proyecto nativo con `npx expo prebuild --platform android` o `npx expo prebuild --platform ios`, respectivamente, para recuperar su identificador.
+
+Para recompilar la demo con el workflow actual, selecciona `field_app=false`; el valor predeterminado construye la app real de campo. En el bloque #15 se repitió correctamente el recorrido Android sobre `29b1f13`; la entrega actual del usuario está descrita en [la guía de campo](ANDROID_SECURITY_QA.md).
 
 ## Recorrido de aceptación
 
