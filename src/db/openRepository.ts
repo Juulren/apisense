@@ -1,13 +1,30 @@
-import { openDatabaseAsync } from "expo-sqlite";
+import { defaultDatabaseDirectory, openDatabaseAsync } from "expo-sqlite";
+import { File } from "expo-file-system";
 import { getRandomBytesAsync, randomUUID } from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { Repository } from "./Repository";
-export async function openRepository(userId: string) {
+export function repositoryStorage(userId: string) {
   if (!/^[a-zA-Z0-9-]+$/.test(userId))
     throw new Error("Identidad local inválida");
-  const keyName = `apisense.db-key.${userId}`;
+  if (!defaultDatabaseDirectory)
+    throw new Error("Almacén nativo no disponible");
+  const databaseName = `apisense-encrypted-v1-${userId}.db`;
+  return {
+    databaseName,
+    keyName: `apisense.db-key.${userId}`,
+    file: new File(defaultDatabaseDirectory, databaseName),
+  };
+}
+export async function openRepository(userId: string) {
+  const { keyName, databaseName, file } = repositoryStorage(userId);
   let key = await SecureStore.getItemAsync(keyName);
   if (!key) {
+    // A restore/reinstall can leave ciphertext without its device-bound key.
+    // Preserve it for recovery; never replace the key or reset the database.
+    if (file.exists)
+      throw new Error(
+        "No se encuentra la clave de esta base local. No se modificaron tus datos. Conserva la instalación y solicita recuperación antes de borrar o reinstalar.",
+      );
     key = Array.from(await getRandomBytesAsync(32), (x) =>
       x.toString(16).padStart(2, "0"),
     ).join("");
@@ -16,7 +33,7 @@ export async function openRepository(userId: string) {
     });
   }
   if (!/^[0-9a-f]{64}$/.test(key)) throw new Error("Clave local dañada");
-  const db = await openDatabaseAsync(`apisense-encrypted-v1-${userId}.db`, {
+  const db = await openDatabaseAsync(databaseName, {
     useNewConnection: true,
   });
   try {

@@ -22,6 +22,7 @@ import type {
   Inspection,
 } from "../db/types";
 import { supabase } from "../services/supabase";
+import { AUTH_REDIRECT_URL } from "../services/authCallback";
 import { AcousticClassifier } from "../services/ai/Classifier";
 import { HiveSummaryEngine } from "../services/ai/HiveSummaryEngine";
 import { AudioIngestionService } from "../services/iot/AudioIngestionService";
@@ -322,6 +323,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
+      options: { emailRedirectTo: AUTH_REDIRECT_URL },
     });
     if (error) throw error;
     if (data.session && data.user) {

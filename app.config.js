@@ -1,4 +1,9 @@
 module.exports = ({ config }) => {
+  if (
+    process.env.EXPO_PUBLIC_SECURITY_QA === "1" &&
+    process.env.EXPO_PUBLIC_DEMO_ONLY !== "1"
+  )
+    throw new Error("SECURITY_QA requiere el perfil de demo aislado");
   if (process.env.EXPO_PUBLIC_DEMO_ONLY !== "1") return config;
   return {
     ...config,

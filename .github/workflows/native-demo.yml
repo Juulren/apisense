@@ -1,23 +1,12 @@
 name: Native demo
 on:
-  push:
-    branches: [codex/native-demo]
-    paths:
-      - "src/**"
-      - "scripts/**"
-      - ".maestro/**"
-      - ".github/workflows/native-demo.yml"
-      - "app.config.js"
-      - "app.json"
-      - "package*.json"
-      - "*.config.js"
   workflow_dispatch:
     inputs:
       platform:
         description: Plataforma a verificar
         type: choice
         options: [all, android, ios]
-        default: all
+        default: android
       ios_artifact_run_id:
         description: Reutilizar el binario iOS de una ejecución anterior (vacío para compilar)
         type: string
@@ -26,6 +15,10 @@ on:
         description: Reutilizar el APK de una ejecución anterior (vacío para compilar)
         type: string
         default: ""
+      security_checks:
+        description: Compilar y comprobar SQLCipher/SecureStore reales (solo datos sintéticos)
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: read
@@ -36,6 +29,7 @@ env:
   CI: "1"
   EXPO_NO_DOTENV: "1"
   EXPO_PUBLIC_DEMO_ONLY: "1"
+  EXPO_PUBLIC_SECURITY_QA: ${{ inputs.security_checks && '1' || '0' }}
   MAESTRO_VERSION: cli-2.12.0
 jobs:
   android:
@@ -44,6 +38,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Require a fresh security build
+        if: inputs.security_checks && inputs.android_artifact_run_id != ''
+        run: echo 'Las comprobaciones de cifrado requieren un binario nuevo.' && exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -68,6 +65,12 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,x86_64 --max-workers=2 --console=plain -x lint -x test 2>&1 | tee ../.artifacts/android-build.log
           ./gradlew --stop
+      - name: Inspect packaged Android security policy
+        if: inputs.android_artifact_run_id == ''
+        run: |
+          ANALYZER=$(find "$ANDROID_HOME/cmdline-tools" -name apkanalyzer -type f | head -1)
+          "$ANALYZER" manifest print android/app/build/outputs/apk/release/app-release.apk > .artifacts/android-manifest.xml
+          python3 scripts/verify-native-policy.py android .artifacts/android-manifest.xml
       - uses: actions/download-artifact@v4
         if: inputs.android_artifact_run_id != ''
         with:
@@ -113,6 +116,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Require a fresh security build
+        if: inputs.security_checks && inputs.ios_artifact_run_id != ''
+        run: echo 'Las comprobaciones de cifrado requieren un binario nuevo.' && exit 1
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -140,6 +146,8 @@ jobs:
           xcodebuild -workspace ios/ApisenseDemo.xcworkspace -scheme ApisenseDemo -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .artifacts/ios-build CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual build 2>&1 | tee .artifacts/ios-build.log
           codesign --verify --deep --strict .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app
           cp ios/ApisenseDemo/ApisenseDemo.entitlements .artifacts/ios-simulator-entitlements.plist
+          cp .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app/Info.plist .artifacts/ios-info.plist
+          python3 scripts/verify-native-policy.py ios .artifacts/ios-info.plist
           ditto -c -k --sequesterRsrc --keepParent .artifacts/ios-build/Build/Products/Release-iphonesimulator/ApisenseDemo.app .artifacts/ApisenseDemo-simulator.zip
       - uses: actions/download-artifact@v4
         if: inputs.ios_artifact_run_id != ''

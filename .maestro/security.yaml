@@ -1,0 +1,22 @@
+appId: com.apisense.demo
+name: SQLCipher y SecureStore reales con datos sintéticos
+---
+- launchApp
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Verificar cifrado nativo"
+- tapOn: "Verificar cifrado nativo"
+- tapOn: "Comprobar cifrado"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Validación de cifrado completada"
+    timeout: 120000
+- assertNotVisible: "Validación de cifrado fallida"
+- takeScreenshot: .artifacts/native-security
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Volver al inicio"
+- tapOn: "Volver al inicio"

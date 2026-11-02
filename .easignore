@@ -1,0 +1,23 @@
+# Preserve the Git exclusions, including native generated projects.
+node_modules/
+.git/
+.expo/
+.env
+.env.*
+!.env.example
+.tools/
+.artifacts/
+dist/
+web-build/
+coverage/
+supabase/.temp/
+supabase/.branches/
+android/
+ios/
+mockups/
+*.log
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+credentials.json
