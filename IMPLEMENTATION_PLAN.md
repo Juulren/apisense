@@ -1,6 +1,6 @@
 # Plan de implementación por bloques
 
-Actualizado: 28 de octubre de 2026. Los [PR #26](https://github.com/Juulren/apisense/pull/26), [#29](https://github.com/Juulren/apisense/pull/29) y [#30](https://github.com/Juulren/apisense/pull/30) están integrados en **`main`**, con autorización del usuario y checks correctos. Se conservaron sus historiales y el contenido de la demo validada. #1 y #7 están cerrados. La demo pasó los recorridos completos de Android Emulator/iOS Simulator y el usuario confirmó que el APK funciona en Android. La app no está publicada en producción; #15/#8/#25/#16 y los criterios restantes de #27 siguen pendientes.
+Actualizado: 2 de noviembre de 2026. Los [PR #26](https://github.com/Juulren/apisense/pull/26), [#29](https://github.com/Juulren/apisense/pull/29) y [#30](https://github.com/Juulren/apisense/pull/30) están integrados en **`main`**, con autorización del usuario y checks correctos. Se conservaron sus historiales y el contenido de la demo validada. #1 y #7 están cerrados. La demo pasó los recorridos completos de Android Emulator/iOS Simulator y el usuario confirmó que el APK funciona en Android. La app no está publicada en producción; #15/#8/#25/#16 y los criterios restantes de #27 siguen pendientes.
 
 El [tablero de Apisense](https://github.com/users/Juulren/projects/2) muestra el trabajo activo. Los Issues contienen responsables, criterios y evidencia; este archivo conserva el resumen de hitos. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para trabajar desde `main` sin acumular ramas dependientes.
 
@@ -11,6 +11,8 @@ El 26 de octubre el usuario excluyó la página web del producto. Expo/React Nat
 La aceptación móvil requiere compilar y ejecutar en emulador/simulador y dispositivo, verificar SQLCipher/SecureStore, permisos, clips, BLE y sincronización, y preparar firma/distribución. #15 y #8 conservan esos pendientes. La comparación visual de #25 debe hacerse en las apps nativas.
 
 Los resultados web de secciones anteriores son históricos y no acreditan el producto móvil. La limpieza cliente de #27 y la demo nativa ya están integradas. La demo tiene compilaciones y recorridos nativos correctos; #27 mantiene pendientes las pruebas de cuentas reales y sincronización coordinadas con #15/#8. Los bundles y las pruebas con dobles no sustituyen esos criterios.
+
+El 2 de noviembre el usuario priorizó Android y dejó iOS en espera. Confirmó la demo en Samsung Galaxy S21 Ultra con Android 15. El bloque #15 entrega el avance Android mediante [PR #32](https://github.com/Juulren/apisense/pull/32), con APK de campo y recorridos nativos correctos. Conserva pendientes físicos y de distribución, sin iniciar otro Issue.
 
 ## Trabajo integrado
 
@@ -103,12 +105,34 @@ La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o ca
 
 Las pruebas locales de la base de demo permanecen correctas. La aceptación nativa se registra en [NATIVE_DEMO.md](docs/NATIVE_DEMO.md), que distingue APK, simulador iOS y firma para iPhone físico.
 
+## Bloque activo — Issue #15, prioridad Android
+
+- [x] Rechazo sin sobrescritura cuando existe la base cifrada pero falta su clave.
+- [x] Pruebas locales del caso de recuperación y callback PKCE nativo; 76 pruebas y TypeScript correctos.
+- [x] Perfil QA aislado con comprobaciones SQLCipher/SecureStore, DB/WAL, claves erróneas/perdidas, separación de identidades y WAV tras reabrir.
+- [x] Política Release: backup/HTTP desactivados, sin permisos de grabación ni almacenamiento externo; verificador del APK empaquetado.
+- [x] Callback `apisense://auth/callback` y redirecciones del proyecto Supabase de desarrollo actualizadas; siete ajustes remotos ajenos conservados.
+- [x] Seis pruebas live de sincronización, aislamiento, Storage y función correctas; datos temporales eliminados por la suite.
+- [x] Perfiles EAS de APK interno/AAB y guía de keystore, backups y aceptación; no se publicaron builds ni se generaron credenciales de firma.
+- [x] Auditoría registrada: 0 críticas, 6 high, 9 moderadas y 2 low. Evaluación/actualizaciones siguen en #16.
+- [x] Comando y workflow de desarrollo Android para `com.apisense.app`, con configuración pública de Supabase y credenciales temporales de prueba separadas del APK.
+- [x] APK Release de la app real `com.apisense.app` y tres fases nativas correctas en Android 15: dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización y salida persistente.
+- [x] Ejecución nativa de PKCE S256, claves erróneas/perdidas, separación, DB/WAL y WAV idéntico tras reabrir correcta; mismo repositorio y criptografía de la app de campo. Regresión de demo Android también correcta, sin cambiar la entrega de campo.
+- [x] Inspección del APK confirmada una sola vez en Supabase, cuenta B aislada y cuentas/datos/secretos temporales eliminados.
+- [x] APK de desarrollo, checksum e instrucciones entregados en `dist/development`; evidencia durable en la guía Android.
+- [ ] Validar la nueva app de campo en el S21 Ultra; correo, bloqueo, permisos y aceptación física de sincronización.
+- [ ] Keystore de distribución y restauración de backups en entorno aislado.
+- [x] Implementación y evidencias revisadas en PR #32, incorporadas a `main` con checks correctos.
+- iOS permanece en espera por decisión del usuario; no bloquea la prioridad Android ni se declara validado con estos cambios.
+
+Procedimiento, evidencia y límites: [ANDROID_SECURITY_QA.md](docs/ANDROID_SECURITY_QA.md). #15 permanece abierto por sus criterios Android pendientes.
+
 ## Pendientes de producto
 
 | Issue                                                                                                  | Trabajo restante                                                                    | Criterio de aceptación                                                                                                                                                                                |
 | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [#25](https://github.com/Juulren/apisense/issues/25)                                                   | Aprobar adaptaciones y completar la comparación visual por ruta                     | Decidir sobre las cinco vistas sin fuente independiente y comparar las apps Android/iOS con fuentes aprobadas al mismo viewport, tema y estado.                                                       |
-| [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                      | Compilar y ejecutar Android/iOS con SQLCipher/SecureStore; probar cierre/apertura, bloqueo, permisos y audio. Revisar firma, enlaces de autenticación, distribución, backups y acceso administrativo. |
+| [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                      | Completar QA física y cuenta real en Android, bloqueo/permisos, firma y recuperación. PKCE y perfiles preparados; iOS en espera por decisión del usuario. |
 | [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                         | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                               |
 | [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                     | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                                       |
 | [#17](https://github.com/Juulren/apisense/issues/17)                                                   | Reclasificar la validación ARIA web heredada, fuera del alcance móvil               | Conservar el historial web y revisar su seguimiento; la accesibilidad nativa se comprueba en #25 con TalkBack/VoiceOver.                                                                              |
@@ -121,4 +145,4 @@ Las pruebas locales de la base de demo permanecen correctas. La aceptación nati
 3. Se abre un PR pequeño con evidencia y criterios pendientes explícitos. Se usa `Closes #NUMERO` solo cuando se cumplen todos los criterios; de lo contrario se enlaza con `Refs #NUMERO`.
 4. Se revisa y, con autorización y checks correctos, se integra; después se elige el siguiente Issue.
 
-Este bloque consolida lo ya implementado. No inicia otro Issue ni publica la app. El siguiente bloque recomendado es delimitar #15 para validación física y firma/distribución, conservando los pendientes de cuentas reales, hardware y modelo.
+El bloque activo #15 entrega cifrado comprobable y preparación Android. Al terminar su PR se detiene el trabajo: no inicia #8/#16/#25 ni publica en tiendas. La aceptación física de cuenta real y distribución se conserva explícitamente, con iOS en espera.

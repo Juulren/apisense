@@ -1,0 +1,14 @@
+{
+  "cli": { "appVersionSource": "local" },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_DEMO_ONLY": "0", "EXPO_PUBLIC_SECURITY_QA": "0" },
+      "android": { "buildType": "apk" }
+    },
+    "production": {
+      "env": { "EXPO_PUBLIC_DEMO_ONLY": "0", "EXPO_PUBLIC_SECURITY_QA": "0" },
+      "android": { "buildType": "app-bundle" }
+    }
+  }
+}

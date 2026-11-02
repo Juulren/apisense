@@ -11,7 +11,7 @@ Integrada en `main` mediante el [PR #30](https://github.com/Juulren/apisense/pul
 | Android | [40372388813, app `bdceeca`](https://github.com/Juulren/apisense/actions/runs/40372388813) | [Maestro correcto, sin red](https://github.com/Juulren/apisense/actions/runs/40532601817/job/122289569881) | [APK, capturas, JUnit y logs](https://github.com/Juulren/apisense/actions/runs/40532601817/artifacts/12747660284) |
 | iOS Simulator | [40522176345, `f2fa9a9`, identidad incorporada por Xcode](https://github.com/Juulren/apisense/actions/runs/40522176345) | [Maestro correcto](https://github.com/Juulren/apisense/actions/runs/40532601817/job/122289569631) | [App, capturas, JUnit y logs](https://github.com/Juulren/apisense/actions/runs/40532601817/artifacts/12747646325) |
 
-La comprobación final del flujo `7cc9a80` reutilizó esos binarios: los cambios posteriores a sus compilaciones afectan a CI, pruebas y documentación. El APK también se instaló y abrió en el emulador Android local de Windows; su dashboard quedó verificado visualmente. TypeScript y las 49 pruebas locales/CI son correctos. El 28 de octubre el usuario confirmó que el APK funciona en Android; no se aportaron modelo, versión del sistema ni resultados de un protocolo físico completo. La aceptación de dispositivos físicos, cuentas reales y producción mantiene los criterios restantes de #15/#8/#25.
+La comprobación final del flujo `7cc9a80` reutilizó esos binarios: los cambios posteriores a sus compilaciones afectan a CI, pruebas y documentación. El APK también se instaló y abrió en el emulador Android local de Windows; su dashboard quedó verificado visualmente. TypeScript y las 49 pruebas locales/CI son correctos. El 28 de octubre el usuario confirmó que el APK funciona en Android; el 2 de noviembre precisó Samsung Galaxy S21 Ultra con Android 15 y priorizó Android, dejando iOS en espera. No se aportaron resultados de un protocolo físico completo. La aceptación de dispositivos físicos, cuentas reales y producción mantiene los criterios restantes de #15/#8/#25.
 
 La primera ejecución detectó que ONNX 1.24.3 usaba `VersionNumber`, retirado en Gradle 9, y que el Xcode seleccionado por defecto tenía Swift 6.1 mientras Expo requería 6.2. `npm ci` aplica ahora un parche nativo acotado a esa versión de ONNX, que reutiliza su comparación numérica existente; no es el antiguo parche de SQLite web. La compilación iOS usa Xcode 26.2.
 
@@ -23,7 +23,7 @@ El APK Android de demo y el archivo `.app` para iOS Simulator incluyen el JavaSc
 
 ## Obtener e instalar
 
-En GitHub abre la ejecución de **Native demo** y revisa el resultado de la plataforma antes de descargar sus artefactos (requiere iniciar sesión para descargar):
+En GitHub abre la ejecución de **Native validation** y revisa el resultado de la plataforma antes de descargar sus artefactos (requiere iniciar sesión para descargar):
 
 - `apisense-demo-android`: contiene `app-release.apk`, logs y resultados Android. Instala el APK en Android, autorizando la instalación desde ese origen, o usa `adb install -r app-release.apk`.
 - `apisense-demo-ios-simulator`: contiene `ApisenseDemo-simulator.zip`, logs y resultados iOS. En un Mac, descomprime y arrastra `ApisenseDemo.app` a un simulador abierto de Xcode. También puedes usar `xcrun simctl install booted ApisenseDemo.app`.
@@ -66,6 +66,8 @@ npm run demo:ios
 Estos comandos generan el proyecto con el identificador de demo y compilan Release sin iniciar Metro. Pueden solicitar seleccionar un emulador/simulador o dispositivo. El comando iOS solo puede ejecutarse en macOS; para un iPhone físico también se necesita configurar la firma.
 
 El wrapper usa `EXPO_PUBLIC_DEMO_ONLY=1`, desactiva la carga de `.env` y elimina los valores de conexión de servicios del entorno de compilación. La app no crea un cliente Supabase ni ofrece acceso de cuentas reales. El modo normal de desarrollo sigue usando `npm run android`/`npm run ios`. Si cambias de demo a la app de campo, regenera antes su proyecto nativo con `npx expo prebuild --platform android` o `npx expo prebuild --platform ios`, respectivamente, para recuperar su identificador.
+
+Para recompilar la demo con el workflow actual, selecciona `field_app=false`; el valor predeterminado construye la app real de campo. En el bloque #15 se repitió correctamente el recorrido Android sobre `29b1f13`; la entrega actual del usuario está descrita en [la guía de campo](ANDROID_SECURITY_QA.md).
 
 ## Recorrido de aceptación
 

@@ -80,6 +80,7 @@ export default function Login() {
           ]}
         />
         <Field
+          testID="login-email"
           label="Correo electrónico"
           autoCapitalize="none"
           autoComplete="email"
@@ -91,6 +92,7 @@ export default function Login() {
         />
         <View style={{ gap: 8 }}>
           <Field
+            testID="login-password"
             label="Contraseña"
             autoComplete={
               mode === "register" ? "new-password" : "current-password"

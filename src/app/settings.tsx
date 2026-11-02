@@ -109,6 +109,7 @@ export default function Settings() {
       <Section title="Guardado local y sincronización">
         <Card>
           <Toggle
+            testID="offline-toggle"
             label="Modo sin conexión"
             value={app.data.settings.offline === "1"}
             onChange={(v) => {

@@ -14,4 +14,7 @@ trap collect_diagnostics EXIT
 xcrun simctl uninstall "$device_id" com.apisense.demo || true
 xcrun simctl install "$device_id" .artifacts/ios-app/ApisenseDemo.app
 xcrun simctl launch "$device_id" com.apisense.demo
+if [ "${EXPO_PUBLIC_SECURITY_QA:-0}" = "1" ]; then
+  "$HOME/.maestro/bin/maestro" --device "$device_id" test --format junit --output .artifacts/ios-security.xml --test-output-dir .artifacts/ios-security-maestro .maestro/security.yaml
+fi
 "$HOME/.maestro/bin/maestro" --device "$device_id" test --format junit --output .artifacts/ios-demo.xml --test-output-dir .artifacts/ios-maestro .maestro/demo.yaml

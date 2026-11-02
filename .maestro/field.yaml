@@ -1,0 +1,83 @@
+appId: com.apisense.app
+name: App de campo Android con cuentas Supabase, audio privado y sincronización
+---
+- launchApp
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Comenzar"
+- tapOn: "Comenzar"
+- tapOn:
+    id: "login-email"
+- inputText: ${MAESTRO_QA_A_EMAIL}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: "login-password"
+- tapOn:
+    id: "login-password"
+- inputText: ${MAESTRO_QA_A_PASSWORD}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Entrar al Apiario"
+- tapOn: "Entrar al Apiario"
+- extendedWaitUntil:
+    visible: "Buenos días, apicultor"
+    timeout: 60000
+- assertNotVisible: "Datos de demostración · Sin envío a nube"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir QA-CAMPO-15"
+    timeout: 60000
+- takeScreenshot: .artifacts/field-account-a
+- tapOn:
+    id: "nav-Acústica"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Escuchar zumbido"
+- tapOn: "Escuchar zumbido"
+- extendedWaitUntil:
+    visible: "Audio en reproducción"
+    timeout: 15000
+- tapOn: "Detener audio"
+- assertVisible: "Audio detenido"
+- takeScreenshot: .artifacts/field-private-audio
+- tapOn:
+    id: "nav-Ajustes"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Modo sin conexión"
+- tapOn:
+    id: "offline-toggle"
+- tapOn:
+    id: "nav-Inicio"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir QA-CAMPO-15"
+- tapOn: "Abrir QA-CAMPO-15"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Anotar inspección"
+- tapOn: "Anotar inspección"
+- tapOn:
+    id: "inspection-notes"
+- inputText: ${MAESTRO_QA_NOTE}
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Guardar inspección"
+- tapOn: "Guardar inspección"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      text: "Inspección guardada en este dispositivo.*"
+- stopApp

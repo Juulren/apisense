@@ -1,0 +1,17 @@
+appId: com.apisense.app
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Buenos días, apicultor"
+    timeout: 60000
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: "Abrir QA-CAMPO-15"
+- tapOn: "Abrir QA-CAMPO-15"
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: ${MAESTRO_QA_NOTE}
+- takeScreenshot: .artifacts/field-offline-reopened
+- stopApp

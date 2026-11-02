@@ -1,7 +1,9 @@
 import "react-native-url-polyfill/auto";
+import "./installAuthCrypto";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { DEMO_ONLY } from "../config/runtime";
+import { createAuthCallbackHandler } from "./authCallback";
 
 const storage = {
   async getItem(key: string) {
@@ -30,6 +32,16 @@ export const supabase =
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: false,
+          flowType: "pkce",
         },
       })
     : null;
+
+export const completeAuthCallback = createAuthCallbackHandler(async (code) => {
+  if (!supabase) throw new Error("Configura Supabase en la app de campo.");
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error || !data.session)
+    throw new Error(
+      "No se pudo confirmar la sesión. Abre el enlace en el dispositivo donde creaste la cuenta o solicita uno nuevo.",
+    );
+});

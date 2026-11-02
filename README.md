@@ -4,9 +4,11 @@ Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, d
 
 Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
+**Prioridad actual (2 de noviembre de 2026): Android.** iOS queda en espera por decisión del usuario; se conserva el código multiplataforma y la evidencia anterior. La demo fue confirmada en Samsung Galaxy S21 Ultra con Android 15.
+
 ## Estado del proyecto
 
-La implementación está consolidada en **`main`**: incluye la base del [PR #21](https://github.com/Juulren/apisense/pull/21), las fuentes y el alcance móvil del [#26](https://github.com/Juulren/apisense/pull/26), la limpieza web del [#29](https://github.com/Juulren/apisense/pull/29) y la demo nativa del [#30](https://github.com/Juulren/apisense/pull/30). El backend Supabase está instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
+La implementación está consolidada en **`main`**: incluye la base del [PR #21](https://github.com/Juulren/apisense/pull/21), las fuentes y el alcance móvil del [#26](https://github.com/Juulren/apisense/pull/26), la limpieza web del [#29](https://github.com/Juulren/apisense/pull/29), la demo nativa del [#30](https://github.com/Juulren/apisense/pull/30) y el avance Android de campo del [#32](https://github.com/Juulren/apisense/pull/32). El backend Supabase está instalado y probado en el proyecto de desarrollo. **La app todavía no está publicada en producción.**
 
 El trabajo se organiza en el [tablero de Apisense](https://github.com/users/Juulren/projects/2): **Pendiente → En curso → En revisión → Terminado**. Cada tarea parte de `main`, usa una rama temporal y se integra tras revisión y checks. Consulta [cómo colaborar](CONTRIBUTING.md) y el [plan de implementación](IMPLEMENTATION_PLAN.md) para ver los avances y pendientes.
 
@@ -39,14 +41,17 @@ Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de r
 Después de clonar el repositorio e instalar las dependencias, ejecuta el comando de tu plataforma:
 
 ```bash
-# Android
+# Android: desarrollo con Metro
 npm run android
+
+# Android de campo: requiere .env de Supabase, Release sin Metro
+npm run field:android
 
 # iOS: requiere macOS y Xcode
 npm run ios
 ```
 
-Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Explorar demo local** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
+Los comandos `android`/`ios` generan y ejecutan la compilación nativa de desarrollo con Metro; `field:android` compila la app real de Android conectada a Supabase con JS incluido. Una vez instalada, selecciona **Explorar demo local** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
 Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
 
@@ -55,6 +60,12 @@ Los bundles JavaScript/Hermes de ambas plataformas se comprueban en CI. Son una 
 ### Demo nativa independiente de Metro
 
 La demo del [PR #30](https://github.com/Juulren/apisense/pull/30), integrada en `main`, ofrece una compilación de demo aislada de Supabase, con identificador propio, datos sintéticos y mapa ilustrativo local. Usa `npm run demo:android` o, en un Mac, `npm run demo:ios`. Generan builds Release con recursos incluidos; no necesitan Expo Go ni Metro. El [recorrido nativo completo pasó en ambas plataformas](https://github.com/Juulren/apisense/actions/runs/40532601817). Consulta las [instrucciones de instalación y los artefactos](docs/NATIVE_DEMO.md) para probarlos. El artefacto iOS es para simulador; un iPhone físico necesita firma de Apple.
+
+## APK de la app de desarrollo Android
+
+El [PR #32](https://github.com/Juulren/apisense/pull/32) entrega la app real `com.apisense.app`, conectada a Supabase y separada de la demo. El APK independiente de Metro está en el artefacto `apisense-android-development` de [la ejecución validada](https://github.com/Juulren/apisense/actions/runs/41526370065); la copia local se entrega en `dist/development/Apisense-Android-Development-0.1.0.apk`, con checksum e instrucciones. Requiere Android 7/API 24 o superior en ARM64 o x86_64.
+
+Pasaron el acceso con dos cuentas temporales, audio privado, inspección local, cierre/reapertura sin Wi-Fi/datos, sincronización y salida persistente. También pasaron las comprobaciones nativas de claves incorrectas/perdidas, DB/WAL y PKCE S256. Usa **Comenzar** para entrar con tu propia cuenta; las cuentas de prueba se eliminaron y el APK no contiene sus contraseñas. Firma de prueba para desarrollo; aceptación física, correo real y distribución conservan sus pendientes en [la guía Android](docs/ANDROID_SECURITY_QA.md).
 
 ## Configuración de servicios reales
 
@@ -81,6 +92,8 @@ npm run backend:check
 El cron procesa una cola con lotes de diez colmenas, reservas temporales y reintentos. Las muestras se recorren por páginas de 200, sin el anterior corte de 1000 clips. Las solicitudes manuales sin `hive_id` devuelven hasta 50 colmenas y un `next_hive_id` para continuar con `after_hive_id`.
 
 Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
+
+El bloque #15 desarrolla y prueba la app de campo Android con cuentas Supabase, confirmación por correo con PKCE, persistencia cifrada y perfiles de distribución. La entrega activa es la app real; las herramientas de demo se conservan como pruebas aisladas. Consulta [pruebas, firma y criterios pendientes](docs/ANDROID_SECURITY_QA.md). Para cuentas nuevas se usa `apisense://auth/callback`; el proyecto Supabase de desarrollo ya tiene esa redirección nativa. El callback y el comando de campo se incluyen en `main` mediante el PR #32.
 
 ### Cifrado y acceso offline
 

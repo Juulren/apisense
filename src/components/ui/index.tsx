@@ -295,11 +295,13 @@ export function Toggle({
   value,
   onChange,
   caption,
+  testID,
 }: {
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
   caption?: string;
+  testID?: string;
 }) {
   const { colors } = useTheme();
   return (
@@ -313,6 +315,7 @@ export function Toggle({
         ) : null}
       </View>
       <Switch
+        testID={testID}
         accessibilityLabel={label}
         value={value}
         onValueChange={onChange}
@@ -340,7 +343,7 @@ export function Segmented<T extends string>({
           accessibilityRole="radio"
           accessibilityLabel={option.label}
           accessibilityState={{ checked: option.value === value }}
-            aria-checked={option.value === value}
+          aria-checked={option.value === value}
           onPress={() => onChange(option.value)}
           style={{
             flexGrow: 1,

@@ -6,6 +6,9 @@ const native = vi.hoisted(() => ({
   setItemAsync: vi.fn(),
   getRandomBytesAsync: vi.fn(),
   openDatabaseAsync: vi.fn(),
+  exists: false,
+  directory: "file:///test/SQLite",
+  fileLocations: [] as string[],
   db: {
     execAsync: vi.fn(),
     getFirstAsync: vi.fn(),
@@ -17,6 +20,21 @@ const native = vi.hoisted(() => ({
 
 vi.mock("expo-sqlite", () => ({
   openDatabaseAsync: native.openDatabaseAsync,
+  get defaultDatabaseDirectory() {
+    return native.directory;
+  },
+}));
+vi.mock("expo-file-system", () => ({
+  File: class {
+    constructor(directory: string) {
+      if (!directory.startsWith("file:///"))
+        throw new Error("URI is not absolute");
+      native.fileLocations.push(directory);
+    }
+    get exists() {
+      return native.exists;
+    }
+  },
 }));
 vi.mock("expo-crypto", () => ({
   getRandomBytesAsync: native.getRandomBytesAsync,
@@ -35,6 +53,9 @@ import { openRepository } from "./openRepository";
 beforeEach(() => {
   vi.resetAllMocks();
   native.keys.clear();
+  native.exists = false;
+  native.directory = "file:///test/SQLite";
+  native.fileLocations.length = 0;
   native.getItemAsync.mockImplementation(
     async (name: string) => native.keys.get(name) ?? null,
   );
@@ -48,6 +69,14 @@ beforeEach(() => {
 });
 
 describe("Native encrypted repository entry point", () => {
+  it("normalizes Android SQLite paths before probing FileSystem", async () => {
+    native.directory = "/data/user/0/com.apisense.app/files/SQLite";
+    const repo = await openRepository("alice");
+    expect(native.fileLocations).toEqual([
+      "file:///data/user/0/com.apisense.app/files/SQLite",
+    ]);
+    await repo.close();
+  });
   it("persists a device-only key before opening SQLite and reuses it on reopen", async () => {
     const first = await openRepository("alice");
     const key = "ab".repeat(32);
@@ -113,6 +142,16 @@ describe("Native encrypted repository entry point", () => {
     await expect(openRepository("alice")).rejects.toThrow(
       "keychain unavailable",
     );
+    expect(native.openDatabaseAsync).not.toHaveBeenCalled();
+  });
+
+  it("preserves an existing database when its device-bound key is missing", async () => {
+    native.exists = true;
+    await expect(openRepository("alice")).rejects.toThrow(
+      "No se encuentra la clave",
+    );
+    expect(native.setItemAsync).not.toHaveBeenCalled();
+    expect(native.getRandomBytesAsync).not.toHaveBeenCalled();
     expect(native.openDatabaseAsync).not.toHaveBeenCalled();
   });
 

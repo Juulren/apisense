@@ -10,8 +10,8 @@ major_version = 17
 
 [auth]
 enabled = true
-site_url = "http://localhost:8081"
-additional_redirect_urls = ["http://localhost:4173", "apisense://login"]
+site_url = "apisense://auth/callback"
+additional_redirect_urls = ["apisense://auth/callback"]
 
 [auth.email]
 enable_confirmations = true

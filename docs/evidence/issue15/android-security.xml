@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="27.539" timestamp="2026-11-02T21:08:02">
+    <testcase id="SQLCipher y SecureStore reales con datos sintéticos" name="SQLCipher y SecureStore reales con datos sintéticos" classname="SQLCipher y SecureStore reales con datos sintéticos" file=".maestro/security.yaml" time="27.522" timestamp="2026-11-02T21:08:02" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

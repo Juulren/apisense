@@ -4,7 +4,7 @@ import { Badge, Button, Card, Icon, Label } from "../components/ui";
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
-import { DEMO_ONLY } from "../config/runtime";
+import { DEMO_ONLY, SECURITY_QA } from "../config/runtime";
 export default function Welcome() {
   const app = useApp(),
     task = useTask();
@@ -64,6 +64,12 @@ export default function Welcome() {
           />
         </>
       )}
+      {SECURITY_QA ? (
+        <Button
+          label="Verificar cifrado nativo"
+          onPress={() => router.push("/security-check")}
+        />
+      ) : null}
       {task.message || app.error ? (
         <Label color="#B45309">{task.message ?? app.error}</Label>
       ) : null}
