@@ -36,7 +36,14 @@ export default function AuthCallback() {
   if (DEMO_ONLY) return <Redirect href="/" />;
   if (confirmed && app.workspace && !app.busy)
     return <Redirect href="/dashboard" />;
-  const error = message ?? (confirmed ? app.error : null);
+  const error =
+    message ??
+    (confirmed
+      ? (app.error ??
+        (!app.busy && !app.workspace
+          ? "No hay una sesión activa. Vuelve a iniciar sesión con tu cuenta confirmada."
+          : null))
+      : null);
   return (
     <Screen nav={false} header={false}>
       <Label bold size={24}>

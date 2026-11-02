@@ -270,6 +270,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((event, session) => {
         if (!mounted) return;
+        if (event === "SIGNED_OUT") {
+          const sequence = ++epoch.current;
+          desired.current = null;
+          const old = current.current;
+          current.current = null;
+          setWorkspace(null);
+          setData(empty);
+          setBusy(true);
+          setSyncState({ status: "offline", error: null, lastSyncedAt: null });
+          void Promise.resolve()
+            .then(() => old?.dispose())
+            .catch((e) => {
+              if (mounted) setError(String(e));
+            })
+            .finally(() => {
+              if (mounted && sequence === epoch.current) setBusy(false);
+            });
+        }
         if (event === "SIGNED_IN" && session)
           void activate(session.user.id, false).catch((e) =>
             setError(String(e)),
@@ -346,16 +364,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await refresh();
   };
   const logout = async () => {
-    ++epoch.current;
+    const sequence = ++epoch.current;
     desired.current = null;
+    setBusy(true);
+    setError(null);
     const w = current.current;
     current.current = null;
     setWorkspace(null);
     setData(empty);
-    await w?.dispose();
-    if (supabase) {
-      const { error } = await supabase.auth.signOut({ scope: "local" });
-      if (error) setError(error.message);
+    setSyncState({ status: "offline", error: null, lastSyncedAt: null });
+    try {
+      try {
+        await w?.dispose();
+      } finally {
+        if (supabase) {
+          const { error } = await supabase.auth.signOut({ scope: "local" });
+          if (error) setError(error.message);
+        }
+      }
+    } finally {
+      if (sequence === epoch.current) setBusy(false);
     }
   };
   const saveSetting = async (key: string, value: string) => {

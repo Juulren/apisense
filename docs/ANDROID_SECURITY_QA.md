@@ -2,6 +2,24 @@
 
 Actualizado: 2 de noviembre de 2026. El usuario confirmó que la demo funciona en un **Samsung Galaxy S21 Ultra con Android 15**. Se prioriza Android; iOS queda en espera por indicación del usuario. La compatibilidad y evidencia iOS anteriores se conservan, sin nuevas compilaciones ni firma Apple en este bloque.
 
+## Entrega de desarrollo: app de campo
+
+Por aclaración del usuario, la entrega activa es **la app real de Android**, conectada a Supabase: `com.apisense.app`, con demo y QA desactivadas. El trabajo de cifrado aislado descrito más abajo es una herramienta interna de comprobación y no sustituye la aceptación de esta app.
+
+Con `.env` público configurado y SDK/JDK disponibles, `npm run field:android` genera e instala la app de campo Release con JS incluido y sin Metro. `npm run android` conserva el ciclo de desarrollo con Metro. El comando de campo fija ambos flags en `0` y valida HTTPS/clave pública antes de compilar; nunca carga `.env.backend`.
+
+El workflow **Android development** construye la app de campo y revisa su manifiesto. Mientras se integra por primera vez, se invoca a través del workflow existente **Native validation**:
+
+```powershell
+gh workflow run native-demo.yml --ref TU_RAMA -f field_app=true -f live_checks=true -f platform=android
+```
+
+Las variables de repositorio `APISENSE_SUPABASE_URL` y `APISENSE_SUPABASE_PUBLIC_KEY` contienen exclusivamente configuración pública del cliente. Los cuatro secretos `APISENSE_NATIVE_QA_{A,B}_{EMAIL,PASSWORD}` solo se usan al ejecutar Maestro, no al compilar el APK. No contienen claves administrativas. Para las pruebas live se preparan dos cuentas desechables con `scripts/native-field-fixtures.mjs`, ejecutado localmente con `.env.backend`. El script marca las cuentas, conserva sus IDs en un archivo ignorado y permite verificar y limpiar exclusivamente los recursos de esa ejecución. No envía correos.
+
+El recorrido nativo entra por **Comenzar**, inicia sesión A, descarga y reproduce un WAV del bucket privado, guarda una inspección con la sincronización desactivada, corta Wi-Fi/datos, mata y reabre el proceso, comprueba la nota local, reconecta y sincroniza. Finalmente cambia a B y comprueba que muestra su propia colmena. Una consulta al servidor verifica que la nota del APK llegó una sola vez y sigue aislada de B. Los reportes de texto se limpian de credenciales temporales antes de subirlos como artefactos.
+
+La nueva [compilación y prueba de campo](https://github.com/Juulren/apisense/actions/runs/41516671485) está en curso. La ejecución aislada anterior se canceló al priorizar esta entrega: no se acredita una prueba criptográfica completa por una ejecución cancelada. Al terminar se eliminarán las dos cuentas, sus datos y los secretos temporales de CI. El APK de desarrollo usa firma de prueba y no contiene una sesión ni contraseña embebidas; cada instalación inicia sesión con su propia cuenta.
+
 ## Resultado del bloque
 
 La apertura del repositorio conserva la base existente si falta su clave: no genera otra, no reinicia SQLite y muestra una indicación de recuperación. SQLite y clips inline siguen usando SQLCipher con una clave aleatoria de 256 bits por identidad en SecureStore. No existe una alternativa de guardado en texto plano.
@@ -23,10 +41,10 @@ Estas pruebas no certifican resistencia ante un dispositivo comprometido. Las do
 
 ## Ejecutar la prueba nativa
 
-El workflow **Native demo** admite `security_checks=true` y requiere una compilación nueva; no permite reutilizar un APK antiguo para acreditar código nuevo. Android 15/API 35 es el destino automatizado. El flujo usa datos sintéticos y red desactivada.
+El workflow **Native validation** admite `security_checks=true` y requiere una compilación nueva; no permite reutilizar un APK antiguo para acreditar código nuevo. Android 15/API 35 es el destino automatizado. El flujo usa datos sintéticos y red desactivada.
 
 ```powershell
-gh workflow run native-demo.yml --ref TU_RAMA -f platform=android -f security_checks=true
+gh workflow run native-demo.yml --ref TU_RAMA -f field_app=false -f platform=android -f security_checks=true
 ```
 
 Para generar e instalar el build QA local con JDK/SDK configurados:
@@ -74,7 +92,7 @@ La política de backups de PostgreSQL y la del bucket de audio deben verificarse
 - Bundles Android/iOS correctos; el de iOS es solo compatibilidad compartida, sin nueva aceptación nativa Apple.
 - **6 pruebas live** de Supabase correctas el 2 de noviembre: dos cuentas temporales, SQLite/WAV/sincronización, aislamiento, audio privado, JWT/cron e idempotencia. La suite elimina sus datos temporales. No prueba una sesión dentro del APK.
 - Auditoría npm del 2 de noviembre: **0 críticas, 6 high, 9 moderadas y 2 low**. Raíces notificadas: decode-uri-component, deepmerge, glob, minimatch, node-forge y zod. La evaluación de actualizaciones continúa en #16; no se declara aptitud para producción por ausencia de críticas.
-- Compilación y pruebas nativas nuevas: [ejecución Android del bloque](https://github.com/Juulren/apisense/actions/runs/41514499902), resultado pendiente de registrar al finalizar.
+- Compilación y pruebas de campo nuevas: [ejecución Android del bloque](https://github.com/Juulren/apisense/actions/runs/41516671485), resultado pendiente de registrar al finalizar. La prueba aislada anterior fue cancelada al priorizar la app real.
 
 | Aceptación física Android | Estado |
 | --- | --- |

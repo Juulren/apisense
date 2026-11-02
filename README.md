@@ -41,14 +41,17 @@ Si ya tienes el repositorio descargado, guarda tus cambios antes de cambiar de r
 Después de clonar el repositorio e instalar las dependencias, ejecuta el comando de tu plataforma:
 
 ```bash
-# Android
+# Android: desarrollo con Metro
 npm run android
+
+# Android de campo: requiere .env de Supabase, Release sin Metro
+npm run field:android
 
 # iOS: requiere macOS y Xcode
 npm run ios
 ```
 
-Estos comandos generan y ejecutan la compilación nativa de desarrollo. Una vez instalada, selecciona **Explorar demo local** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
+Los comandos `android`/`ios` generan y ejecutan la compilación nativa de desarrollo con Metro; `field:android` compila la app real de Android conectada a Supabase con JS incluido. Una vez instalada, selecciona **Explorar demo local** para explorar los datos sintéticos sin servicios externos. **Expo Go no es compatible con los módulos nativos utilizados**, entre ellos SQLCipher, BLE y ONNX Runtime.
 
 Para iniciar Metro por separado puedes usar `npm start`; la ejecución del producto se realiza en el emulador, simulador o dispositivo de la plataforma.
 
@@ -84,7 +87,7 @@ El cron procesa una cola con lotes de diez colmenas, reservas temporales y reint
 
 Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de acceso del dispositivo, pendientes en el [Issue #8](https://github.com/Juulren/apisense/issues/8).
 
-El bloque #15 prepara pruebas nativas de cifrado, confirmación por correo con PKCE y perfiles de distribución Android. Consulta [pruebas, firma y criterios pendientes](docs/ANDROID_SECURITY_QA.md). Para cuentas nuevas se usa `apisense://auth/callback`; el proyecto Supabase de desarrollo ya tiene esa redirección nativa. La app de campo con este callback debe compilarse desde la rama del bloque hasta integrar el PR.
+El bloque #15 desarrolla y prueba la app de campo Android con cuentas Supabase, confirmación por correo con PKCE, persistencia cifrada y perfiles de distribución. La entrega activa es la app real; las herramientas de demo se conservan como pruebas aisladas. Consulta [pruebas, firma y criterios pendientes](docs/ANDROID_SECURITY_QA.md). Para cuentas nuevas se usa `apisense://auth/callback`; el proyecto Supabase de desarrollo ya tiene esa redirección nativa. La app de campo con este callback debe compilarse desde la rama del bloque hasta integrar el PR.
 
 ### Cifrado y acceso offline
 
