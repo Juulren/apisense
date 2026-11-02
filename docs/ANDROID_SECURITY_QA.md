@@ -28,6 +28,7 @@ El build QA añade una comprobación reproducible con los módulos nativos reale
 
 | Comprobación | Cómo se verifica |
 | --- | --- |
+| PKCE nativo | Aleatoriedad nativa y SHA-256/UTF-8/base64url comparados con el vector conocido `abc` |
 | SQLCipher presente | `PRAGMA cipher_version` en el repositorio real |
 | Notas y clips en disco | Busca un marcador y el prefijo del WAV inline en DB/WAL; rechaza cabecera SQLite sin cifrar |
 | Lectura no autorizada | Consultar el esquema sin clave y con clave errónea debe fallar |
@@ -59,7 +60,7 @@ En el inicio aparece **Verificar cifrado nativo**. Ejecuta **Comprobar cifrado**
 
 ## Confirmación de cuenta
 
-El registro solicita `apisense://auth/callback` y usa PKCE. El código se intercambia mediante el verificador conservado en SecureStore en el dispositivo que inició el registro. La ruta rechaza otros esquemas/destinos, códigos duplicados y tokens de sesión importados por URL; no registra códigos ni refleja el detalle de errores remotos. Las entregas simultáneas del mismo enlace comparten un intercambio.
+El registro solicita `apisense://auth/callback` y usa PKCE S256. El adaptador de autenticación conecta aleatoriedad y SHA-256 de Expo Crypto cuando Hermes no ofrece esas funciones WebCrypto; no usa la alternativa `Math.random`/challenge plano del SDK. Las implementaciones WebCrypto existentes se conservan. El código se intercambia mediante el verificador conservado en SecureStore en el dispositivo que inició el registro. La ruta rechaza otros esquemas/destinos, códigos duplicados y tokens de sesión importados por URL; no registra códigos ni refleja el detalle de errores remotos. Las entregas simultáneas del mismo enlace comparten un intercambio.
 
 La configuración local y el proyecto Supabase de desarrollo usan exclusivamente esa redirección nativa. Se revisó el diff antes de aplicar dos propiedades de Auth; siete ajustes remotos no declarados, incluidos MFA y límites de correo, se conservaron. No se desplegaron migraciones ni funciones. La prueba de correo real y retorno a un dispositivo siguen pendientes; no se enviaron correos durante las pruebas. El callback está preparado en esta rama y estará disponible para los usuarios tras integrar y compilar la app de campo.
 
@@ -88,7 +89,7 @@ La política de backups de PostgreSQL y la del bucket de audio deben verificarse
 
 ## Evidencia y aceptación pendiente
 
-- TypeScript y **73 pruebas locales** correctos, incluidos rechazo por pérdida de clave y callbacks PKCE.
+- TypeScript y **75 pruebas locales** correctos, incluidos rechazo por pérdida de clave y callbacks PKCE.
 - Bundles Android/iOS correctos; el de iOS es solo compatibilidad compartida, sin nueva aceptación nativa Apple.
 - **6 pruebas live** de Supabase correctas el 2 de noviembre: dos cuentas temporales, SQLite/WAV/sincronización, aislamiento, audio privado, JWT/cron e idempotencia. La suite elimina sus datos temporales. No prueba una sesión dentro del APK.
 - Auditoría npm del 2 de noviembre: **0 críticas, 6 high, 9 moderadas y 2 low**. Raíces notificadas: decode-uri-component, deepmerge, glob, minimatch, node-forge y zod. La evaluación de actualizaciones continúa en #16; no se declara aptitud para producción por ausencia de críticas.

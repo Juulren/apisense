@@ -1,4 +1,5 @@
 import "react-native-url-polyfill/auto";
+import "./installAuthCrypto";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { DEMO_ONLY } from "../config/runtime";

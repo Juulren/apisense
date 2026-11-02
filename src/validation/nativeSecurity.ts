@@ -36,6 +36,29 @@ export async function runNativeSecurityChecks(
   const identities = [0, 1].map(() => `qa-15-${randomUUID()}`);
   let repo: Repository | undefined;
   try {
+    const random = new Uint8Array(32);
+    crypto.getRandomValues(random);
+    assert(
+      random.some((byte) => byte !== 0),
+      "Falta la aleatoriedad nativa",
+    );
+    const hash = new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode("abc")),
+    );
+    assert(
+      Array.from(hash, (byte) => byte.toString(16).padStart(2, "0")).join(
+        "",
+      ) === "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      "SHA-256 nativo incorrecto",
+    );
+    assert(
+      btoa(String.fromCharCode(...hash))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "") === "ungWv48Bz-pBQUDeXa4iI7ADYaOWF3qctBD_YfIAFa0",
+      "Codificación PKCE S256 incorrecta",
+    );
+    report("PKCE con aleatoriedad nativa y SHA-256: OK");
     const alice = identities[0]!,
       bob = identities[1]!;
     const marker = `nota-privada-${randomUUID()}`;

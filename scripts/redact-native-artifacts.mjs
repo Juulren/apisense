@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, extname } from "node:path";
 const values = Object.entries(process.env)
   .filter(([key, value]) => key.startsWith("MAESTRO_QA_") && value)
@@ -20,5 +20,5 @@ function redact(directory) {
     }
   }
 }
-redact(".artifacts");
+if (existsSync(".artifacts")) redact(".artifacts");
 console.log("Credenciales temporales eliminadas de los artefactos de texto.");
