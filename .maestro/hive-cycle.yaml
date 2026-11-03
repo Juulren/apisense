@@ -1,0 +1,114 @@
+appId: com.apisense.app
+name: Observaciones lecturas y ciclo persistente por colmena
+---
+- openLink: apisense:///
+- scrollUntilVisible:
+    element: { text: "Explorar demo local" }
+- tapOn: "Explorar demo local"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    element: { text: "Claro" }
+- tapOn: "Claro"
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
+- scrollUntilVisible:
+    element: { id: "cycle-label" }
+- tapOn: { id: "cycle-label" }
+- inputText: QA Cuadro 1
+- hideKeyboard
+- scrollUntilVisible:
+    element: { id: "cycle-start" }
+- tapOn: { id: "cycle-start" }
+- eraseText: 50
+- inputText: ${CYCLE_START}
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "Iniciar seguimiento de cría" }
+- tapOn: "Iniciar seguimiento de cría"
+- scrollUntilVisible:
+    element: { text: "Seguimiento guardado en este dispositivo" }
+- scrollUntilVisible:
+    direction: UP
+    centerElement: true
+    element: { text: "Día 16" }
+- takeScreenshot: .artifacts/design/functional/01-cycle-day16
+- tapOn: { id: "brood-cycle-ring" }
+- scrollUntilVisible:
+    element: { id: "cycle-start" }
+- tapOn: { id: "cycle-start" }
+- eraseText: 50
+- inputText: "2099-01-01"
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "Guardar cambios del ciclo" }
+- tapOn: "Guardar cambios del ciclo"
+- scrollUntilVisible:
+    element: { text: "Escribe una fecha válida AAAA-MM-DD, de hoy o anterior" }
+- takeScreenshot: .artifacts/design/functional/02-cycle-invalid-date
+- tapOn: "Cancelar edición"
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "^Cría operculada$" }
+- tapOn: { text: "^Cría operculada$" }
+- scrollUntilVisible:
+    element: { text: "Guardar etapa observada" }
+- tapOn: "Guardar etapa observada"
+- scrollUntilVisible:
+    element: { text: "Etapa observada guardada" }
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "Anotar observación de esta colmena" }
+- tapOn: "Anotar observación de esta colmena"
+- assertVisible: "Observaciones de Colmena 01"
+- tapOn: { id: "inspection-notes" }
+- inputText: Observacion QA persistente de Colmena 01
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "Guardar inspección" }
+- tapOn: "Guardar inspección"
+- scrollUntilVisible:
+    element: { text: "Inspección de demo guardada localmente." }
+- takeScreenshot: .artifacts/design/functional/03-observation-saved
+- scrollUntilVisible:
+    element: { text: "Volver al detalle de colmena" }
+- tapOn: "Volver al detalle de colmena"
+- scrollUntilVisible:
+    element: { text: "Ver lecturas guardadas.*" }
+- tapOn: "Ver lecturas guardadas.*"
+- scrollUntilVisible:
+    element: { text: "Abrir lectura 1" }
+- tapOn: "Abrir lectura 1"
+- assertVisible: "Lectura seleccionada del historial"
+- scrollUntilVisible:
+    element: { text: "Escuchar zumbido" }
+- tapOn: "Escuchar zumbido"
+- assertVisible: "Audio en reproducción"
+- takeScreenshot: .artifacts/design/functional/04-selected-reading-audio
+- tapOn: "Detener audio"
+- assertVisible: "Audio detenido"
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
+- scrollUntilVisible:
+    element: { text: "Sin registro" }
+- assertNotVisible: QA Cuadro 1
+- takeScreenshot: .artifacts/design/functional/05-other-hive-no-cycle
+- stopApp
+- launchApp
+- openLink: apisense:///
+- scrollUntilVisible:
+    element: { text: "Explorar demo local" }
+- tapOn: "Explorar demo local"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
+- scrollUntilVisible:
+    element: { text: "Día 16" }
+- assertVisible: QA Cuadro 1
+- takeScreenshot: .artifacts/design/functional/06-cycle-after-reopen
+- scrollUntilVisible:
+    element: { text: "Última observación: Cría operculada.*" }
+- scrollUntilVisible:
+    element: { text: "Observacion QA persistente de Colmena 01" }
+- takeScreenshot: .artifacts/design/functional/07-observation-after-reopen

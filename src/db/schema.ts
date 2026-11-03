@@ -50,6 +50,15 @@ export const columns = {
     "engine_version",
   ],
   inspections: ["hive_id", "inspected_at", "notes", "tags_json", "queen_seen"],
+  brood_cycles: [
+    "hive_id",
+    "cohort_label",
+    "started_on",
+    "state",
+    "observed_stage",
+    "observed_at",
+    "ended_at",
+  ],
 } as const;
 const common = `id TEXT PRIMARY KEY NOT NULL, updated_at TEXT NOT NULL, synced_at TEXT, deleted_at TEXT, local_revision INTEGER NOT NULL DEFAULT 0`;
 export const migrationV1 = `
@@ -66,4 +75,19 @@ CREATE INDEX IF NOT EXISTS audio_hive_time ON audio_samples(hive_id,recorded_at)
 CREATE INDEX IF NOT EXISTS summary_hive_time ON ai_summaries(hive_id,period_end);
 CREATE INDEX IF NOT EXISTS queue_retry ON sync_queue(next_retry_at);
 PRAGMA user_version = 1;
+`;
+export const migrationV2 = `
+CREATE TABLE IF NOT EXISTS brood_cycles (
+  ${common}, hive_id TEXT NOT NULL REFERENCES hives(id),
+  cohort_label TEXT NOT NULL CHECK(length(trim(cohort_label)) BETWEEN 1 AND 80),
+  started_on TEXT NOT NULL CHECK(length(started_on)=10 AND strftime('%Y-%m-%d',started_on) IS NOT NULL AND strftime('%Y-%m-%d',started_on)=started_on),
+  state TEXT NOT NULL CHECK(state IN ('active','emerged','stopped')),
+  observed_stage TEXT NOT NULL CHECK(observed_stage IN ('unknown','egg','larva','capped','emerged')),
+  observed_at TEXT, ended_at TEXT,
+  CHECK((state='active' AND ended_at IS NULL) OR (state<>'active' AND ended_at IS NOT NULL)),
+  CHECK((observed_stage='unknown' AND observed_at IS NULL) OR (observed_stage<>'unknown' AND observed_at IS NOT NULL)),
+  CHECK(state<>'emerged' OR observed_stage='emerged')
+);
+CREATE INDEX IF NOT EXISTS brood_hive_start ON brood_cycles(hive_id,started_on);
+PRAGMA user_version = 2;
 `;

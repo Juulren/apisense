@@ -66,6 +66,16 @@ export interface Inspection extends BaseRow {
   tags_json: string;
   queen_seen: number;
 }
+export type BroodStage = "unknown" | "egg" | "larva" | "capped" | "emerged";
+export interface BroodCycle extends BaseRow {
+  hive_id: string;
+  cohort_label: string;
+  started_on: string;
+  state: "active" | "emerged" | "stopped";
+  observed_stage: BroodStage;
+  observed_at: string | null;
+  ended_at: string | null;
+}
 export interface EntityMap {
   apiaries: Apiary;
   hives: Hive;
@@ -73,6 +83,7 @@ export interface EntityMap {
   audio_samples: AudioSample;
   ai_summaries: AiSummary;
   inspections: Inspection;
+  brood_cycles: BroodCycle;
 }
 export const TABLES = [
   "apiaries",
@@ -81,6 +92,7 @@ export const TABLES = [
   "audio_samples",
   "ai_summaries",
   "inspections",
+  "brood_cycles",
 ] as const;
 export type Table = (typeof TABLES)[number];
 export type Input<K extends Table> = Omit<EntityMap[K], keyof BaseRow> & {

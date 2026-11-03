@@ -14,6 +14,7 @@ const apiaryId = randomUUID(),
   hiveId = randomUUID(),
   micId = randomUUID();
 const sampleId = randomUUID();
+const cycleId = randomUUID();
 const users: string[] = [];
 const wav = encodeWav(
   Float32Array.from(
@@ -131,6 +132,16 @@ beforeAll(async () => {
     tags_json: "[]",
     queen_seen: 0,
   });
+  await local.save("brood_cycles", {
+    id: cycleId,
+    hive_id: hiveId,
+    cohort_label: `QA ${runId}`,
+    started_on: "2026-10-18",
+    state: "active",
+    observed_stage: "unknown",
+    observed_at: null,
+    ended_at: null,
+  });
   let connect = (_online: boolean) => {};
   engine = new SyncEngine(
     local,
@@ -194,7 +205,7 @@ describe("Supabase real: isolated disposable fixtures", () => {
     const summary = await local.list("ai_summaries");
     expect(summary.some((row) => row.id === summaryId)).toBe(true);
   });
-  it("isolates all six tables, rejects foreign writes and protects the service-only queue", async () => {
+  it("isolates all synchronized tables, rejects foreign writes and protects the service-only queue", async () => {
     for (const table of TABLES) {
       const rows = await b.from(table).select("id");
       checked(rows.error, "Leer con segunda cuenta");
@@ -206,6 +217,50 @@ describe("Supabase real: isolated disposable fixtures", () => {
     expect(write.error?.code).toBe("42501");
     const claim = await a.rpc("claim_hive_summary_jobs", { batch_size: 1 });
     expect(claim.error?.code).toBe("42501");
+  });
+  it("syncs brood observations and rejects another account's write to the hive", async () => {
+    const own = await a
+      .from("brood_cycles")
+      .select("*")
+      .eq("id", cycleId)
+      .single();
+    checked(own.error, "Leer ciclo propio");
+    expect(own.data).toMatchObject({
+      state: "active",
+      observed_stage: "unknown",
+      hive_id: hiveId,
+    });
+    const foreign = await b.from("brood_cycles").insert({
+      id: randomUUID(),
+      hive_id: hiveId,
+      cohort_label: "forbidden",
+      started_on: "2026-10-18",
+      state: "active",
+      observed_stage: "unknown",
+    });
+    expect(foreign.error?.code).toBe("42501");
+    const stamp = new Date().toISOString();
+    checked(
+      (
+        await a
+          .from("brood_cycles")
+          .update({
+            observed_stage: "emerged",
+            observed_at: stamp,
+            state: "emerged",
+            ended_at: stamp,
+          })
+          .eq("id", cycleId)
+      ).error,
+      "Confirmar emergencia manual",
+    );
+    await engine.sync();
+    const downloaded = await local.get("brood_cycles", cycleId);
+    expect(downloaded).toMatchObject({
+      state: "emerged",
+      observed_stage: "emerged",
+    });
+    expect(new Date(downloaded!.ended_at!).toISOString()).toBe(stamp);
   });
   it("serves a private clip only to its owner, including signed URL access", async () => {
     const own = await a.storage.from("hive-audio").download(audioPath);

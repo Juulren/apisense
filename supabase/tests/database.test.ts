@@ -42,6 +42,7 @@ beforeAll(async () => {
   for (const migration of [
     "202610200001_core.sql",
     "202610210001_summary_queue.sql",
+    "202611020001_brood_cycles.sql",
   ]) {
     await db.exec(
       await readFile(
@@ -75,6 +76,49 @@ afterAll(async () => {
 });
 
 describe("Postgres RLS from migrations", () => {
+  it("isolates brood cycles and rejects cross-hive writes", async () => {
+    const cycleA = "aaaaaaaa-0000-4000-a000-000000000101";
+    const cycleB = "bbbbbbbb-0000-4000-b000-000000000101";
+    await db.query(
+      "insert into public.brood_cycles(id,hive_id,cohort_label,started_on,state,observed_stage) values ($1,$2,'Cuadro A','2026-10-20','active','unknown'),($3,$4,'Cuadro B','2026-10-21','active','unknown')",
+      [cycleA, hiveA, cycleB, hiveB],
+    );
+    await asUser(ownerB);
+    expect(
+      (await db.query("select cohort_label from public.brood_cycles")).rows,
+    ).toEqual([{ cohort_label: "Cuadro B" }]);
+    await db.query(
+      "update public.brood_cycles set cohort_label='forbidden' where id=$1",
+      [cycleA],
+    );
+    await expect(
+      db.query(
+        "insert into public.brood_cycles(id,hive_id,cohort_label,started_on,state,observed_stage) values(gen_random_uuid(),$1,'bad','2026-10-20','active','unknown')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("rejects inconsistent brood completion", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.brood_cycles(id,hive_id,cohort_label,started_on,state,observed_stage) values(gen_random_uuid(),$1,'Cuadro','2026-10-20','emerged','unknown')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("persists manual emergence with ownership policy and server timestamp", async () => {
+    await asUser(ownerA);
+    const rows = await db.query(
+      "insert into public.brood_cycles(id,hive_id,cohort_label,started_on,state,observed_stage,observed_at,ended_at) values(gen_random_uuid(),$1,'Cuadro','2026-10-20','emerged','emerged',now(),now()) returning state,observed_stage,updated_at",
+      [hiveA],
+    );
+    expect(rows.rows[0]).toMatchObject({
+      state: "emerged",
+      observed_stage: "emerged",
+    });
+    expect(rows.rows[0]).toHaveProperty("updated_at");
+  });
   it("isolates apiaries and hives between users", async () => {
     await asUser(ownerB);
     expect((await db.query("select name from public.apiaries")).rows).toEqual([

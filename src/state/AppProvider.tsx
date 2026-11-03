@@ -20,6 +20,7 @@ import type {
   AudioSample,
   AiSummary,
   Inspection,
+  BroodCycle,
 } from "../db/types";
 import { supabase } from "../services/supabase";
 import { AUTH_REDIRECT_URL } from "../services/authCallback";
@@ -39,6 +40,7 @@ type Data = {
   samples: AudioSample[];
   summaries: AiSummary[];
   inspections: Inspection[];
+  cycles: BroodCycle[];
   pending: number;
   settings: Record<string, string>;
 };
@@ -49,6 +51,7 @@ const empty: Data = {
   samples: [],
   summaries: [],
   inspections: [],
+  cycles: [],
   pending: 0,
   settings: {},
 };
@@ -104,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       samples,
       summaries,
       inspections,
+      cycles,
       pending,
     ] = await Promise.all([
       w.repo.list("apiaries"),
@@ -112,6 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       w.repo.list("audio_samples"),
       w.repo.list("ai_summaries"),
       w.repo.list("inspections"),
+      w.repo.list("brood_cycles"),
       w.repo.pendingCount(),
     ]);
     if (current.current !== w) return;
@@ -134,6 +139,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         samples,
         summaries,
         inspections,
+        cycles,
         pending,
         settings,
       });

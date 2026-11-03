@@ -1,0 +1,47 @@
+appId: com.apisense.app
+name: Ciclo con texto al 150 por ciento y cierre manual
+---
+- launchApp
+- openLink: apisense:///
+- scrollUntilVisible:
+    element: { text: "Explorar demo local" }
+- tapOn: "Explorar demo local"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    element: { text: "Oscuro" }
+- tapOn: "Oscuro"
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Día 16" }
+- takeScreenshot: .artifacts/design/large-font/01-cycle-text150
+- tapOn: { id: "brood-cycle-ring" }
+- scrollUntilVisible:
+    element: { id: "cycle-start" }
+- tapOn: { id: "cycle-start" }
+- eraseText: 50
+- inputText: ${CYCLE_DUE_START}
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "Guardar cambios del ciclo" }
+- tapOn: "Guardar cambios del ciclo"
+- scrollUntilVisible:
+    element: { text: "Seguimiento guardado en este dispositivo" }
+- scrollUntilVisible:
+    direction: UP
+    centerElement: true
+    element: { text: "Día 21" }
+- takeScreenshot: .artifacts/design/large-font/02-day21-not-auto-closed
+- scrollUntilVisible:
+    element: { text: "^Emergencia observada$" }
+- tapOn: { text: "^Emergencia observada$" }
+- scrollUntilVisible:
+    element: { text: "Confirmar emergencia observada" }
+- tapOn: "Confirmar emergencia observada"
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "Cerrado con emergencia observada en campo." }
+- takeScreenshot: .artifacts/design/large-font/03-manual-emergence
