@@ -45,19 +45,19 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - openLink: apisense:///hives
 - assertVisible: "Mis colmenas"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/04-hives
-- openLink: apisense:///hive/00000000-0000-4000-8000-000000000100
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
 - assertVisible: "Colmena 01"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/05-hive
-- openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000100
+- openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000101
 - assertVisible: "Monitoreo acústico"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/06-monitor
 - openLink: apisense:///history
 - assertVisible: "Historial de resúmenes"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/07-history
-- openLink: apisense:///pairing?hiveId=00000000-0000-4000-8000-000000000100
+- openLink: apisense:///pairing?hiveId=00000000-0000-4000-8000-000000000101
 - assertVisible: "Micrófonos IoT"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/08-pairing
-- openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000100
+- openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000101
 - assertVisible: "Anotar inspección"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection
 - tapOn:
