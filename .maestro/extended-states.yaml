@@ -38,7 +38,6 @@ name: Mapa errores y colmena sin lecturas
     element: { text: "Abrir QA sin lecturas" }
 - tapOn: "Abrir QA sin lecturas"
 - scrollUntilVisible:
-    centerElement: true
     element: { text: 'Ver lecturas guardadas \(0\)' }
 - tapOn: 'Ver lecturas guardadas \(0\)'
 - scrollUntilVisible:
@@ -49,14 +48,15 @@ name: Mapa errores y colmena sin lecturas
     element: { text: "Anotar observación de esta colmena" }
 - tapOn: "Anotar observación de esta colmena"
 - scrollUntilVisible:
-    centerElement: true
     element: { text: "Guardar inspección" }
 - tapOn: "Guardar inspección"
 - scrollUntilVisible:
     element: { text: "Describe tu observación con al menos 10 caracteres" }
 - takeScreenshot: .artifacts/design/states/04-inspection-validation
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000009999
-- assertVisible: "Selecciona una colmena válida"
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "Selecciona una colmena válida" }
 - scrollUntilVisible:
     element: { text: "Guardar inspección" }
 - assertVisible: { text: "Guardar inspección", enabled: false }

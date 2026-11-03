@@ -6,6 +6,7 @@ import {
   Switch,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
   type StyleProp,
   type ViewStyle,
@@ -366,6 +367,8 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   const { colors } = useTheme();
+  const { fontScale, width } = useWindowDimensions();
+  const largeText = fontScale > 1.2;
   return (
     <View
       accessibilityRole="radiogroup"
@@ -381,7 +384,7 @@ export function Segmented<T extends string>({
           onPress={() => onChange(option.value)}
           style={{
             flexGrow: 1,
-            flexBasis: 100,
+            flexBasis: largeText ? (width < 380 ? "100%" : "45%") : 100,
             borderWidth: option.value === value ? 2 : 1,
             borderColor: option.value === value ? tokens.honey : colors.border,
             borderRadius: 12,

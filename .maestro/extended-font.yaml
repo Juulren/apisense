@@ -21,12 +21,16 @@ name: Navegacion ciclo y formulario con texto al 200 por ciento
 - takeScreenshot: .artifacts/design/font200/02-cycle-editor
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
+    direction: UP
+    element: { text: "Observaciones de Colmena 02" }
+- takeScreenshot: .artifacts/design/font200/03-hive-options
+- scrollUntilVisible:
     centerElement: true
     element: { id: "inspection-notes" }
 - tapOn: { id: "inspection-notes" }
 - inputText: Texto grande con teclado y observacion de campo
-- takeScreenshot: .artifacts/design/font200/03-notes-keyboard
+- takeScreenshot: .artifacts/design/font200/04-notes-keyboard
 - hideKeyboard
 - scrollUntilVisible:
     element: { text: "Guardar inspección" }
-- takeScreenshot: .artifacts/design/font200/04-save-reachable
+- takeScreenshot: .artifacts/design/font200/05-save-reachable

@@ -100,7 +100,6 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - takeScreenshot: .artifacts/design/extended/04-long-note-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    centerElement: true
     element: { text: "Guardar inspección" }
 - tapOn: "Guardar inspección"
 - scrollUntilVisible:
@@ -113,7 +112,6 @@ name: Varios cuadros notas largas y paginacion de lecturas
       - inputText: QA visita adicional para consultar observaciones anteriores
       - hideKeyboard
       - scrollUntilVisible:
-          centerElement: true
           element: { text: "Guardar inspección" }
       - tapOn: "Guardar inspección"
       - scrollUntilVisible:
@@ -131,7 +129,6 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - takeScreenshot: .artifacts/design/extended/05-older-long-note
 - openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
-    centerElement: true
     element: { text: "Simular muestra de 5 segundos" }
 - repeat:
     times: 11

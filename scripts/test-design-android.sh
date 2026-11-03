@@ -32,9 +32,9 @@ run_design_phase() {
   # Retry only a proven device-offline transport loss before any app action.
   # The existing recognizer rejects assertions, taps, writes and app errors.
   python3 scripts/is-adb-launch-failure.py ".artifacts/design/$phase/maestro" || return 1
-  cp ".artifacts/design/$phase.xml" ".artifacts/design/$phase-transport.xml"
-  adb reconnect offline
-  timeout 45 adb wait-for-device
+  cp ".artifacts/design/$phase.xml" ".artifacts/design/$phase-transport.xml" || return 1
+  adb reconnect offline || return 1
+  timeout 45 adb wait-for-device || return 1
   "$HOME/.maestro/bin/maestro" test "$@" --format junit --output ".artifacts/design/$phase.xml" --test-output-dir ".artifacts/design/$phase/maestro-retry" "$flow"
 }
 if [[ "$scope" == all ]]; then
@@ -78,5 +78,6 @@ adb shell settings get system font_scale > .artifacts/design/font200-scale.txt
 run_design_phase font200 .maestro/extended-font.yaml || failed=1
 adb shell uiautomator dump /sdcard/apisense-font200.xml
 adb pull /sdcard/apisense-font200.xml .artifacts/design/font200-controls.xml
+python3 scripts/verify-android-large-text.py .artifacts/design/font200-controls.xml .artifacts/design/viewport.txt > .artifacts/design/large-text-attributes.json
 adb shell settings put system font_scale 1.0
 exit "$failed"
