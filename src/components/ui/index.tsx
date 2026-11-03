@@ -57,6 +57,7 @@ export function Label({
   return (
     <Text
       accessibilityRole={accessibilityRole}
+      accessibilityLiveRegion={tone ? "polite" : undefined}
       style={[
         {
           color:
