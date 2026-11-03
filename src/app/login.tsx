@@ -109,7 +109,12 @@ export default function Login() {
               visible ? "Ocultar contraseña" : "Mostrar contraseña"
             }
             onPress={() => setVisible(!visible)}
-            style={{ alignSelf: "flex-end", padding: 8, minHeight: 44 }}
+            style={{
+              alignSelf: "flex-end",
+              padding: 8,
+              minHeight: 48,
+              justifyContent: "center",
+            }}
           >
             <Row>
               <Icon

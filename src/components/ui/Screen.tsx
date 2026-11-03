@@ -93,7 +93,12 @@ export function Screen({
                         ? router.back()
                         : router.replace("/dashboard")
                     }
-                    style={{ padding: 6 }}
+                    style={{
+                      minWidth: 48,
+                      minHeight: 48,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
                     <Icon name="arrow-back" />
                   </Pressable>
@@ -114,6 +119,7 @@ export function Screen({
                 accessibilityRole="button"
                 accessibilityLabel="Ver estado de sincronización"
                 onPress={() => router.push("/settings")}
+                style={{ minHeight: 48, justifyContent: "center" }}
               >
                 <Badge label={status} tone="green" />
               </Pressable>
@@ -122,6 +128,7 @@ export function Screen({
         </View>
       ) : null}
       <ScrollView
+        keyboardDismissMode="on-drag"
         contentContainerStyle={{
           padding: 20,
           gap: 24,
@@ -135,7 +142,12 @@ export function Screen({
         {title ? (
           <View style={{ gap: 6 }}>
             <Row>
-              <Label bold size={24} style={{ flex: 1 }}>
+              <Label
+                bold
+                size={24}
+                accessibilityRole="header"
+                style={{ flex: 1 }}
+              >
                 {title}
               </Label>
               {action}

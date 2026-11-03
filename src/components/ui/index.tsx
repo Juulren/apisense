@@ -41,6 +41,7 @@ export function Label({
   bold = false,
   color,
   style,
+  accessibilityRole,
 }: {
   children: ReactNode;
   muted?: boolean;
@@ -48,10 +49,12 @@ export function Label({
   bold?: boolean;
   color?: string;
   style?: ComponentProps<typeof Text>["style"];
+  accessibilityRole?: ComponentProps<typeof Text>["accessibilityRole"];
 }) {
   const { colors } = useTheme();
   return (
     <Text
+      accessibilityRole={accessibilityRole}
       style={[
         {
           color: color ?? (muted ? colors.muted : colors.text),
@@ -129,6 +132,9 @@ export function Button({
           : "#FFFFFF";
   return (
     <Pressable
+      // NativeWind's interop drops functional inline styles. This component
+      // uses only native inline styles, so preserve Pressable's callback.
+      cssInterop={false}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{
@@ -143,7 +149,7 @@ export function Button({
       onBlur={() => setFocused(false)}
       style={({ pressed, hovered }) => [
         {
-          minHeight: compact ? 44 : variant === "primary" ? 52 : 48,
+          minHeight: variant === "primary" && !compact ? 52 : 48,
           paddingHorizontal: 18,
           paddingVertical: 12,
           borderRadius: variant === "secondary" ? 12 : 16,
@@ -167,7 +173,12 @@ export function Button({
       ) : icon ? (
         <Icon name={icon} color={foreground} size={20} />
       ) : null}
-      <Label bold size={13} color={foreground}>
+      <Label
+        bold
+        size={13}
+        color={foreground}
+        style={{ flexShrink: 1, textAlign: "center" }}
+      >
         {label}
       </Label>
     </Pressable>
@@ -254,7 +265,7 @@ export function Section({
   return (
     <View style={{ gap: 14 }}>
       <View>
-        <Label bold size={18}>
+        <Label bold size={18} accessibilityRole="header">
           {title}
         </Label>
         {caption ? (
@@ -336,7 +347,10 @@ export function Segmented<T extends string>({
 }) {
   const { colors } = useTheme();
   return (
-    <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+    <View
+      accessibilityRole="radiogroup"
+      style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}
+    >
       {options.map((option) => (
         <Pressable
           key={option.value}
