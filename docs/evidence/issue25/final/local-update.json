@@ -1,0 +1,9 @@
+{
+  "version_name": "0.1.1",
+  "version_code": 2,
+  "device": "agent-owned Android 15 emulator",
+  "viewport": "466x1600 px, density 160",
+  "update": "adb install -r; no app data reset",
+  "entry": "explicit synthetic workspace entry after cold launch",
+  "dashboard": "visible; no app ANR overlay"
+}

@@ -125,7 +125,7 @@ export default function Settings() {
                 : "Aún no hay una sincronización confirmada."}
           </Label>
           {app.syncState.error ? (
-            <Label color="#B45309">{app.syncState.error}</Label>
+            <Label tone="warning">{app.syncState.error}</Label>
           ) : null}
           <Button
             label="Forzar sincronización local a nube"

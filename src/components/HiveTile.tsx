@@ -26,7 +26,7 @@ export function HiveTile({ hive }: { hive: Hive }) {
         style={{ padding: 14, minHeight: 170, gap: 12 }}
       >
         <Row>
-          <Label bold size={12}>
+          <Label bold size={12} style={{ flex: 1 }}>
             {hive.code}
           </Label>
           <Icon

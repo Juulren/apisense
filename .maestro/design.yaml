@@ -1,0 +1,101 @@
+appId: com.apisense.app
+name: Pantallas Android con datos sintéticos y tema explícito
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Close app"
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    element:
+      text: "${THEME_LABEL}"
+- tapOn: "${THEME_LABEL}"
+- openLink: apisense:///
+- scrollUntilVisible:
+    element:
+      text: "Comenzar"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/01-welcome
+- tapOn: "Comenzar"
+- assertVisible: "Bienvenido de nuevo"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/02-login
+- tapOn:
+    id: login-email
+- inputText: qa-design@example.com
+- assertVisible: qa-design@example.com
+- takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-keyboard
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Entrar al Apiario"
+- tapOn: "Entrar al Apiario"
+- scrollUntilVisible:
+    element:
+      text: "La contraseña debe tener al menos 8 caracteres"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-validation
+- openLink: apisense:///
+- scrollUntilVisible:
+    element:
+      text: "Explorar demo local"
+- tapOn: "Explorar demo local"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+# The workspace restores its own preference. Set it explicitly after loading.
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    element:
+      text: "${THEME_LABEL}"
+- tapOn: "${THEME_LABEL}"
+- openLink: apisense:///dashboard
+- assertVisible: "Estado por Colmena"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/03-dashboard
+- openLink: apisense:///hives
+- assertVisible: "Mis colmenas"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/04-hives
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
+- assertVisible: "Colmena 01"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/05-hive
+- openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000101
+- assertVisible: "Monitoreo acústico"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/06-monitor
+- openLink: apisense:///history
+- assertVisible: "Historial de resúmenes"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/07-history
+- openLink: apisense:///pairing?hiveId=00000000-0000-4000-8000-000000000101
+- assertVisible: "Micrófonos IoT"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/08-pairing
+- openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000101
+- assertVisible: "Anotar inspección"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection
+- tapOn:
+    id: inspection-notes
+- inputText: Observacion sintetica para revisar el teclado
+- takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection-keyboard
+- hideKeyboard
+- openLink: apisense:///settings
+- assertVisible: "Ajustes y configuración"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/10-settings
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    direction: UP
+    element:
+      text: "Componentes UI"
+- assertVisible: "Componentes UI"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/11-catalog
+- openLink: apisense:///settings
+- scrollUntilVisible:
+    element:
+      text: "Salir de la demo"
+- tapOn: "Salir de la demo"
+- extendedWaitUntil:
+    visible: "Comenzar"
+    timeout: 30000
+# Leave an account-free control surface for the native bounds regression.
+- openLink: apisense:///ui-catalog
+- scrollUntilVisible:
+    direction: UP
+    element:
+      text: "Entrar al Apiario"
+- assertVisible: "Entrar al Apiario"

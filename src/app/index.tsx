@@ -71,7 +71,7 @@ export default function Welcome() {
         />
       ) : null}
       {task.message || app.error ? (
-        <Label color="#B45309">{task.message ?? app.error}</Label>
+        <Label tone="warning">{task.message ?? app.error}</Label>
       ) : null}
     </Screen>
   );

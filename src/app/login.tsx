@@ -109,7 +109,12 @@ export default function Login() {
               visible ? "Ocultar contraseña" : "Mostrar contraseña"
             }
             onPress={() => setVisible(!visible)}
-            style={{ alignSelf: "flex-end", padding: 8, minHeight: 44 }}
+            style={{
+              alignSelf: "flex-end",
+              padding: 8,
+              minHeight: 48,
+              justifyContent: "center",
+            }}
           >
             <Row>
               <Icon
@@ -155,7 +160,7 @@ export default function Login() {
           }
         />
         {task.message || app.error ? (
-          <Label color="#B45309">{task.message ?? app.error}</Label>
+          <Label tone="warning">{task.message ?? app.error}</Label>
         ) : null}
       </Card>
       <Label muted size={12} style={{ textAlign: "center" }}>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import { useColorScheme } from "react-native";
+import { StatusBar, useColorScheme } from "react-native";
 
 export const tokens = {
   honey: "#F59E0B",
@@ -26,6 +26,7 @@ const palettes = {
     amberText: "#92400E",
     greenText: "#047857",
     blueText: "#0369A1",
+    dangerText: "#B91C1C",
   },
   dark: {
     background: "#0B0F17",
@@ -40,6 +41,7 @@ const palettes = {
     amberText: "#FCD34D",
     greenText: "#6EE7B7",
     blueText: "#7DD3FC",
+    dangerText: "#FCA5A5",
   },
 };
 export type ThemePreference = "light" | "dark" | "system";
@@ -64,6 +66,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setPreference,
       }}
     >
+      <StatusBar barStyle={dark ? "light-content" : "dark-content"} />
       {children}
     </ThemeContext.Provider>
   );
