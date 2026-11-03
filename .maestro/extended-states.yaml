@@ -27,7 +27,12 @@ name: Mapa errores y colmena sin lecturas
 - tapOn: "Guardar colmena"
 - scrollUntilVisible:
     element: { text: "Colmena guardada localmente" }
-- openLink: apisense:///hives
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "zzz-no-existe" }
+- tapOn: "zzz-no-existe"
+- eraseText: 100
+- hideKeyboard
 - scrollUntilVisible:
     centerElement: true
     element: { text: "Abrir QA sin lecturas" }
