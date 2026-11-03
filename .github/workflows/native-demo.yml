@@ -50,6 +50,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Reserve space for Android build and emulator
+        run: bash scripts/prepare-android-runner.sh
       - name: Require a fresh security build
         if: inputs.security_checks && inputs.android_artifact_run_id != ''
         run: echo 'Las comprobaciones de cifrado requieren un binario nuevo.' && exit 1

@@ -54,6 +54,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Reserve space for Android build and emulator
+        run: bash scripts/prepare-android-runner.sh
       - uses: actions/setup-node@v4
         with:
           node-version: 24
