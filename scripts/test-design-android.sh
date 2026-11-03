@@ -23,6 +23,20 @@ trap 'adb shell settings put system font_scale 1.0 || true; adb logcat -d > .art
 device_date=$(adb shell date +%F | tr -d '\r')
 cycle_start=$(python3 -c 'from datetime import date,timedelta; import sys; print(date.fromisoformat(sys.argv[1])-timedelta(days=15))' "$device_date")
 cycle_due_start=$(python3 -c 'from datetime import date,timedelta; import sys; print(date.fromisoformat(sys.argv[1])-timedelta(days=20))' "$device_date")
+run_design_phase() {
+  local phase="$1" flow="$2"
+  shift 2
+  if "$HOME/.maestro/bin/maestro" test "$@" --format junit --output ".artifacts/design/$phase.xml" --test-output-dir ".artifacts/design/$phase/maestro" "$flow"; then
+    return 0
+  fi
+  # Retry only a proven device-offline transport loss before any app action.
+  # The existing recognizer rejects assertions, taps, writes and app errors.
+  python3 scripts/is-adb-launch-failure.py ".artifacts/design/$phase/maestro" || return 1
+  cp ".artifacts/design/$phase.xml" ".artifacts/design/$phase-transport.xml"
+  adb reconnect offline
+  timeout 45 adb wait-for-device
+  "$HOME/.maestro/bin/maestro" test "$@" --format junit --output ".artifacts/design/$phase.xml" --test-output-dir ".artifacts/design/$phase/maestro-retry" "$flow"
+}
 if [[ "$scope" == all ]]; then
 for theme in light dark; do
   label=Claro
@@ -52,19 +66,13 @@ fi
 # Additional state/volume regressions use the same isolated synthetic workspace.
 adb shell settings put system font_scale 1.0
 adb shell am force-stop com.apisense.app
-"$HOME/.maestro/bin/maestro" test -e CYCLE_START="$cycle_start" \
-  --format junit --output .artifacts/design/extended.xml \
-  --test-output-dir .artifacts/design/extended/maestro .maestro/extended-hives.yaml
-"$HOME/.maestro/bin/maestro" test \
-  --format junit --output .artifacts/design/states.xml \
-  --test-output-dir .artifacts/design/states/maestro .maestro/extended-states.yaml
+run_design_phase extended .maestro/extended-hives.yaml -e CYCLE_START="$cycle_start"
+run_design_phase states .maestro/extended-states.yaml
 
 adb shell settings put system font_scale 2.0
 adb shell am force-stop com.apisense.app
 adb shell settings get system font_scale > .artifacts/design/font200-scale.txt
-"$HOME/.maestro/bin/maestro" test \
-  --format junit --output .artifacts/design/font200.xml \
-  --test-output-dir .artifacts/design/font200/maestro .maestro/extended-font.yaml
+run_design_phase font200 .maestro/extended-font.yaml
 adb shell uiautomator dump /sdcard/apisense-font200.xml
 adb pull /sdcard/apisense-font200.xml .artifacts/design/font200-controls.xml
 adb shell settings put system font_scale 1.0
