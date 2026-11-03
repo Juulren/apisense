@@ -372,7 +372,7 @@ export function Segmented<T extends string>({
           onPress={() => onChange(option.value)}
           style={{
             flexGrow: 1,
-            flexBasis: 80,
+            flexBasis: 100,
             borderWidth: option.value === value ? 2 : 1,
             borderColor: option.value === value ? tokens.honey : colors.border,
             borderRadius: 12,

@@ -219,7 +219,7 @@ export function Screen({
               const selected = item.prefix.some(
                 (prefix) => path === prefix || path.startsWith(prefix + "/"),
               );
-              const color = selected ? tokens.audio : colors.muted;
+              const color = selected ? colors.amberText : colors.muted;
               return (
                 <Pressable
                   key={item.label}
