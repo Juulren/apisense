@@ -160,6 +160,7 @@ El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, d
 - [x] APK de campo 0.1.1/código 2 generado desde `3a6e276`, con los tres bloques anteriores; entregado con SHA-256 e instrucciones en `dist/development`. Conservada la versión 0.1.0.
 - [ ] #25: completar aceptación visual al mismo viewport/estado, zonas desplazables, escalado de texto y TalkBack físico. Las cinco adaptaciones existentes se conservan como base de desarrollo; no se atribuye al propietario una aprobación visual nueva.
 - [ ] #8: aportar firmware/UUIDs, hardware, broker con TLS/ACL, calibración y dataset/modelo entrenado; ejecutar la aceptación física y científica. Las pruebas con dobles y datos sintéticos no cierran este criterio.
-- [ ] #16: resolver las cuatro raíces restantes de herramientas Expo cuando haya versiones y migraciones compatibles; mantener la evaluación documentada antes de distribución.
+- [x] #16: segunda corrección de herramientas: glob 14/minimatch 11 juntos, Zod 4 para colecciones DevTools y escritura segura en deepmerge. 26 regresiones nuevas; 129 pruebas y TypeScript correctos. Auditoría: 7 low, sin moderadas/high/críticas; los avisos de deepmerge permanecen visibles pese al parche local.
+- [ ] #16: confirmar CI y compilación/recorrido Android con esta segunda corrección antes del cierre; mantener evaluación antes de distribución.
 
 #15 y #27 se omiten por instrucción del usuario. No se crean recursos cloud, credenciales de distribución ni publicaciones en tiendas en esta continuación; iOS sigue en espera.
