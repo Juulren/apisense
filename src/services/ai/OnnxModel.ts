@@ -3,6 +3,7 @@ import { CryptoDigestAlgorithm, digest } from "expo-crypto";
 import {
   modelResult,
   normalizeMfcc,
+  validateManifest,
   type ModelManifest,
 } from "./ModelContract";
 import type { InferenceModel } from "./Classifier";
@@ -10,6 +11,7 @@ export async function loadOnnxModel(
   bytes: Uint8Array,
   manifest: ModelManifest,
 ): Promise<InferenceModel> {
+  validateManifest(manifest);
   const checksum = Array.from(
     new Uint8Array(
       await digest(CryptoDigestAlgorithm.SHA256, Uint8Array.from(bytes)),
@@ -21,6 +23,8 @@ export async function loadOnnxModel(
   normalizeMfcc(new Array(13).fill(0), manifest);
   const session = await ort.InferenceSession.create(bytes);
   return {
+    sampleRateHz: manifest.sampleRateHz,
+    preprocessing: manifest.preprocessing,
     async predict(mfcc) {
       const results = await session.run({
         [manifest.inputName]: new ort.Tensor(

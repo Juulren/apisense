@@ -9,6 +9,7 @@ export type Classification = {
   confidence: number;
   version: string;
 };
+export type DeviceBinding = { hiveId: string; deviceId: string };
 export class AudioIngestionService {
   private tail: Promise<unknown> = Promise.resolve();
   constructor(
@@ -22,13 +23,28 @@ export class AudioIngestionService {
       version: "unclassified",
     }),
   ) {}
-  ingest(input: unknown, source: AudioSample["source"]): Promise<AudioSample> {
-    const result = this.tail.then(() => this.receive(input, source));
+  ingest(
+    input: unknown,
+    source: AudioSample["source"],
+    binding?: DeviceBinding,
+  ): Promise<AudioSample> {
+    const result = this.tail.then(() => this.receive(input, source, binding));
     this.tail = result.catch(() => {});
     return result;
   }
-  private async receive(input: unknown, source: AudioSample["source"]) {
+  private async receive(
+    input: unknown,
+    source: AudioSample["source"],
+    binding?: DeviceBinding,
+  ) {
     const frame = validateFrame(input);
+    if (
+      binding &&
+      (frame.hive_id !== binding.hiveId || frame.device_id !== binding.deviceId)
+    )
+      throw new Error(
+        "La telemetría no corresponde al micrófono y colmena vinculados",
+      );
     const existing = await this.local.get("audio_samples", frame.id);
     if (existing) return existing;
     const mic = await this.local.get("iot_microphones", frame.device_id);

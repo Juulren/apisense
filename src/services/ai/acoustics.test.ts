@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { preprocess, powerSpectrum } from "./acoustics";
 import { AcousticClassifier } from "./Classifier";
 import {
   modelResult,
   normalizeMfcc,
+  validateManifest,
   type ModelManifest,
 } from "./ModelContract";
 import {
@@ -26,6 +27,10 @@ const frame: TelemetryFrame = {
   battery_level: 90,
 };
 const manifest: ModelManifest = {
+  contractVersion: 1,
+  preprocessing: "apisense-mfcc-v1",
+  sampleRateHz: 16000,
+  classes: ["healthy", "swarming", "queenless", "pest_disturbance", "unknown"],
   version: "test",
   inputName: "input",
   outputName: "output",
@@ -87,6 +92,70 @@ describe("Acoustics and summaries", () => {
       modelResult([0.01, 0.01, 0.95, 0.01, 0.02], manifest).classification,
     ).toBe("queenless");
     expect(() => modelResult([9, 0, 0, 0, 0], manifest)).toThrow();
+  });
+  it.each([
+    { preprocessing: "different-mfcc" },
+    {
+      classes: [
+        "queenless",
+        "swarming",
+        "healthy",
+        "pest_disturbance",
+        "unknown",
+      ],
+    },
+    { sampleRateHz: 16000.5 },
+    { sha256: "not-a-checksum" },
+    { inputName: "" },
+    { minimumScore: NaN },
+  ])("rejects incompatible model metadata %s", (changes) => {
+    expect(() =>
+      validateManifest({ ...manifest, ...changes } as ModelManifest),
+    ).toThrow("incompatible");
+  });
+  it("rejects normalization that overflows float32", () => {
+    expect(() =>
+      normalizeMfcc(new Array(13).fill(3), {
+        ...manifest,
+        std: new Array(13).fill(1e-45),
+      }),
+    ).toThrow("float32");
+  });
+  it("abstains instead of passing incompatible firmware features to a model", async () => {
+    const predict = vi
+      .fn()
+      .mockResolvedValue({
+        classification: "healthy",
+        confidence: 0.9,
+        version: "onnx:synthetic-test",
+      });
+    const classifier = new AcousticClassifier({
+      sampleRateHz: 16000,
+      preprocessing: "apisense-mfcc-v1",
+      predict,
+    });
+    expect((await classifier.classify({ ...frame })).classification).toBe(
+      "unknown",
+    );
+    expect(
+      (
+        await classifier.classify({
+          ...frame,
+          mfcc_version: "apisense-mfcc-v1",
+          sampling_rate_hz: 32000,
+        })
+      ).classification,
+    ).toBe("unknown");
+    expect(predict).not.toHaveBeenCalled();
+    expect(
+      (
+        await classifier.classify({
+          ...frame,
+          mfcc_version: "apisense-mfcc-v1",
+        })
+      ).classification,
+    ).toBe("healthy");
+    expect(predict).toHaveBeenCalledWith(frame.mfcc_features);
   });
   it("never declares a critical diagnosis from experimental rules or simulated data", () => {
     expect(

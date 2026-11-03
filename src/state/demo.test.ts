@@ -12,6 +12,7 @@ import { AudioIngestionService } from "../services/iot/AudioIngestionService";
 import { clips } from "../services/iot/ClipStore";
 import { decodeWav } from "../services/iot/wav";
 import { DEMO_USER, seedDemo } from "./demo";
+import { simulate } from "../services/iot/Simulator";
 
 vi.mock("expo-crypto", async () => {
   const { createHash, randomUUID } = await import("node:crypto");
@@ -86,6 +87,34 @@ it("seeds eight demo hives offline, reads WAVs, and preserves inspections on reo
   const samples = await first.list("audio_samples");
   expect(samples).toHaveLength(8);
   expect(samples.every((s) => s.source === "simulator")).toBe(true);
+  const micA = (await first.list("iot_microphones")).find(
+    (m) => m.hive_id === hives[0]!.id,
+  )!;
+  const captured = simulate("healthy", {
+    id: randomUUID(),
+    hive_id: hives[0]!.id,
+    device_id: micA.id,
+  });
+  await expect(
+    ingestion.ingest(captured, "ble", {
+      hiveId: hives[1]!.id,
+      deviceId: micA.id,
+    }),
+  ).rejects.toThrow("vinculados");
+  await expect(
+    ingestion.ingest(captured, "ble", {
+      hiveId: hives[0]!.id,
+      deviceId: randomUUID(),
+    }),
+  ).rejects.toThrow("vinculados");
+  expect(await first.get("audio_samples", captured.id)).toBeUndefined();
+  const ownSample = samples.find((s) => s.device_id === micA.id)!;
+  await expect(
+    ingestion.ingest({ ...captured, id: ownSample.id }, "ble", {
+      hiveId: hives[0]!.id,
+      deviceId: micA.id,
+    }),
+  ).resolves.toEqual(ownSample);
   expect(await first.list("ai_summaries")).toHaveLength(8);
   const bytes = await clips.read(samples[0]!.local_audio_uri!);
   expect(decodeWav(new Uint8Array(bytes)).sampleRate).toBe(16000);

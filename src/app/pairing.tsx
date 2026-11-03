@@ -66,7 +66,11 @@ export default function Pairing() {
       const w = app.workspace;
       await w.ble.connect(
         device.id,
-        (frame) => w.ingestion.ingest(frame, "ble"),
+        (frame) =>
+          w.ingestion.ingest(frame, "ble", {
+            hiveId: hive.id,
+            deviceId: logicalId,
+          }),
         (error) => setNotice(error.message),
       );
       await app.refresh();
