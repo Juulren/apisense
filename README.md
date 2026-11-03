@@ -99,6 +99,8 @@ Los UUIDs BLE y el broker deben corresponder al firmware y a las políticas de a
 
 El [contrato IoT/modelo y la matriz de aceptación](docs/IOT_MODEL_ACCEPTANCE.md) indican cómo aportar esos recursos. Para validar una captura NDJSON sin conectarse a un broker ni modificar datos, ejecuta `npm run iot:validate -- C:\ruta\captura.ndjson`.
 
+El [protocolo de evaluación del modelo](docs/MODEL_EVALUATION.md) permite preparar WAV etiquetados con separación por grupos y normalización solo de entrenamiento, y evaluar predicciones con métricas por clase/dispositivo y abstención. `npm run model:fixture` genera un ejemplo sintético para comprobar las herramientas; no entrena ni ejecuta un modelo ni acredita precisión bioacústica.
+
 El bloque #15 desarrolla y prueba la app de campo Android con cuentas Supabase, confirmación por correo con PKCE, persistencia cifrada y perfiles de distribución. La entrega activa es la app real; las herramientas de demo se conservan como pruebas aisladas. Consulta [pruebas, firma y criterios pendientes](docs/ANDROID_SECURITY_QA.md). Para cuentas nuevas se usa `apisense://auth/callback`; el proyecto Supabase de desarrollo ya tiene esa redirección nativa. El callback y el comando de campo se incluyen en `main` mediante el PR #32.
 
 ### Cifrado y acceso offline

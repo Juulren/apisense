@@ -23,7 +23,10 @@
     "test:backend": "vitest run supabase/tests",
     "test:backend:live": "node --env-file=.env --env-file-if-exists=.env.backend node_modules/vitest/vitest.mjs run --config supabase/vitest.live.config.mts",
     "check": "npm run typecheck && npm test",
-    "format": "prettier --write src supabase/functions *.json *.js"
+    "format": "prettier --write src supabase/functions *.json *.js",
+    "model:prepare": "node scripts/model-evaluation-cli.mjs prepare",
+    "model:evaluate": "node scripts/model-evaluation-cli.mjs evaluate",
+    "model:fixture": "node scripts/create-model-evaluation-fixture.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
