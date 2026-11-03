@@ -144,7 +144,8 @@ export function BroodCycleTracker({ hiveId }: { hiveId: string }) {
           }}
           options={cycles.map((c) => ({
             value: c.id,
-            label: `${c.cohort_label} · ${c.started_on}${c.state !== "active" ? " · Cerrado" : ""}`,
+            label: c.cohort_label,
+            description: `${c.started_on}${c.state !== "active" ? " · Cerrado" : ""}`,
           }))}
         />
       ) : null}

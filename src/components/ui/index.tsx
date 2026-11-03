@@ -363,12 +363,13 @@ export function Segmented<T extends string>({
   onChange,
 }: {
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; description?: string }[];
   onChange: (v: T) => void;
 }) {
   const { colors } = useTheme();
   const { fontScale, width } = useWindowDimensions();
   const largeText = fontScale > 1.2;
+  const rows = width < 380 || options.some((option) => option.description);
   return (
     <View
       accessibilityRole="radiogroup"
@@ -378,13 +379,17 @@ export function Segmented<T extends string>({
         <Pressable
           key={option.value}
           accessibilityRole="radio"
-          accessibilityLabel={option.label}
+          accessibilityLabel={
+            option.description
+              ? `${option.label} · ${option.description}`
+              : option.label
+          }
           accessibilityState={{ checked: option.value === value }}
           aria-checked={option.value === value}
           onPress={() => onChange(option.value)}
           style={{
             flexGrow: 1,
-            flexBasis: largeText ? (width < 380 ? "100%" : "45%") : 100,
+            flexBasis: largeText ? (rows ? "100%" : "45%") : 100,
             borderWidth: option.value === value ? 2 : 1,
             borderColor: option.value === value ? tokens.honey : colors.border,
             borderRadius: 12,
@@ -392,6 +397,7 @@ export function Segmented<T extends string>({
             minHeight: 48,
             alignItems: "center",
             justifyContent: "center",
+            gap: 3,
             backgroundColor:
               option.value === value ? colors.amber : colors.card,
           }}
@@ -403,6 +409,14 @@ export function Segmented<T extends string>({
           >
             {option.label}
           </Label>
+          {option.description ? (
+            <Label
+              size={12}
+              color={option.value === value ? colors.amberText : colors.muted}
+            >
+              {option.description}
+            </Label>
+          ) : null}
         </Pressable>
       ))}
     </View>

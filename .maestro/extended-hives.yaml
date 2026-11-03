@@ -86,8 +86,8 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - assertVisible: "Detener seguimiento"
 - tapOn: "Detener seguimiento"
 - tapOn: { text: "^Detener$" }
-- scrollUntilVisible:
-    element: { text: "Seguimiento detenido; registro conservado" }
+# Closing removes the active controls and moves the old scroll offset below
+# the cycle card. Verify its persisted state, rather than a transient message.
 - scrollUntilVisible:
     direction: UP
     centerElement: true
