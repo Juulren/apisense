@@ -10,6 +10,9 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 adb shell pm clear com.apisense.app
 adb shell svc wifi disable
 adb shell svc data disable
+# The Google APIs cold-boot launcher can leave an ANR dialog over our app.
+# Stop only that emulator launcher; never dismiss an Apisense crash/ANR.
+adb shell am force-stop com.google.android.apps.nexuslauncher
 adb shell wm size > .artifacts/design/viewport.txt
 adb shell wm density >> .artifacts/design/viewport.txt
 adb shell getprop ro.build.version.sdk >> .artifacts/design/viewport.txt

@@ -2,6 +2,11 @@ appId: com.apisense.app
 name: Pantallas Android con datos sintéticos y tema explícito
 ---
 - launchApp
+- runFlow:
+    when:
+      visible: "Pixel Launcher isn't responding"
+    commands:
+      - tapOn: "Close app"
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:
     element:
