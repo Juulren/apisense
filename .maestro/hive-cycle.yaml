@@ -82,6 +82,9 @@ name: Observaciones lecturas y ciclo persistente por colmena
 - tapOn: "Abrir lectura 1"
 - assertVisible: "Lectura seleccionada del historial"
 - scrollUntilVisible:
+    # Android can report a clipped 13px button slice as fully visible.
+    # Center it so the action and actual playback status share the viewport.
+    centerElement: true
     element: { text: "Escuchar zumbido" }
 - tapOn: "Escuchar zumbido"
 - assertVisible: "Audio en reproducción"
