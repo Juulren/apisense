@@ -28,6 +28,5 @@ name: Navegacion ciclo y formulario con texto al 200 por ciento
 - takeScreenshot: .artifacts/design/font200/03-notes-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    centerElement: true
     element: { text: "Guardar inspección" }
 - takeScreenshot: .artifacts/design/font200/04-save-reachable

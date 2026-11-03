@@ -47,6 +47,8 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - scrollUntilVisible:
     element: { text: "Seguimiento guardado en este dispositivo" }
 - scrollUntilVisible:
+    # The preceding success message is below this action in the cycle card.
+    direction: UP
     centerElement: true
     element: { text: "Iniciar otro cuadro o lote" }
 - tapOn: "Iniciar otro cuadro o lote"

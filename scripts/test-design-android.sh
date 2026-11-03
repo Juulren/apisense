@@ -66,13 +66,17 @@ fi
 # Additional state/volume regressions use the same isolated synthetic workspace.
 adb shell settings put system font_scale 1.0
 adb shell am force-stop com.apisense.app
-run_design_phase extended .maestro/extended-hives.yaml -e CYCLE_START="$cycle_start"
-run_design_phase states .maestro/extended-states.yaml
+failed=0
+# Collect independent state/font evidence even if a volume case fails.
+# Any failed phase still fails this run; no application assertion is retried.
+run_design_phase extended .maestro/extended-hives.yaml -e CYCLE_START="$cycle_start" || failed=1
+run_design_phase states .maestro/extended-states.yaml || failed=1
 
 adb shell settings put system font_scale 2.0
 adb shell am force-stop com.apisense.app
 adb shell settings get system font_scale > .artifacts/design/font200-scale.txt
-run_design_phase font200 .maestro/extended-font.yaml
+run_design_phase font200 .maestro/extended-font.yaml || failed=1
 adb shell uiautomator dump /sdcard/apisense-font200.xml
 adb pull /sdcard/apisense-font200.xml .artifacts/design/font200-controls.xml
 adb shell settings put system font_scale 1.0
+exit "$failed"
