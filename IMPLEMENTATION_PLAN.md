@@ -105,7 +105,7 @@ La coincidencia exacta se refiere al cuerpo HTML normalizado, no a píxeles o ca
 
 Las pruebas locales de la base de demo permanecen correctas. La aceptación nativa se registra en [NATIVE_DEMO.md](docs/NATIVE_DEMO.md), que distingue APK, simulador iOS y firma para iPhone físico.
 
-## Bloque activo — Issue #15, prioridad Android
+## Bloque anterior — Issue #15, prioridad Android
 
 - [x] Rechazo sin sobrescritura cuando existe la base cifrada pero falta su clave.
 - [x] Pruebas locales del caso de recuperación y callback PKCE nativo; 76 pruebas y TypeScript correctos.
@@ -155,5 +155,11 @@ El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, d
 - [x] #16: PR #33 integrado; dos raíces corregidas y adaptador de importación compatible. 82 pruebas, bundles y recorrido nativo del mismo APK correctos; [repetición 41566406140](https://github.com/Juulren/apisense/actions/runs/41566406140). Quedan cuatro raíces de herramientas Expo en seguimiento.
 - [x] #17 cerrado como no planificado: ARIA/DOM web fuera del alcance vigente. La accesibilidad nativa continúa en #25.
 - [x] #25: capturada la app Android antes del cambio; se identificó pérdida de estilos funcionales de botones y barra de estado sin contraste. Correcciones y recorrido claro/oscuro en PR #34.
-- [ ] #25: revisar las capturas y controles nativos generados; completar aceptación visual/física y TalkBack. Las cinco adaptaciones existentes se conservan como base de desarrollo; no se atribuye al propietario una aprobación visual nueva.
-- [ ] #8: integrar y documentar las validaciones de transportes/identidad y contrato de modelo del PR #35; registrar por separado la aceptación física y científica pendiente.
+- [x] #25: revisadas 28 capturas de 0.1.1, once vistas en claro/oscuro más teclado/error. Recorrido nativo: 2 casos/0 fallos, ambos controles >=52dp y política del APK correctos. PR #34; evidencia y discrepancias en [design-qa.md](design-qa.md).
+- [x] #8: PR #35 integrado; 103 pruebas, TypeScript y bundles correctos. Validaciones de transportes/identidad y contrato de modelo documentadas en [IOT_MODEL_ACCEPTANCE.md](docs/IOT_MODEL_ACCEPTANCE.md).
+- [x] APK de campo 0.1.1/código 2 generado desde `3a6e276`, con los tres bloques anteriores; entregado con SHA-256 e instrucciones en `dist/development`. Conservada la versión 0.1.0.
+- [ ] #25: completar aceptación visual al mismo viewport/estado, zonas desplazables, escalado de texto y TalkBack físico. Las cinco adaptaciones existentes se conservan como base de desarrollo; no se atribuye al propietario una aprobación visual nueva.
+- [ ] #8: aportar firmware/UUIDs, hardware, broker con TLS/ACL, calibración y dataset/modelo entrenado; ejecutar la aceptación física y científica. Las pruebas con dobles y datos sintéticos no cierran este criterio.
+- [ ] #16: resolver las cuatro raíces restantes de herramientas Expo cuando haya versiones y migraciones compatibles; mantener la evaluación documentada antes de distribución.
+
+#15 y #27 se omiten por instrucción del usuario. No se crean recursos cloud, credenciales de distribución ni publicaciones en tiendas en esta continuación; iOS sigue en espera.

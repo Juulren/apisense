@@ -1,0 +1,13 @@
+{
+  "version": "0.1.1",
+  "version_code": 2,
+  "package": "com.apisense.app",
+  "sha256": "7a32ea9828eaad9ee1f83a31eea9ca4004b1496f71c6cbc77157a105f127ede6",
+  "bytes": 165697589,
+  "apk_source_sha": "3a6e27698d9d9a57152c14718fb9d6f32d679cd1",
+  "run": "https://github.com/Juulren/apisense/actions/runs/41570910637",
+  "server_secret_scan": {
+    "configured_values_checked": 2,
+    "matches": 0
+  }
+}
