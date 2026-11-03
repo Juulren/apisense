@@ -74,6 +74,9 @@ export function validateFrame(
     throw new Error("Clip base64 inválido o demasiado grande");
   return {
     ...f,
+    id: f.id.toLowerCase(),
+    hive_id: f.hive_id.toLowerCase(),
+    device_id: f.device_id.toLowerCase(),
     recorded_at: new Date(f.recorded_at).toISOString(),
   } as TelemetryFrame;
 }

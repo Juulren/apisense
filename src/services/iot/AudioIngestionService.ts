@@ -40,7 +40,8 @@ export class AudioIngestionService {
     const frame = validateFrame(input);
     if (
       binding &&
-      (frame.hive_id !== binding.hiveId || frame.device_id !== binding.deviceId)
+      (frame.hive_id !== binding.hiveId.toLowerCase() ||
+        frame.device_id !== binding.deviceId.toLowerCase())
     )
       throw new Error(
         "La telemetría no corresponde al micrófono y colmena vinculados",

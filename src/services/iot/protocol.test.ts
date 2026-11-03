@@ -36,6 +36,13 @@ describe("IoT protocol", () => {
       validateFrame({ ...frame, mfcc_version: "apisense-mfcc-v1" })
         .mfcc_version,
     ).toBe("apisense-mfcc-v1");
+    expect(
+      validateFrame({
+        ...frame,
+        id: frame.id.toUpperCase(),
+        device_id: frame.device_id.toUpperCase(),
+      }),
+    ).toMatchObject({ id: frame.id, device_id: frame.device_id });
   });
   it.each(["healthy", "swarming", "queenless", "pest_disturbance"] as const)(
     "produces a valid deterministic PCM16 clip for %s",
