@@ -42,6 +42,7 @@ export function Label({
   color,
   style,
   accessibilityRole,
+  tone,
 }: {
   children: ReactNode;
   muted?: boolean;
@@ -50,6 +51,7 @@ export function Label({
   color?: string;
   style?: ComponentProps<typeof Text>["style"];
   accessibilityRole?: ComponentProps<typeof Text>["accessibilityRole"];
+  tone?: "warning" | "danger";
 }) {
   const { colors } = useTheme();
   return (
@@ -57,7 +59,15 @@ export function Label({
       accessibilityRole={accessibilityRole}
       style={[
         {
-          color: color ?? (muted ? colors.muted : colors.text),
+          color:
+            color ??
+            (tone === "warning"
+              ? colors.amberText
+              : tone === "danger"
+                ? colors.dangerText
+                : muted
+                  ? colors.muted
+                  : colors.text),
           fontFamily: bold ? "JakartaBold" : "Jakarta",
           fontSize: size,
           lineHeight: size * 1.45,
@@ -219,7 +229,7 @@ export function Field({
           props.style,
         ]}
       />
-      {error ? <Label color={tokens.danger}>{error}</Label> : null}
+      {error ? <Label tone="danger">{error}</Label> : null}
     </View>
   );
 }

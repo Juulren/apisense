@@ -25,6 +25,14 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - inputText: qa-design@example.com
 - takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-keyboard
 - hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Entrar al Apiario"
+- tapOn: "Entrar al Apiario"
+- scrollUntilVisible:
+    element:
+      text: "La contraseña debe tener al menos 8 caracteres"
+- takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-validation
 - openLink: apisense:///
 - scrollUntilVisible:
     element:

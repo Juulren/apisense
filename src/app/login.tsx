@@ -160,7 +160,7 @@ export default function Login() {
           }
         />
         {task.message || app.error ? (
-          <Label color="#B45309">{task.message ?? app.error}</Label>
+          <Label tone="warning">{task.message ?? app.error}</Label>
         ) : null}
       </Card>
       <Label muted size={12} style={{ textAlign: "center" }}>

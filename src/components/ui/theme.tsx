@@ -26,6 +26,7 @@ const palettes = {
     amberText: "#92400E",
     greenText: "#047857",
     blueText: "#0369A1",
+    dangerText: "#B91C1C",
   },
   dark: {
     background: "#0B0F17",
@@ -40,6 +41,7 @@ const palettes = {
     amberText: "#FCD34D",
     greenText: "#6EE7B7",
     blueText: "#7DD3FC",
+    dangerText: "#FCA5A5",
   },
 };
 export type ThemePreference = "light" | "dark" | "system";

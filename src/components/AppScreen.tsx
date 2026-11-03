@@ -27,7 +27,7 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
     <Screen {...props} status={status}>
       {error ? (
         <View accessibilityRole="alert">
-          <Label color="#B45309">{error}</Label>
+          <Label tone="warning">{error}</Label>
         </View>
       ) : null}
       {props.children}
