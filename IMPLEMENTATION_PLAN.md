@@ -139,7 +139,6 @@ Avance #8 del 2 de noviembre: validación GATT/WSS, cancelación de búsquedas B
 | [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                      | Completar QA física y cuenta real en Android, bloqueo/permisos, firma y recuperación. PKCE y perfiles preparados; iOS en espera por decisión del usuario. |
 | [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                         | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                               |
 | [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                     | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                                       |
-| [#17](https://github.com/Juulren/apisense/issues/17)                                                   | Reclasificar la validación ARIA web heredada, fuera del alcance móvil               | Conservar el historial web y revisar su seguimiento; la accesibilidad nativa se comprueba en #25 con TalkBack/VoiceOver.                                                                              |
 | [#27](https://github.com/Juulren/apisense/issues/27)                                                   | Limpieza integrada; pendientes cuentas reales y sincronización en dispositivos | Código web retirado y demo nativa validada; completar acceso/cifrado y sincronización reales coordinados con #15/#8 antes del cierre.                                                                                  |
 
 ## Flujo siguiente
@@ -149,4 +148,12 @@ Avance #8 del 2 de noviembre: validación GATT/WSS, cancelación de búsquedas B
 3. Se abre un PR pequeño con evidencia y criterios pendientes explícitos. Se usa `Closes #NUMERO` solo cuando se cumplen todos los criterios; de lo contrario se enlaza con `Refs #NUMERO`.
 4. Se revisa y, con autorización y checks correctos, se integra; después se elige el siguiente Issue.
 
-El bloque activo #15 entrega cifrado comprobable y preparación Android. Al terminar su PR se detiene el trabajo: no inicia #8/#16/#25 ni publica en tiendas. La aceptación física de cuenta real y distribución se conserva explícitamente, con iOS en espera.
+El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, dejando fuera #15 y #27. Cada cambio conserva PR y evidencia propios. No se publica en tiendas; iOS continúa en espera. Los criterios de hardware, modelo y aceptación que necesiten recursos externos no se marcan como realizados por pasar pruebas con dobles.
+
+## Continuación autónoma — #16, #17, #25 y #8
+
+- [x] #16: PR #33 integrado; dos raíces corregidas y adaptador de importación compatible. 82 pruebas, bundles y recorrido nativo del mismo APK correctos; [repetición 41566406140](https://github.com/Juulren/apisense/actions/runs/41566406140). Quedan cuatro raíces de herramientas Expo en seguimiento.
+- [x] #17 cerrado como no planificado: ARIA/DOM web fuera del alcance vigente. La accesibilidad nativa continúa en #25.
+- [x] #25: capturada la app Android antes del cambio; se identificó pérdida de estilos funcionales de botones y barra de estado sin contraste. Correcciones y recorrido claro/oscuro en PR #34.
+- [ ] #25: revisar las capturas y controles nativos generados; completar aceptación visual/física y TalkBack. Las cinco adaptaciones existentes se conservan como base de desarrollo; no se atribuye al propietario una aprobación visual nueva.
+- [ ] #8: integrar y documentar las validaciones de transportes/identidad y contrato de modelo del PR #35; registrar por separado la aceptación física y científica pendiente.
