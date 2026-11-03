@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "status": "synthetic-tooling-check-only",
+  "modelSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "preprocessing": "apisense-mfcc-v1",
+  "split": "test",
+  "minimumScore": 0.6,
+  "datasetName": "synthetic-tooling-fixture-NO-BEE-DATA",
+  "synthetic": true,
+  "warnings": [
+    "SINTETICO: comprueba herramientas; no es evidencia biológica ni de precisión"
+  ],
+  "metrics": {
+    "count": 5,
+    "classes": [
+      "healthy",
+      "swarming",
+      "queenless",
+      "pest_disturbance",
+      "unknown"
+    ],
+    "confusionMatrix": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    ],
+    "perClass": [
+      {
+        "label": "healthy",
+        "support": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "label": "swarming",
+        "support": 1,
+        "predicted": 0,
+        "precision": null,
+        "recall": 0,
+        "f1": 0
+      },
+      {
+        "label": "queenless",
+        "support": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "label": "pest_disturbance",
+        "support": 1,
+        "predicted": 1,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      {
+        "label": "unknown",
+        "support": 1,
+        "predicted": 2,
+        "precision": 0.5,
+        "recall": 1,
+        "f1": 0.6666666666666666
+      }
+    ],
+    "accuracy": 0.8,
+    "macroF1Supported": 0.7333333333333333,
+    "coverage": 0.6,
+    "unknownRate": 0.4,
+    "selectiveAccuracy": 1,
+    "logLoss": 0.5004024235381879,
+    "multiclassBrierSum": 0.20400000000000001,
+    "topLabelEce10": 0.21999999999999997,
+    "reliabilityBins": [
+      {
+        "lower": 0,
+        "upper": 0.1,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "count": 1,
+        "confidence": 0.3,
+        "accuracy": 0
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "count": 4,
+        "confidence": 0.8,
+        "accuracy": 1
+      },
+      {
+        "lower": 0.9,
+        "upper": 1,
+        "count": 0,
+        "confidence": null,
+        "accuracy": null
+      }
+    ]
+  },
+  "perDevice": {
+    "synthetic-mic-1": {
+      "count": 5,
+      "classes": [
+        "healthy",
+        "swarming",
+        "queenless",
+        "pest_disturbance",
+        "unknown"
+      ],
+      "confusionMatrix": [
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "perClass": [
+        {
+          "label": "healthy",
+          "support": 1,
+          "predicted": 1,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1
+        },
+        {
+          "label": "swarming",
+          "support": 1,
+          "predicted": 0,
+          "precision": null,
+          "recall": 0,
+          "f1": 0
+        },
+        {
+          "label": "queenless",
+          "support": 1,
+          "predicted": 1,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1
+        },
+        {
+          "label": "pest_disturbance",
+          "support": 1,
+          "predicted": 1,
+          "precision": 1,
+          "recall": 1,
+          "f1": 1
+        },
+        {
+          "label": "unknown",
+          "support": 1,
+          "predicted": 2,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.6666666666666666
+        }
+      ],
+      "accuracy": 0.8,
+      "macroF1Supported": 0.7333333333333333,
+      "coverage": 0.6,
+      "unknownRate": 0.4,
+      "selectiveAccuracy": 1,
+      "logLoss": 0.5004024235381879,
+      "multiclassBrierSum": 0.20400000000000001,
+      "topLabelEce10": 0.21999999999999997,
+      "reliabilityBins": [
+        {
+          "lower": 0,
+          "upper": 0.1,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 1,
+          "confidence": 0.3,
+          "accuracy": 0
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 4,
+          "confidence": 0.8,
+          "accuracy": 1
+        },
+        {
+          "lower": 0.9,
+          "upper": 1,
+          "count": 0,
+          "confidence": null,
+          "accuracy": null
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Predicciones y hash del modelo declarados: no ejecuta ONNX ni verifica sus bytes",
+    "No certifica veracidad de etiquetas, calibración ni aceptación científica",
+    "unknown incluye la clase explícita y abstenciones por umbral; no se omiten del denominador",
+    "ECE usa diez bins uniformes del máximo original; no es certificación de calibración",
+    "Modelo y umbral se seleccionan con train/validation; test se reserva para evaluación final"
+  ],
+  "inputs": {
+    "preparedSha256": "529ff7bae3f08fa2efde4381b1185e9b3dbd15712c9bec86bc48faf1843f62f7",
+    "predictionsSha256": "1e83a35e2a64e259e82fb478530370edbb5eec1ed42c4a6655bf901d9f76fa3f",
+    "modelManifestSha256": "bc3c2c0f425561f2b23e0d83276a86bd61ac85921f40b847abb0b4912d934ce0"
+  }
+}

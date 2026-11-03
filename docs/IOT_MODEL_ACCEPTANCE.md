@@ -52,3 +52,7 @@ Antes de añadir un modelo, entregar:
 5. Latencia/memoria en Android y revisión de falsas alarmas con criterio apícola. No sustituir estos resultados por tonos sintéticos del simulador.
 
 No se generó ni se declaró entrenado un modelo en este bloque. #8 sigue abierto por estas pruebas y recursos externos.
+
+## Preparación y evaluación offline
+
+El [protocolo ejecutable](MODEL_EVALUATION.md) añade `model:prepare`, `model:evaluate` y una fixture explícitamente sintética. Valida WAV/hashes/etiquetas, separa grupos completos y ajusta normalización solo con entrenamiento; reporta matriz, métricas por clase/dispositivo y abstención. No entrena ni ejecuta ONNX y no convierte datos sintéticos en evidencia científica. La aceptación física/científica anterior sigue pendiente.

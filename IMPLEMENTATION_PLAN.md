@@ -175,3 +175,13 @@ El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, d
 - [ ] #25: aceptación física/TalkBack y decisiones visuales restantes; iOS en espera.
 
 Uso y límites: [HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md). Esta continuación sí añade la tabla necesaria para el ciclo en el backend de desarrollo; no cambia credenciales ni distribución.
+
+## Avance #8 — herramientas de evaluación, 3 de noviembre de 2026
+
+- [x] Contrato de dataset con licencia/procedencia/anotación, WAV/hashes y trazabilidad por grabación, colmena, apiario y dispositivo.
+- [x] Preparación ejecutable: grupos completos reproducibles, MFCC del mismo código de la app y normalización ajustada solo a train; rechaza duplicados/fugas evidentes.
+- [x] Evaluación de predicciones suministradas: contrato compartido, matriz, métricas por clase/dispositivo, abstención, log loss/Brier/ECE y hashes de entrada.
+- [x] Fixture de tonos y predicciones fabricadas identificada como sintética; prueba de CLI completa. 26 regresiones nuevas y 165 pruebas locales/TypeScript correctas.
+- [ ] Dataset real autorizado, anotación verificada, entrenamiento/ONNX y paridad en Android; revisión científica y aceptación física del #8 siguen pendientes.
+
+Uso y límites: [MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md). La herramienta no ejecuta ONNX ni acredita qué modelo produjo los vectores; no se añade un modelo al APK. #15/#27 e iOS siguen en pausa.
