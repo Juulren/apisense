@@ -58,7 +58,6 @@ name: Mapa errores y colmena sin lecturas
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000009999
 - assertVisible: "Selecciona una colmena válida"
 - scrollUntilVisible:
-    centerElement: true
     element: { text: "Guardar inspección" }
 - assertVisible: { text: "Guardar inspección", enabled: false }
 - takeScreenshot: .artifacts/design/states/05-invalid-hive-disabled

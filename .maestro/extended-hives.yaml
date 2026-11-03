@@ -118,11 +118,13 @@ name: Varios cuadros notas largas y paginacion de lecturas
           element: { text: "Inspección de demo guardada localmente." }
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
-    centerElement: true
+    # This control is near the bottom; centering it is physically impossible.
+    # Require full visibility, then verify the older saved note after tapping.
+    timeout: 60000
     element: { text: "Ver observaciones anteriores" }
 - tapOn: "Ver observaciones anteriores"
 - scrollUntilVisible:
-    centerElement: true
+    timeout: 60000
     element: { text: ".*FINAL NOTA LARGA QA.*" }
 - takeScreenshot: .artifacts/design/extended/05-older-long-note
 - openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000102
@@ -143,6 +145,7 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - tapOn: 'Ver lecturas guardadas \(12\)'
 - scrollUntilVisible:
     centerElement: true
+    timeout: 60000
     element: { text: "Mostrar más lecturas" }
 - tapOn: "Mostrar más lecturas"
 - scrollUntilVisible:

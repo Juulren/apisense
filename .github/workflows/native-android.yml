@@ -8,6 +8,9 @@ on:
       design_checks:
         type: boolean
         default: false
+      design_scope:
+        type: string
+        default: all
       artifact_run_id:
         type: string
         default: ""
@@ -30,6 +33,11 @@ on:
         description: Capturar pantallas claro/oscuro con datos sintéticos (sin acceso cloud)
         type: boolean
         default: false
+      design_scope:
+        description: Recorridos visuales completos o solo los casos ampliados
+        type: choice
+        options: [all, extended]
+        default: all
       artifact_run_id:
         description: Repetir el recorrido sobre un APK anterior (registra su SHA original)
         type: string
@@ -126,6 +134,7 @@ jobs:
       - uses: reactivecircus/android-emulator-runner@v2
         if: inputs.live_checks || inputs.design_checks
         env:
+          APISENSE_DESIGN_SCOPE: ${{ inputs.design_scope || 'all' }}
           MAESTRO_QA_A_EMAIL: ${{ secrets.APISENSE_NATIVE_QA_A_EMAIL }}
           MAESTRO_QA_A_PASSWORD: ${{ secrets.APISENSE_NATIVE_QA_A_PASSWORD }}
           MAESTRO_QA_B_EMAIL: ${{ secrets.APISENSE_NATIVE_QA_B_EMAIL }}
