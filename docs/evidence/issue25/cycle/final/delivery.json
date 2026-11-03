@@ -1,0 +1,14 @@
+{
+  "version": "0.1.2",
+  "version_code": 3,
+  "package": "com.apisense.app",
+  "bytes": 165721285,
+  "sha256": "b8e858dfd231be9f3ad3a97dfcc619157c4b95ea61532c42734a3b476a4646c5",
+  "apk_source_sha": "8649126d9edfdc78c3f574c92db8146b61e4e6cc",
+  "flow_source_sha": "20acc5348128af1dee7011d5c03db91d6af9ee71",
+  "build_run": 41581048991,
+  "validation_run": 41584654869,
+  "same_apk_verified": true,
+  "configured_server_values_checked": 2,
+  "matches": 0
+}

@@ -63,11 +63,13 @@ La demo del [PR #30](https://github.com/Juulren/apisense/pull/30), integrada en 
 
 ## APK de la app de desarrollo Android
 
-La entrega actual es **0.1.1 (código Android 2)** de la app real `com.apisense.app`, conectada al Supabase de desarrollo y separada de la demo. El APK independiente de Metro está en el artefacto `apisense-android-development` de [la ejecución validada](https://github.com/Juulren/apisense/actions/runs/41570910637); la copia local se entrega en `dist/development/Apisense-Android-Development-0.1.1.apk`, con checksum e instrucciones. Requiere Android 7/API 24 o superior en ARM64 o x86_64. SHA-256: `7a32ea9828eaad9ee1f83a31eea9ca4004b1496f71c6cbc77157a105f127ede6`.
+La entrega actual es **0.1.2 (código Android 3)** de la app real `com.apisense.app`, conectada al Supabase de desarrollo y separada de la demo. El APK independiente de Metro está en el artefacto `apisense-android-development` de [la ejecución validada](https://github.com/Juulren/apisense/actions/runs/41584654869); la copia local se entrega en `dist/development/Apisense-Android-Development-0.1.2.apk`, con checksum e instrucciones. Requiere Android 7/API 24 o superior en ARM64 o x86_64. SHA-256: `b8e858dfd231be9f3ad3a97dfcc619157c4b95ea61532c42734a3b476a4646c5`.
 
-La 0.1.1 incorpora las correcciones de dependencias, transportes/contrato de modelo y controles Android de los PR [#33](https://github.com/Juulren/apisense/pull/33), [#35](https://github.com/Juulren/apisense/pull/35) y [#34](https://github.com/Juulren/apisense/pull/34). Pasó el recorrido de once vistas en claro/oscuro, teclado, validación de acceso y controles nativos de 52dp; [capturas y límites de la revisión](design-qa.md). Este recorrido usa datos sintéticos locales; no acredita firmware, broker ni un modelo entrenado.
+Desde el detalle de cada colmena puedes **anotar observaciones**, consultar **lecturas individuales** y abrir su audio, y registrar el **ciclo de cría por cuadro o lote**. El círculo calcula el progreso desde una fecha guardada; las etapas observadas y el cierre por emergencia se confirman manualmente. [Guía de uso y límites](docs/HIVE_WORKFLOWS.md).
 
-La entrega anterior del [PR #32](https://github.com/Juulren/apisense/pull/32) validó acceso con dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización, salida, claves incorrectas/perdidas, DB/WAL y PKCE S256. Esas pruebas cloud no se repitieron en el recorrido visual de 0.1.1. Usa **Comenzar** para entrar con tu propia cuenta; las cuentas temporales fueron eliminadas. Firma de prueba para desarrollo; aceptación física, correo real y distribución conservan sus pendientes en [la guía Android](docs/ANDROID_SECURITY_QA.md).
+La 0.1.2 incorpora las correcciones de dependencias de [#36](https://github.com/Juulren/apisense/pull/36) y las funciones de colmena de [#37](https://github.com/Juulren/apisense/pull/37). Pasaron 139 pruebas, siete pruebas reales de backend y cuatro recorridos Android: claro/oscuro, guardado/reapertura, lectura/audio, ciclo y texto al 150%. La actualización local conservó una nota anterior y su audio. [Capturas, procedencia y aceptación pendiente](design-qa.md). Los recorridos de UI usan el espacio sintético dentro de la app de campo; no acreditan hardware, broker ni un modelo entrenado.
+
+La entrega anterior del [PR #32](https://github.com/Juulren/apisense/pull/32) validó acceso con dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización, salida, claves incorrectas/perdidas, DB/WAL y PKCE S256. El recorrido visual de 0.1.2 no repite esas pruebas de cuentas/PKCE; sus siete pruebas separadas de backend sí incluyen el ciclo. Usa **Comenzar** para entrar con tu propia cuenta; las cuentas temporales fueron eliminadas. Firma de prueba para desarrollo; aceptación física, correo real y distribución conservan sus pendientes en [la guía Android](docs/ANDROID_SECURITY_QA.md).
 
 ## Configuración de servicios reales
 
@@ -85,7 +87,7 @@ Reinicia Expo después de cambiar la configuración. Los valores `EXPO_PUBLIC_*`
 
 La URL y la clave pública se obtienen desde **Connect** en el proyecto de Supabase. Aunque la variable se llama `ANON_KEY`, acepta la clave Publishable actual. `.env` está excluido de Git; no subas sus valores.
 
-En el proyecto de desarrollo ya se aplicaron las migraciones, RLS en las seis tablas, el bucket privado y la función con cron. Para otro proyecto, sigue [la guía de backend](docs/SUPABASE.md). Puedes comprobar tu configuración sin mostrar las claves con:
+En el proyecto de desarrollo ya se aplicaron las migraciones, RLS en las siete tablas (incluido el ciclo de cría), el bucket privado y la función con cron. Para otro proyecto, sigue [la guía de backend](docs/SUPABASE.md). Puedes comprobar tu configuración sin mostrar las claves con:
 
 ```bash
 npm run backend:check
@@ -105,7 +107,7 @@ En las cuentas reales, la implementación utiliza SQLCipher y SecureStore, con c
 
 La integración cloud se comprobó con dos cuentas temporales: aislamiento de las seis tablas, rechazo de escrituras ajenas, audio privado y resúmenes idempotentes. Las conexiones de la app con Supabase usan HTTPS y el secreto cron está en Vault y en los secretos de la función. El backend autorizado necesita leer los clips para analizarlos; este diseño no proporciona cifrado de extremo a extremo frente al servidor.
 
-La validación del cifrado en dispositivos y la revisión de dependencias siguen abiertas. Consulta la [arquitectura de seguridad](docs/SECURITY_ARCHITECTURE.md) y el [plan](IMPLEMENTATION_PLAN.md) antes de preparar una publicación.
+La revisión de dependencias del #16 está completada, con siete avisos low de versión documentados pese a los parches locales. La validación física del cifrado sigue pendiente. Consulta la [arquitectura de seguridad](docs/SECURITY_ARCHITECTURE.md) y el [plan](IMPLEMENTATION_PLAN.md) antes de preparar una publicación.
 
 ## Comprobar el proyecto
 

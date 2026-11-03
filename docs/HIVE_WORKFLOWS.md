@@ -13,7 +13,7 @@ El detalle de una colmena reúne tres funciones de campo. La app de desarrollo u
 
 ## Lecturas individuales
 
-**Ver lecturas guardadas** despliega únicamente muestras de la colmena actual, con fecha, origen, duración, frecuencia, nivel digital y micrófono. **Abrir lectura N** abre esa muestra concreta en Monitoreo: su audio, gráfica y telemetría; no sustituye silenciosamente el registro por el más reciente. **Mostrar última lectura** vuelve explícitamente al estado actual. Cambiar de colmena detiene el audio anterior.
+**Ver lecturas guardadas** despliega únicamente muestras de la colmena actual, con fecha, origen, duración, frecuencia, nivel digital y micrófono. **Abrir lectura N** abre esa muestra concreta en Monitoreo: su audio disponible, gráfica calculada cuando existe un clip local y telemetría; no sustituye silenciosamente el registro por el más reciente. **Mostrar última lectura** vuelve explícitamente al estado actual. Cambiar de colmena detiene el audio anterior.
 
 La lista amplía de diez en diez. En una colmena real vacía se muestra que faltan lecturas; no se generan datos. El nivel digital es dBFS, no SPL calibrado. Las reglas acústicas siguen siendo experimentales; hardware, calibración y modelo entrenado mantienen el seguimiento de #8.
 
@@ -32,4 +32,4 @@ Es un calendario aproximado de **obreras**, con día 1 en la fecha registrada; n
 
 La migración local v1→v2 conserva las observaciones y lecturas existentes y añade `brood_cycles`. La migración `202611020001_brood_cycles.sql` añade la tabla remota con RLS por propietario de la colmena, timestamps e índices. Se integra en la misma cola y descarga por cuenta; se aplicó en el Supabase de desarrollo tras verificar que coincidía con el proyecto del cliente. Pasaron 139 pruebas locales/TypeScript y siete pruebas reales de backend, con sincronización y rechazo de escrituras de otra cuenta; las cuentas y datos temporales se limpiaron.
 
-El recorrido Android de este bloque debe verificar guardado/reapertura, audio de una lectura concreta, aislamiento entre colmenas, fechas rechazadas, día 16→21, cierre manual y texto al 150%. Se registrarán capturas y resultados en `design-qa.md`. Esto no sustituye TalkBack y aceptación física; iOS continúa en espera. #15/#27 no se intervienen en este bloque.
+El [recorrido Android validado](https://github.com/Juulren/apisense/actions/runs/41584654869) pasó cuatro casos sin fallos: claro/oscuro y las funciones de guardado/reapertura, audio de una lectura concreta, aislamiento entre colmenas, fechas rechazadas, día 16→21, cierre manual y texto al 150%. La actualización local 0.1.1→0.1.2 conservó una nota y su audio. Capturas y procedencia en [design-qa.md](../design-qa.md). Esto no sustituye TalkBack y aceptación física; iOS continúa en espera. #15/#27 no se intervienen en este bloque.

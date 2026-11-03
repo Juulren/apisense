@@ -1,6 +1,33 @@
 # Design QA — Apisense
 
-Resultado actual: recorrido Android 0.1.1 correcto en ambos temas; pendiente de aceptación visual completa y TalkBack físico.
+Resultado actual: Android 0.1.2 correcto en ambos temas y en observaciones, lecturas y ciclo, incluido texto al 150%. Pendiente de aceptación visual completa y TalkBack físico.
+
+## Entrega Android 0.1.2 — funciones de colmena, 2 de noviembre de 2026
+
+La [validación 41584654869](https://github.com/Juulren/apisense/actions/runs/41584654869) terminó con **cuatro casos y cero fallos**: claro 104,443 s, oscuro 88,827 s, funciones por colmena 171,070 s y texto al 150%/cierre manual 72,829 s. Se revisaron las 38 capturas conservadas. Android 15/API 35, 1080×2400 px y densidad 420; escala 1,0 en las suites generales y 1,5 en la última. Los controles primarios >=52dp y la política del APK empaquetado pasaron. Esto acredita las áreas y estados recorridos, sin certificar toda la app.
+
+1. **Crear ciclo — correcto:** [día 16](docs/evidence/issue25/cycle/final/functional/01-cycle-day16.png) calculado desde la fecha guardada del cuadro/lote, con etapa y días restantes. El círculo abre la edición.
+2. **Validar fecha — correcto:** [fecha futura rechazada](docs/evidence/issue25/cycle/final/functional/02-cycle-invalid-date.png) antes de escribir, conservando el ciclo existente.
+3. **Anotar observación — correcto:** [nota guardada](docs/evidence/issue25/cycle/final/functional/03-observation-saved.png) en la colmena seleccionada y confirmación visible.
+4. **Leer y escuchar — correcto:** [muestra concreta con audio en reproducción](docs/evidence/issue25/cycle/final/functional/04-selected-reading-audio.png), sin sustituirla por la última lectura. La gráfica requiere clip local; sin él se informa que solo hay telemetría.
+5. **Separar colmenas — correcto:** [otra colmena sin ciclo](docs/evidence/issue25/cycle/final/functional/05-other-hive-no-cycle.png), sin heredar el registro anterior.
+6. **Reabrir ciclo — correcto:** [registro conservado](docs/evidence/issue25/cycle/final/functional/06-cycle-after-reopen.png) tras cerrar y abrir, entrando explícitamente al espacio sintético.
+7. **Reabrir observación — correcto:** [misma nota conservada](docs/evidence/issue25/cycle/final/functional/07-observation-after-reopen.png) en su bitácora.
+8. **Texto al 150% — corregido y comprobado:** [día 16 y navegación legible](docs/evidence/issue25/cycle/final/large-font/01-cycle-text150.png). El [estado anterior](docs/evidence/issue25/cycle/before-text150.png) dejaba una letra aislada de Diagnóstico; ahora la navegación usa dos columnas conservando el escalado.
+9. **Llegar al día 21 — correcto:** [emergencia por verificar](docs/evidence/issue25/cycle/final/large-font/02-day21-not-auto-closed.png); el calendario no confirma nacimientos ni reinicia el registro.
+10. **Confirmar emergencia — correcto:** [cierre manual explícito](docs/evidence/issue25/cycle/final/large-font/03-manual-emergence.png) y registro conservado en el historial.
+
+Las once vistas generales y los estados de teclado/error se volvieron a capturar en [claro](docs/evidence/issue25/cycle/final/light/01-welcome.png) y [oscuro](docs/evidence/issue25/cycle/final/dark/01-welcome.png); cada tema conserva la numeración de la tabla histórica 0.1.1. Evidencia: [JUnit claro](docs/evidence/issue25/cycle/final/light.xml), [oscuro](docs/evidence/issue25/cycle/final/dark.xml), [funciones](docs/evidence/issue25/cycle/final/functional.xml), [texto grande](docs/evidence/issue25/cycle/final/large-font.xml), [bounds claro](docs/evidence/issue25/cycle/final/light-controls.xml), [oscuro](docs/evidence/issue25/cycle/final/dark-controls.xml), [texto grande](docs/evidence/issue25/cycle/final/large-font-controls.xml), [viewport](docs/evidence/issue25/cycle/final/viewport.txt) y [escala](docs/evidence/issue25/cycle/final/font-scale.txt).
+
+APK **0.1.2/código 3**, `com.apisense.app`, compilado desde `8649126d9edfdc78c3f574c92db8146b61e4e6cc` en [41581048991](https://github.com/Juulren/apisense/actions/runs/41581048991). La primera prueba funcional encontró el botón de audio recortado a 13px que Maestro consideraba visible: el recorrido ahora centra el control antes de pulsarlo y conserva la comprobación de reproducción real. La repetición final usa el mismo APK, con hash idéntico, y recorridos de `20acc5348128af1dee7011d5c03db91d6af9ee71`; el código de la app no cambió. [Procedencia](docs/evidence/issue25/cycle/final/provenance.json), [manifiesto](docs/evidence/issue25/cycle/final/manifest.xml) y [entrega](docs/evidence/issue25/cycle/final/delivery.json).
+
+La copia local `dist/development/Apisense-Android-Development-0.1.2.apk` pesa 165721285 bytes; SHA-256 `b8e858dfd231be9f3ad3a97dfcc619157c4b95ea61532c42734a3b476a4646c5`. Se comprobó el hash y la ausencia de los dos secretos de servidor configurados en sus entradas descomprimidas, sin imprimir sus valores; no es una auditoría completa de secretos. Firma de desarrollo, sin publicación en tienda.
+
+También se instaló con `adb install -r` sobre 0.1.1/código 2 en el emulador local, **sin borrar datos**. La migración SQLCipher v1→v2 conservó una [nota creada antes de actualizar](docs/evidence/issue25/cycle/migration-before-log.png), visible [después](docs/evidence/issue25/cycle/migration-after-log.png), y permitió [reproducir el audio anterior](docs/evidence/issue25/cycle/migration-after-audio.png). [Registro](docs/evidence/issue25/cycle/migration-local.json). Esto no sustituye una actualización física en el S21 Ultra.
+
+Las pruebas de UI usan el espacio sintético aislado de la app de campo. Por separado pasaron **139 pruebas locales, TypeScript y siete pruebas reales de backend**, incluida sincronización del ciclo y rechazo de acceso cruzado; las cuentas y datos temporales se eliminaron. [Uso, migraciones y límites del calendario](docs/HIVE_WORKFLOWS.md). No se acreditan sensores, broker ni modelo entrenado.
+
+**Pendiente en #25:** aprobación de las cinco adaptaciones, comparación con fuentes aprobadas al mismo viewport/estado, zonas y estados no recorridos, escalado fuera de los casos probados y TalkBack/aceptación física. Los atributos accesibles no acreditan el anuncio y orden reales. iOS sigue en espera; #15/#27 no se modifican. #25 permanece abierto.
 
 ## Revisión Android — 2 de noviembre de 2026, #25
 

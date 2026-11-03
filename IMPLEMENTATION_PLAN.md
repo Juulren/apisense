@@ -171,7 +171,7 @@ El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, d
 - [x] #25: círculo de cría funcional, por cuadro/lote y fecha; progreso/etapas estimados, observación manual, edición y cierre explícito, sin nacimiento automático ni cifras biológicas inventadas.
 - [x] Migración local v1→v2 que conserva datos y tabla remota con RLS integrada en la sincronización. Aplicada en desarrollo; 139 pruebas locales y siete pruebas reales de backend correctas, con limpieza de cuentas temporales.
 - [x] Capturada la app anterior al 150%: la navegación partía Diagnóstico en una letra final. Se adapta a dos columnas con texto grande, conservando el escalado.
-- [ ] Compilar y recorrer Android 0.1.2, revisar capturas y texto ampliado, entregar APK y actualizar evidencia/README en main.
+- [x] Android 0.1.2/código 3 validado: cuatro casos/0 fallos, 38 capturas revisadas, texto al 150%, migración local conservando nota/audio y APK con SHA-256 en dist/development. README y evidencia incluidos en PR #37 para integrar en main tras sus checks.
 - [ ] #25: aceptación física/TalkBack y decisiones visuales restantes; iOS en espera.
 
 Uso y límites: [HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md). Esta continuación sí añade la tabla necesaria para el ciclo en el backend de desarrollo; no cambia credenciales ni distribución.
