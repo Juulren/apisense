@@ -2,6 +2,7 @@ import { BleManager, type Subscription } from "react-native-ble-plx";
 import { PermissionsAndroid, Platform } from "react-native";
 import { toByteArray } from "base64-js";
 import { JsonLineFramer } from "./protocol";
+import { requireBleProfile } from "./configuration";
 export interface DiscoveredMic {
   id: string;
   name: string;
@@ -15,11 +16,15 @@ export class BleTransport {
   private disconnect?: Subscription;
   private deviceId?: string;
   private timer?: ReturnType<typeof setTimeout>;
+  private finishScan?: (error?: Error) => void;
+  private scanVersion = 0;
+  private connectionVersion = 0;
   private service = process.env.EXPO_PUBLIC_BLE_SERVICE_UUID;
   private characteristic = process.env.EXPO_PUBLIC_BLE_CHARACTERISTIC_UUID;
   async scan(found: (device: DiscoveredMic) => void) {
-    if (!this.service || !this.characteristic)
-      throw new Error("Configura los UUID BLE del firmware");
+    requireBleProfile(this.service, this.characteristic);
+    this.stopScan();
+    const scanVersion = this.scanVersion;
     if (Platform.OS === "android") {
       const permissions =
         Number(Platform.Version) >= 31
@@ -29,6 +34,7 @@ export class BleTransport {
             ]
           : [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
       const result = await PermissionsAndroid.requestMultiple(permissions);
+      if (scanVersion !== this.scanVersion) return;
       if (
         permissions.some(
           (p) => result[p] !== PermissionsAndroid.RESULTS.GRANTED,
@@ -36,28 +42,43 @@ export class BleTransport {
       )
         throw new Error("Permiso Bluetooth denegado");
     }
-    if ((await this.manager.state()) !== "PoweredOn")
+    const state = await this.manager.state();
+    if (scanVersion !== this.scanVersion) return;
+    if (state !== "PoweredOn")
       throw new Error("Activa Bluetooth para buscar micrófonos");
     await new Promise<void>((resolve, reject) => {
-      this.manager.startDeviceScan([this.service!], null, (error, device) => {
-        if (error) {
-          this.stopScan();
-          reject(error);
-          return;
-        }
-        if (device)
-          found({
-            id: device.id,
-            name: device.localName ?? device.name ?? "Micrófono BLE",
-          });
-      });
-      this.timer = setTimeout(() => {
-        this.stopScan();
-        resolve();
-      }, 10_000);
+      const finish = (error?: Error) => {
+        if (this.finishScan !== finish) return;
+        this.finishScan = undefined;
+        clearTimeout(this.timer);
+        this.manager.stopDeviceScan();
+        if (error) reject(error);
+        else resolve();
+      };
+      this.finishScan = finish;
+      this.timer = setTimeout(() => finish(), 10_000);
+      try {
+        this.manager.startDeviceScan([this.service!], null, (error, device) => {
+          if (this.finishScan !== finish) return;
+          if (error) return finish(error);
+          if (device)
+            found({
+              id: device.id,
+              name: device.localName ?? device.name ?? "Micrófono BLE",
+            });
+        });
+      } catch (error) {
+        finish(
+          error instanceof Error
+            ? error
+            : new Error("No se pudo iniciar Bluetooth"),
+        );
+      }
     });
   }
   stopScan() {
+    this.scanVersion++;
+    if (this.finishScan) return this.finishScan();
     this.instance?.stopDeviceScan();
     clearTimeout(this.timer);
   }
@@ -66,23 +87,33 @@ export class BleTransport {
     onFrame: (frame: unknown) => Promise<unknown>,
     onError: (error: Error) => void,
   ) {
-    if (!this.service || !this.characteristic)
-      throw new Error("Configura los UUID BLE del firmware");
+    requireBleProfile(this.service, this.characteristic);
     this.stopScan();
+    const connectionVersion = ++this.connectionVersion;
+    const manager = this.manager;
     this.monitor?.remove();
     this.disconnect?.remove();
     if (this.deviceId && this.deviceId !== id)
-      await this.manager.cancelDeviceConnection(this.deviceId).catch(() => {});
-    const device = await this.manager.connectToDevice(id, { timeout: 10_000 });
-    await device.discoverAllServicesAndCharacteristics();
+      await manager.cancelDeviceConnection(this.deviceId).catch(() => {});
+    const device = await manager.connectToDevice(id, { timeout: 10_000 });
+    try {
+      if (connectionVersion !== this.connectionVersion)
+        throw new Error("Conexión Bluetooth cancelada");
+      await device.discoverAllServicesAndCharacteristics();
+      if (connectionVersion !== this.connectionVersion)
+        throw new Error("Conexión Bluetooth cancelada");
+    } catch (error) {
+      await manager.cancelDeviceConnection(id).catch(() => {});
+      throw error;
+    }
     this.deviceId = id;
     const framer = new JsonLineFramer();
     this.disconnect = this.manager.onDeviceDisconnected(id, (error) =>
       onError(new Error(error?.message ?? "Micrófono desconectado")),
     );
     this.monitor = device.monitorCharacteristicForService(
-      this.service,
-      this.characteristic,
+      this.service!,
+      this.characteristic!,
       (error, characteristic) => {
         if (error) {
           onError(error);
@@ -104,6 +135,7 @@ export class BleTransport {
     );
   }
   async stop() {
+    this.connectionVersion++;
     this.stopScan();
     this.monitor?.remove();
     this.disconnect?.remove();
@@ -111,5 +143,8 @@ export class BleTransport {
       await this.manager.cancelDeviceConnection(this.deviceId).catch(() => {});
     await this.instance?.destroy();
     this.instance = undefined;
+    this.deviceId = undefined;
+    this.monitor = undefined;
+    this.disconnect = undefined;
   }
 }

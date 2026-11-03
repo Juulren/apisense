@@ -10,6 +10,7 @@
     "dev": "expo start",
     "android": "expo run:android",
     "field:android": "node scripts/native-field.mjs android",
+    "iot:validate": "node scripts/validate-hardware-capture.mjs",
     "ios": "expo run:ios",
     "demo:android": "node scripts/native-demo.mjs android",
     "demo:ios": "node scripts/native-demo.mjs ios",

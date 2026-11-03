@@ -3,7 +3,10 @@ import type { Classification } from "../iot/AudioIngestionService";
 import type { TelemetryFrame } from "../iot/protocol";
 import { decodeWav } from "../iot/wav";
 import { preprocess } from "./acoustics";
+import { MFCC_CONTRACT } from "./ModelContract";
 export interface InferenceModel {
+  sampleRateHz: number;
+  preprocessing: string;
   predict(mfcc: number[]): Promise<Classification>;
 }
 export class AcousticClassifier {
@@ -18,7 +21,20 @@ export class AcousticClassifier {
       frequency = features.dominantHz;
       flatness = features.flatness;
     }
-    if (this.model) return this.model.predict(frame.mfcc_features);
+    if (this.model) {
+      // Feature-only firmware must declare the same preprocessing contract.
+      if (
+        frame.sampling_rate_hz !== this.model.sampleRateHz ||
+        this.model.preprocessing !== MFCC_CONTRACT ||
+        (!frame.wav_base64 && frame.mfcc_version !== MFCC_CONTRACT)
+      )
+        return {
+          classification: "unknown",
+          confidence: 0,
+          version: "incompatible-model-features",
+        };
+      return this.model.predict(frame.mfcc_features);
+    }
     const version = "experimental-rules-v1";
     if (flatness !== undefined && flatness > 0.15)
       return { classification: "pest_disturbance", confidence: 0.45, version };

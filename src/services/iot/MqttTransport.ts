@@ -1,4 +1,5 @@
 import { connect, type MqttClient } from "mqtt";
+import { mqttEndpoint } from "./configuration";
 export class MqttTransport {
   private client?: MqttClient;
   start(
@@ -11,14 +12,12 @@ export class MqttTransport {
     onFrame: (frame: unknown) => Promise<unknown>,
     onError: (error: Error) => void,
   ) {
-    if (
-      !options.url.startsWith("wss://") ||
-      !/^[a-zA-Z0-9-]+$/.test(options.userId)
-    )
+    if (!/^[a-zA-Z0-9-]+$/.test(options.userId))
       throw new Error("MQTT requiere WSS y una identidad válida");
+    const url = mqttEndpoint(options.url);
     this.stop();
     const topic = `apisense/${options.userId}/hives/+/telemetry`;
-    this.client = connect(options.url, {
+    const client = connect(url, {
       username: options.username,
       password: options.password,
       clean: true,
@@ -26,13 +25,18 @@ export class MqttTransport {
       connectTimeout: 10_000,
       protocolVersion: 4,
     });
-    this.client.on("connect", () =>
-      this.client?.subscribe(topic, { qos: 1 }, (error) => {
-        if (error) onError(error);
-      }),
-    );
-    this.client.on("error", onError);
-    this.client.on("message", (received, payload) => {
+    this.client = client;
+    client.on("connect", () => {
+      if (this.client !== client) return;
+      client.subscribe(topic, { qos: 1 }, (error) => {
+        if (error && this.client === client) onError(error);
+      });
+    });
+    client.on("error", (error) => {
+      if (this.client === client) onError(error);
+    });
+    client.on("message", (received, payload) => {
+      if (this.client !== client) return;
       try {
         if (payload.length > 1_500_000)
           throw new Error("Paquete MQTT demasiado grande");

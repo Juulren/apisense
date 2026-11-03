@@ -40,20 +40,21 @@ export default function Pairing() {
   const connect = (device: DiscoveredMic) =>
     task.run(async () => {
       if (!app.workspace || !hive) throw new Error("Selecciona una colmena");
+      const microphoneId = logicalId.trim().toLowerCase();
       if (
         !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          logicalId,
+          microphoneId,
         )
       )
         throw new Error("Introduce el UUID lógico configurado en el firmware");
       const existing = await app.workspace.repo.get(
         "iot_microphones",
-        logicalId,
+        microphoneId,
       );
       if (existing && existing.hive_id !== hive.id)
         throw new Error("Este micrófono ya está vinculado a otra colmena");
       await app.workspace.repo.save("iot_microphones", {
-        id: logicalId,
+        id: microphoneId,
         hive_id: hive.id,
         mac_address: device.id,
         firmware_version: existing?.firmware_version ?? "unknown",
@@ -66,7 +67,11 @@ export default function Pairing() {
       const w = app.workspace;
       await w.ble.connect(
         device.id,
-        (frame) => w.ingestion.ingest(frame, "ble"),
+        (frame) =>
+          w.ingestion.ingest(frame, "ble", {
+            hiveId: hive.id,
+            deviceId: microphoneId,
+          }),
         (error) => setNotice(error.message),
       );
       await app.refresh();

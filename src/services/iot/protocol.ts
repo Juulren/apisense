@@ -9,6 +9,7 @@ export interface TelemetryFrame {
   dominant_freq_hz: number;
   amplitude_db: number;
   mfcc_features: number[];
+  mfcc_version?: string;
   battery_level: number;
   wav_base64?: string;
 }
@@ -24,7 +25,16 @@ export function validateFrame(
   const finite = (v: unknown, min: number, max: number) =>
     typeof v === "number" && Number.isFinite(v) && v >= min && v <= max;
   if (
+    f.mfcc_version !== undefined &&
+    (typeof f.mfcc_version !== "string" ||
+      !/^[a-zA-Z0-9._-]{1,64}$/.test(f.mfcc_version))
+  )
+    throw new Error("Versión de MFCC inválida");
+  if (
     f.version !== 1 ||
+    typeof f.id !== "string" ||
+    typeof f.hive_id !== "string" ||
+    typeof f.device_id !== "string" ||
     !uuid.test(f.id ?? "") ||
     !uuid.test(f.hive_id ?? "") ||
     !uuid.test(f.device_id ?? "")
@@ -32,6 +42,9 @@ export function validateFrame(
     throw new Error("Versión o identificadores inválidos");
   if (
     typeof f.recorded_at !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      f.recorded_at,
+    ) ||
     !Number.isFinite(Date.parse(f.recorded_at)) ||
     Date.parse(f.recorded_at) > now + 300_000
   )
@@ -61,6 +74,9 @@ export function validateFrame(
     throw new Error("Clip base64 inválido o demasiado grande");
   return {
     ...f,
+    id: f.id.toLowerCase(),
+    hive_id: f.hive_id.toLowerCase(),
+    device_id: f.device_id.toLowerCase(),
     recorded_at: new Date(f.recorded_at).toISOString(),
   } as TelemetryFrame;
 }
