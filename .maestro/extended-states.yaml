@@ -1,0 +1,72 @@
+appId: com.apisense.app
+name: Mapa errores y colmena sin lecturas
+---
+- openLink: apisense:///hives
+- assertVisible: "Mis colmenas"
+- tapOn: { text: "^Mapa$" }
+- scrollUntilVisible:
+    centerElement: true
+    element: { id: "demo-map" }
+- takeScreenshot: .artifacts/design/states/01-local-map
+- scrollUntilVisible:
+    element: { text: "Nombre o código" }
+- tapOn: "Nombre o código"
+- inputText: zzz-no-existe
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "No hay colmenas para esta búsqueda." }
+- takeScreenshot: .artifacts/design/states/02-empty-search
+- scrollUntilVisible:
+    element: { text: "Colmena 09" }
+- tapOn: "Colmena 09"
+- inputText: QA sin lecturas
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Guardar colmena" }
+- tapOn: "Guardar colmena"
+- scrollUntilVisible:
+    element: { text: "Colmena guardada localmente" }
+- openLink: apisense:///hives
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Abrir QA sin lecturas" }
+- tapOn: "Abrir QA sin lecturas"
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: 'Ver lecturas guardadas \(0\)' }
+- tapOn: 'Ver lecturas guardadas \(0\)'
+- scrollUntilVisible:
+    element: { text: "Aún no hay lecturas de esta colmena. Vincula un micrófono desde el monitor acústico." }
+- takeScreenshot: .artifacts/design/states/03-empty-readings
+- scrollUntilVisible:
+    direction: UP
+    element: { text: "Anotar observación de esta colmena" }
+- tapOn: "Anotar observación de esta colmena"
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Guardar inspección" }
+- tapOn: "Guardar inspección"
+- scrollUntilVisible:
+    element: { text: "Describe tu observación con al menos 10 caracteres" }
+- takeScreenshot: .artifacts/design/states/04-inspection-validation
+- openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000009999
+- assertVisible: "Selecciona una colmena válida"
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Guardar inspección" }
+- assertVisible: { text: "Guardar inspección", enabled: false }
+- takeScreenshot: .artifacts/design/states/05-invalid-hive-disabled
+- openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000102&sampleId=00000000-0000-4000-8000-000000009999
+- assertVisible: "La lectura solicitada no está disponible en esta colmena"
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Escuchar zumbido" }
+- assertVisible: { text: "Escuchar zumbido", enabled: false }
+- takeScreenshot: .artifacts/design/states/06-unavailable-reading
+- scrollUntilVisible:
+    direction: UP
+    centerElement: true
+    element: { text: "Mostrar última lectura" }
+- tapOn: "Mostrar última lectura"
+- assertNotVisible: "La lectura solicitada no está disponible en esta colmena"

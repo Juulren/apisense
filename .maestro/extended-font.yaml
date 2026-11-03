@@ -1,0 +1,33 @@
+appId: com.apisense.app
+name: Navegacion ciclo y formulario con texto al 200 por ciento
+---
+- launchApp
+- openLink: apisense:///
+- scrollUntilVisible:
+    element: { text: "Explorar demo local" }
+- tapOn: "Explorar demo local"
+- extendedWaitUntil:
+    visible: "Datos de demostración · Sin envío a nube"
+    timeout: 60000
+- openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
+- scrollUntilVisible:
+    centerElement: true
+    element: { id: "brood-cycle-ring" }
+- takeScreenshot: .artifacts/design/font200/01-cycle-navigation
+- tapOn: { id: "brood-cycle-ring" }
+- scrollUntilVisible:
+    centerElement: true
+    element: { id: "cycle-label" }
+- takeScreenshot: .artifacts/design/font200/02-cycle-editor
+- openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
+- scrollUntilVisible:
+    centerElement: true
+    element: { id: "inspection-notes" }
+- tapOn: { id: "inspection-notes" }
+- inputText: Texto grande con teclado y observacion de campo
+- takeScreenshot: .artifacts/design/font200/03-notes-keyboard
+- hideKeyboard
+- scrollUntilVisible:
+    centerElement: true
+    element: { text: "Guardar inspección" }
+- takeScreenshot: .artifacts/design/font200/04-save-reachable

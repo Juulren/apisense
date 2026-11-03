@@ -42,3 +42,23 @@ adb shell settings get system font_scale > .artifacts/design/font-scale.txt
   --test-output-dir .artifacts/design/large-font/maestro .maestro/hive-large-font.yaml
 adb shell uiautomator dump /sdcard/apisense-large-font.xml
 adb pull /sdcard/apisense-large-font.xml .artifacts/design/large-font-controls.xml
+
+# Additional state/volume regressions use the same isolated synthetic workspace.
+adb shell settings put system font_scale 1.0
+adb shell am force-stop com.apisense.app
+"$HOME/.maestro/bin/maestro" test -e CYCLE_START="$cycle_start" \
+  --format junit --output .artifacts/design/extended.xml \
+  --test-output-dir .artifacts/design/extended/maestro .maestro/extended-hives.yaml
+"$HOME/.maestro/bin/maestro" test \
+  --format junit --output .artifacts/design/states.xml \
+  --test-output-dir .artifacts/design/states/maestro .maestro/extended-states.yaml
+
+adb shell settings put system font_scale 2.0
+adb shell am force-stop com.apisense.app
+adb shell settings get system font_scale > .artifacts/design/font200-scale.txt
+"$HOME/.maestro/bin/maestro" test \
+  --format junit --output .artifacts/design/font200.xml \
+  --test-output-dir .artifacts/design/font200/maestro .maestro/extended-font.yaml
+adb shell uiautomator dump /sdcard/apisense-font200.xml
+adb pull /sdcard/apisense-font200.xml .artifacts/design/font200-controls.xml
+adb shell settings put system font_scale 1.0
