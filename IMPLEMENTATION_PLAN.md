@@ -129,6 +129,8 @@ Procedimiento, evidencia y límites: [ANDROID_SECURITY_QA.md](docs/ANDROID_SECUR
 
 ## Pendientes de producto
 
+Avance #16 del 2 de noviembre: decodificador 0.5.1 y node-forge 1.4.2, adaptador de importación compatible con Expo Router y seis regresiones específicas. Auditoría: 17 → 13 entradas; high: 6 → 2, sin críticas. Quedan deepmerge/glob/minimatch/zod en herramientas de Expo, con evaluación explícita en [SECURITY_ARCHITECTURE.md](docs/SECURITY_ARCHITECTURE.md). Se mantiene #16 abierto por esas raíces; no se modifican #15 ni #27.
+
 | Issue                                                                                                  | Trabajo restante                                                                    | Criterio de aceptación                                                                                                                                                                                |
 | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [#25](https://github.com/Juulren/apisense/issues/25)                                                   | Aprobar adaptaciones y completar la comparación visual por ruta                     | Decidir sobre las cinco vistas sin fuente independiente y comparar las apps Android/iOS con fuentes aprobadas al mismo viewport, tema y estado.                                                       |

@@ -29,3 +29,23 @@ El 21 de octubre de 2026 se aplicaron las migraciones y se desplegaron función 
 La auditoría inicial detectó 39 entradas, con 2 críticas. Se actualizó Vitest 5 y se fijaron dependencias transitivas corregidas (`decode-uri-component`, `postcss-selector-parser`, `uuid`), repitiendo tests y exportación. En aquella comprobación quedaron 22 entradas high derivadas de [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) y [node-forge](https://github.com/advisories/GHSA-86w9-cpqp-85rv). La auditoría histórica del 26 de octubre tras #27 informa 0 críticas y 5 high, con node-forge y zod como avisos raíz. No se atribuye la diferencia solo a la retirada de dependencias: el registro de avisos también cambia con el tiempo. #16 conserva la evaluación antes de release; no se declara riesgo nulo ni se aplican cambios incompatibles automáticamente. CI falla con avisos críticos y reporta los restantes. El 2 de noviembre se repitió: 0 críticas, 6 high, 9 moderadas y 2 low; detalle y límites en [la evidencia Android](ANDROID_SECURITY_QA.md).
 
 No se han puesto secretos reales en el repositorio ni publicado una aplicación. El backend de desarrollo está instalado. El bloque #15 añade callback PKCE, política del APK y comprobaciones nativas sintéticas; ver [evidencia actual y pendientes Android](ANDROID_SECURITY_QA.md). iOS queda en espera por decisión del usuario el 2 de noviembre.
+
+## Reevaluación de dependencias — #16, 2 de noviembre de 2026
+
+Se corrigieron dos raíces sin cambiar Expo 57, React Native ni ONNX:
+
+- `decode-uri-component` 0.5.0 → **0.5.1**, fijado mediante override. La entrada con 16 000 secuencias distintas y un escape inválido tardó 5146 ms antes y 79 ms después en esta máquina. Se conserva una regresión acotada con margen de 1500 ms. [Aviso y corrección upstream](https://github.com/advisories/GHSA-qr28-fpjm-wq7f).
+- `node-forge` 1.4.0 → **1.4.2**, compatible con los consumidores de Expo. Dos firmas sintéticas con campos adicionales dentro de `DigestAlgorithm` eran aceptadas antes; ahora se rechazan. Las firmas válidas, PEM como Buffer y la generación/validación real de certificados de Expo siguen funcionando. [Cambios upstream](https://github.com/digitalbazaar/forge/blob/v1.4.2/CHANGELOG.md).
+
+El override anterior del decodificador ya era ESM y rompía `query-string` 7.1.3, que lo importaba como una función CommonJS. El postinstall normaliza exclusivamente ese import, verifica versión y SHA-256 del archivo original y admite su ejecución repetida. Actualizar `query-string` a 9.x cambiaría sus exports y rompería los imports de Expo Router; se conserva su API. Las pruebas cubren Unicode, arrays, escapes malformados, serialización y el caso de coste cuadrático. La ruta principal de Expo usa URLSearchParams, pero su alternativa de React Navigation aún importa este parser.
+
+`npm ci`, TypeScript y las regresiones locales pasan. La auditoría baja de **17 entradas (6 high, 9 moderadas, 2 low)** a **13 (2 high, 9 moderadas, 2 low)**, sin críticas. Las entradas incluyen propagación por paquetes consumidores; no equivalen a 13 vulnerabilidades independientes.
+
+| Raíz pendiente | Consumidor observado | Decisión de compatibilidad |
+| --- | --- | --- |
+| deepmerge 4.3.1 | Configuración/plugins de Expo, durante compilación | [Sin versión corregida publicada](https://github.com/advisories/GHSA-gcqx-w48m-w2h4); no procesar configuraciones de fuentes no confiables. |
+| glob 13.0.6 | CLI, configuración, Metro y fingerprint | [Corrección desde 14.0.2](https://github.com/advisories/GHSA-3g3m-2fjr-6pw4), fuera del rango `^13` de Expo. Requiere migración y pruebas de compilación. |
+| minimatch 10.2.6 | glob y fingerprint | [Corrección desde 11.0.1](https://github.com/advisories/GHSA-g3hv-75wg-m249), fuera del rango de fingerprint. No se fuerza otro major. |
+| zod 3.25.76 | Validación de plugins DevTools de la CLI de Expo | [Corrección desde 4.6.6](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), fuera de `^3.25.76`; no sustituir la API de la CLI sin migración. |
+
+Estas cuatro rutas observadas pertenecen a herramientas de desarrollo/compilación; no se identificaron imports desde `src/`. Esto no convierte sus avisos en falsos positivos ni garantiza ausencia en toda variante del build. #16 conserva el seguimiento de estas cuatro raíces antes de producción. `npm audit --audit-level=critical` sigue reportando los avisos y no acredita que los high estén resueltos. No se usa `audit fix --force` ni se declara aptitud para producción.
