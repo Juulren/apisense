@@ -1,0 +1,13 @@
+{
+  "version": "0.1.1",
+  "version_code": 2,
+  "package": "com.apisense.app",
+  "viewport": "1080x2400, density420",
+  "device": "Android15 agent-owned emulator",
+  "run_date": "2026-11-02 America/Mexico_City",
+  "workspace": "synthetic local only",
+  "findings": [
+    "cycle missing from hive detail",
+    "150% text splits Diagn\u00f3stico into final single-character line"
+  ]
+}

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 export function useTask() {
+  const running = useRef(false);
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState<string | null>(null);
   const run = async (action: () => Promise<unknown>, success?: string) => {
-    if (busy) return;
+    if (running.current) return;
+    running.current = true;
     setBusy(true);
     setMessage(null);
     try {
@@ -12,6 +14,7 @@ export function useTask() {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
     } finally {
+      running.current = false;
       setBusy(false);
     }
   };

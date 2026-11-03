@@ -1,0 +1,14 @@
+{
+  "before_version": "0.1.1/code2",
+  "after_version": "0.1.2/code3",
+  "action": "adb install -r; no app data reset",
+  "package": "com.apisense.app",
+  "device": "agent-owned Android15 emulator",
+  "viewport": "1080x2400 density420 font1.0",
+  "workspace": "synthetic local only",
+  "observation_marker": "QA-pre-migracion-V2-por-colmena",
+  "legacy_observation_preserved": true,
+  "legacy_frequency_hz": 250,
+  "actual_native_playing_status": true,
+  "native_source": "8649126d9edfdc78c3f574c92db8146b61e4e6cc"
+}

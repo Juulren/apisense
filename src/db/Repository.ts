@@ -1,4 +1,4 @@
-import { columns, migrationV1 } from "./schema";
+import { columns, migrationV1, migrationV2 } from "./schema";
 import {
   TABLES,
   type AnyRow,
@@ -59,11 +59,12 @@ export class Repository {
     const version =
       (await this.sql.all<{ user_version: number }>("PRAGMA user_version"))[0]
         ?.user_version ?? 0;
-    if (version > 1)
+    if (version > 2)
       throw new Error(
         "La base local requiere una versión más reciente de Apisense",
       );
     if (version < 1) await this.transaction(() => this.sql.exec(migrationV1));
+    if (version < 2) await this.transaction(() => this.sql.exec(migrationV2));
   }
   private async insert(table: Table, row: Dictionary) {
     const allowed = new Set<string>([...metadata, ...columns[table]]);

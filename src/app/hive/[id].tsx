@@ -1,5 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
+import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
   Badge,
@@ -11,6 +12,8 @@ import {
   Section,
 } from "../../components/ui";
 import { SummaryCard } from "../../components/SummaryCard";
+import { BroodCycleTracker } from "../../components/BroodCycleTracker";
+import { HiveReadings } from "../../components/HiveReadings";
 import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
 import {
@@ -26,6 +29,7 @@ export default function HiveDetail() {
   const hive = app.data.hives.find((h) => h.id === id),
     sample = latestSample(app.data.samples, id),
     summary = latestSummary(app.data.summaries, id);
+  const [inspectionLimit, setInspectionLimit] = useState(5);
   const inspections = app.data.inspections
     .filter((i) => i.hive_id === id)
     .sort((a, b) => b.inspected_at.localeCompare(a.inspected_at));
@@ -39,6 +43,13 @@ export default function HiveDetail() {
         <Empty>La colmena no existe en esta base local.</Empty>
       ) : (
         <>
+          <Button
+            label="Anotar observación de esta colmena"
+            icon="edit-note"
+            onPress={() =>
+              router.push({ pathname: "/inspection", params: { hiveId: id } })
+            }
+          />
           <Card>
             <Badge label="Seguimiento de campo" tone="blue" />
             <Label bold size={20}>
@@ -68,6 +79,16 @@ export default function HiveDetail() {
               icon="volume-up"
             />
           </View>
+          {sample ? (
+            <Label muted size={12}>
+              Última lectura: {dateLabel(sample.recorded_at)} ·{" "}
+              {sample.source === "simulator"
+                ? "Audio sintético"
+                : sample.source.toUpperCase()}
+            </Label>
+          ) : null}
+          <BroodCycleTracker key={`cycle-${id}`} hiveId={id} />
+          <HiveReadings key={`readings-${id}`} hiveId={id} />
           {summary ? (
             <SummaryCard summary={summary} />
           ) : (
@@ -111,7 +132,7 @@ export default function HiveDetail() {
             caption="Tus observaciones y acciones guardadas localmente"
           >
             {inspections.length ? (
-              inspections.slice(0, 5).map((inspection) => (
+              inspections.slice(0, inspectionLimit).map((inspection) => (
                 <Card key={inspection.id}>
                   <Row>
                     <Label bold>Inspección manual</Label>
@@ -134,6 +155,13 @@ export default function HiveDetail() {
             ) : (
               <Empty>Aún no has registrado inspecciones.</Empty>
             )}
+            {inspections.length > inspectionLimit ? (
+              <Button
+                label="Ver observaciones anteriores"
+                variant="secondary"
+                onPress={() => setInspectionLimit(inspectionLimit + 5)}
+              />
+            ) : null}
             <Button
               label="Anotar inspección"
               icon="add-circle-outline"

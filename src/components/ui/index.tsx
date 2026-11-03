@@ -42,6 +42,7 @@ export function Label({
   color,
   style,
   accessibilityRole,
+  accessibilityLiveRegion,
   tone,
 }: {
   children: ReactNode;
@@ -51,13 +52,18 @@ export function Label({
   color?: string;
   style?: ComponentProps<typeof Text>["style"];
   accessibilityRole?: ComponentProps<typeof Text>["accessibilityRole"];
+  accessibilityLiveRegion?: ComponentProps<
+    typeof Text
+  >["accessibilityLiveRegion"];
   tone?: "warning" | "danger";
 }) {
   const { colors } = useTheme();
   return (
     <Text
       accessibilityRole={accessibilityRole}
-      accessibilityLiveRegion={tone ? "polite" : undefined}
+      accessibilityLiveRegion={
+        accessibilityLiveRegion ?? (tone ? "polite" : undefined)
+      }
       style={[
         {
           color:
@@ -115,6 +121,7 @@ export function Button({
   disabled,
   loading,
   compact = false,
+  testID,
 }: {
   label: string;
   onPress: () => void | Promise<void>;
@@ -123,6 +130,7 @@ export function Button({
   disabled?: boolean;
   loading?: boolean;
   compact?: boolean;
+  testID?: string;
 }) {
   const { colors } = useTheme();
   const [focused, setFocused] = useState(false);
@@ -146,6 +154,7 @@ export function Button({
       // NativeWind's interop drops functional inline styles. This component
       // uses only native inline styles, so preserve Pressable's callback.
       cssInterop={false}
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{

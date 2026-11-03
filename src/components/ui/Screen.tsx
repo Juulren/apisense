@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { router, useFocusEffect, usePathname, type Href } from "expo-router";
@@ -66,6 +67,8 @@ export function Screen({
   const { colors } = useTheme();
   const path = usePathname();
   const inset = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale > 1.2;
   const scroll = useRef<ScrollView>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   useFocusEffect(
@@ -213,6 +216,7 @@ export function Screen({
               paddingHorizontal: 12,
               paddingTop: 8,
               gap: 0,
+              flexWrap: largeText ? "wrap" : "nowrap",
             }}
           >
             {navigation.map((item) => {
@@ -229,7 +233,8 @@ export function Screen({
                   accessibilityState={{ selected }}
                   onPress={() => router.navigate(item.route)}
                   style={{
-                    flex: 1,
+                    flexGrow: 1,
+                    flexBasis: largeText ? "48%" : 0,
                     minHeight: 48,
                     alignItems: "center",
                     justifyContent: "center",
@@ -237,7 +242,12 @@ export function Screen({
                   }}
                 >
                   <Icon name={item.icon} color={color} />
-                  <Label size={11} bold={selected} color={color}>
+                  <Label
+                    size={11}
+                    bold={selected}
+                    color={color}
+                    style={{ textAlign: "center" }}
+                  >
                     {item.label}
                   </Label>
                 </Pressable>

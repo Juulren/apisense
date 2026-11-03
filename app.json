@@ -3,7 +3,7 @@
     "name": "Apisense",
     "slug": "apisense",
     "scheme": "apisense",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -11,14 +11,16 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.apisense.app",
       "infoPlist": {
-        "NSAppTransportSecurity": { "NSAllowsArbitraryLoads": false },
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
         "UIFileSharingEnabled": false,
         "LSSupportsOpeningDocumentsInPlace": false
       }
     },
     "android": {
       "package": "com.apisense.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",

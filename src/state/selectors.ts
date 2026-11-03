@@ -7,6 +7,21 @@ export const latestSample = (samples: AudioSample[], hiveId: string) =>
   samples
     .filter((s) => s.hive_id === hiveId)
     .sort((a, b) => b.recorded_at.localeCompare(a.recorded_at))[0];
+export const hiveReadings = (samples: AudioSample[], hiveId: string) =>
+  samples
+    .filter((s) => s.hive_id === hiveId && !s.deleted_at)
+    .sort(
+      (a, b) =>
+        b.recorded_at.localeCompare(a.recorded_at) || b.id.localeCompare(a.id),
+    );
+export const selectedReading = (
+  samples: AudioSample[],
+  hiveId: string,
+  sampleId?: string,
+) =>
+  sampleId
+    ? hiveReadings(samples, hiveId).find((s) => s.id === sampleId)
+    : hiveReadings(samples, hiveId)[0];
 export const dateLabel = (iso: string) =>
   new Date(iso).toLocaleString("es-MX", {
     day: "numeric",

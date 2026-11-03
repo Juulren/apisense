@@ -129,7 +129,7 @@ Procedimiento, evidencia y límites: [ANDROID_SECURITY_QA.md](docs/ANDROID_SECUR
 
 ## Pendientes de producto
 
-Avance #16 del 2 de noviembre: decodificador 0.5.1 y node-forge 1.4.2, adaptador de importación compatible con Expo Router y seis regresiones específicas. Auditoría: 17 → 13 entradas; high: 6 → 2, sin críticas. Quedan deepmerge/glob/minimatch/zod en herramientas de Expo, con evaluación explícita en [SECURITY_ARCHITECTURE.md](docs/SECURITY_ARCHITECTURE.md). Se mantiene #16 abierto por esas raíces; no se modifican #15 ni #27.
+Avance #16 del 2 de noviembre: decodificador 0.5.1 y node-forge 1.4.2, adaptador de importación compatible con Expo Router y seis regresiones específicas. Auditoría: 17 → 13 entradas; high: 6 → 2, sin críticas. Quedan deepmerge/glob/minimatch/zod en herramientas de Expo, con evaluación explícita en [SECURITY_ARCHITECTURE.md](docs/SECURITY_ARCHITECTURE.md). Ese estado quedó superado por la segunda corrección del PR #36: #16 está cerrado, con parches verificados y avisos low de versión todavía visibles; no se modifican #15 ni #27.
 
 Avance #8 del 2 de noviembre: validación GATT/WSS, cancelación de búsquedas BLE y callbacks de sesiones MQTT sustituidas, comprobación de identidad BLE antes de persistir y contrato explícito de modelo/preprocesamiento con abstención. Validador offline de capturas y matriz de aceptación en [IOT_MODEL_ACCEPTANCE.md](docs/IOT_MODEL_ACCEPTANCE.md). 103 pruebas locales y TypeScript correctos; falta hardware, broker/ACL, calibración y modelo/dataset reales. #8 permanece abierto por esos recursos y su aceptación física/científica; no se inventan UUIDs ni un modelo.
 
@@ -138,7 +138,6 @@ Avance #8 del 2 de noviembre: validación GATT/WSS, cancelación de búsquedas B
 | [#25](https://github.com/Juulren/apisense/issues/25)                                                   | Aprobar adaptaciones y completar la comparación visual por ruta                     | Decidir sobre las cinco vistas sin fuente independiente y comparar las apps Android/iOS con fuentes aprobadas al mismo viewport, tema y estado.                                                       |
 | [#15](https://github.com/Juulren/apisense/issues/15)                                                   | Cifrado en dispositivos y preparación de la distribución móvil                      | Completar QA física y cuenta real en Android, bloqueo/permisos, firma y recuperación. PKCE y perfiles preparados; iOS en espera por decisión del usuario. |
 | [#8](https://github.com/Juulren/apisense/issues/8)                                                     | Firmware, UUIDs, broker/ACL, calibración y modelo entrenado                         | Pruebas físicas y dataset etiquetado con métricas, manifiesto, checksum y preprocesamiento compatibles.                                                                                               |
-| [#16](https://github.com/Juulren/apisense/issues/16)                                                   | Avisos upstream de dependencias                                                     | Revaluar las versiones corregidas y su impacto con pruebas; resolver o evaluar explícitamente antes de release.                                                                                       |
 | [#27](https://github.com/Juulren/apisense/issues/27)                                                   | Limpieza integrada; pendientes cuentas reales y sincronización en dispositivos | Código web retirado y demo nativa validada; completar acceso/cifrado y sincronización reales coordinados con #15/#8 antes del cierre.                                                                                  |
 
 ## Flujo siguiente
@@ -161,6 +160,18 @@ El usuario autorizó después continuar autónomamente con #16, #17, #25 y #8, d
 - [ ] #25: completar aceptación visual al mismo viewport/estado, zonas desplazables, escalado de texto y TalkBack físico. Las cinco adaptaciones existentes se conservan como base de desarrollo; no se atribuye al propietario una aprobación visual nueva.
 - [ ] #8: aportar firmware/UUIDs, hardware, broker con TLS/ACL, calibración y dataset/modelo entrenado; ejecutar la aceptación física y científica. Las pruebas con dobles y datos sintéticos no cierran este criterio.
 - [x] #16: segunda corrección de herramientas: glob 14/minimatch 11 juntos, Zod 4 para colecciones DevTools y escritura segura en deepmerge. 26 regresiones nuevas; 129 pruebas y TypeScript correctos. Auditoría: 7 low, sin moderadas/high/críticas; los avisos de deepmerge permanecen visibles pese al parche local.
-- [ ] #16: confirmar CI y compilación/recorrido Android con esta segunda corrección antes del cierre; mantener evaluación antes de distribución.
+- [x] #16: PR #36 integrado y Issue cerrado; CI limpia [41578902937](https://github.com/Juulren/apisense/actions/runs/41578902937) y Android [41578900612](https://github.com/Juulren/apisense/actions/runs/41578900612) correctos. Dos casos/0 fallos con APK nuevo; se conserva el seguimiento de mantenimiento de los parches y los siete avisos low visibles.
 
 #15 y #27 se omiten por instrucción del usuario. No se crean recursos cloud, credenciales de distribución ni publicaciones en tiendas en esta continuación; iOS sigue en espera.
+
+## Continuación solicitada — #25 y #16, funciones de campo
+
+- [x] #25: observaciones existentes identificadas; acceso directo por colmena, etiqueta de destino y consulta de entradas anteriores. Las URLs inválidas no eligen otra colmena silenciosamente.
+- [x] #25: historial de lecturas por colmena y apertura de una muestra concreta en el monitor, con audio/gráfica del registro seleccionado.
+- [x] #25: círculo de cría funcional, por cuadro/lote y fecha; progreso/etapas estimados, observación manual, edición y cierre explícito, sin nacimiento automático ni cifras biológicas inventadas.
+- [x] Migración local v1→v2 que conserva datos y tabla remota con RLS integrada en la sincronización. Aplicada en desarrollo; 139 pruebas locales y siete pruebas reales de backend correctas, con limpieza de cuentas temporales.
+- [x] Capturada la app anterior al 150%: la navegación partía Diagnóstico en una letra final. Se adapta a dos columnas con texto grande, conservando el escalado.
+- [x] Android 0.1.2/código 3 validado: cuatro casos/0 fallos, 38 capturas revisadas, texto al 150%, migración local conservando nota/audio y APK con SHA-256 en dist/development. README y evidencia incluidos en PR #37 para integrar en main tras sus checks.
+- [ ] #25: aceptación física/TalkBack y decisiones visuales restantes; iOS en espera.
+
+Uso y límites: [HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md). Esta continuación sí añade la tabla necesaria para el ciclo en el backend de desarrollo; no cambia credenciales ni distribución.

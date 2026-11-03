@@ -254,4 +254,38 @@ describe("SQLite transactions and synchronization", () => {
       TABLES,
     );
   });
+  it("pushes and downloads brood cycles through the account sync queue", async () => {
+    const f = await setup();
+    const cycle = await f.local.save("brood_cycles", {
+      hive_id: f.hive.id,
+      cohort_label: "Cuadro",
+      started_on: "2026-10-19",
+      state: "active",
+      observed_stage: "unknown",
+      observed_at: null,
+      ended_at: null,
+    });
+    const remoteCycle = {
+      ...cycle,
+      id: randomUUID(),
+      cohort_label: "Otro cuadro",
+    };
+    vi.mocked(f.remote.page).mockImplementation(
+      async <K extends Table>(table: K): Promise<EntityMap[K][]> =>
+        (table === "brood_cycles" ? [remoteCycle] : []) as EntityMap[K][],
+    );
+    f.connect();
+    await f.engine.sync();
+    expect(f.remote.upsert).toHaveBeenCalledWith(
+      "brood_cycles",
+      expect.objectContaining({ id: cycle.id, hive_id: f.hive.id }),
+    );
+    expect(
+      (await f.local.get("brood_cycles", cycle.id))?.synced_at,
+    ).not.toBeNull();
+    expect(
+      (await f.local.get("brood_cycles", remoteCycle.id))?.cohort_label,
+    ).toBe("Otro cuadro");
+    expect(await f.local.pendingCount()).toBe(0);
+  });
 });

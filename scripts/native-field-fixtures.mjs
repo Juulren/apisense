@@ -173,6 +173,7 @@ async function cleanup(run) {
         "Eliminar WAV temporal",
       );
     for (const table of [
+      "brood_cycles",
       "inspections",
       "ai_summaries",
       "audio_samples",

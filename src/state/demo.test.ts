@@ -13,6 +13,7 @@ import { clips } from "../services/iot/ClipStore";
 import { decodeWav } from "../services/iot/wav";
 import { DEMO_USER, seedDemo } from "./demo";
 import { simulate } from "../services/iot/Simulator";
+import { saveCycleStart } from "../services/BroodCycle";
 
 vi.mock("expo-crypto", async () => {
   const { createHash, randomUUID } = await import("node:crypto");
@@ -126,6 +127,13 @@ it("seeds eight demo hives offline, reads WAVs, and preserves inspections on reo
     tags_json: '["demo"]',
     queen_seen: 1,
   });
+  const cycle = await saveCycleStart(
+    first,
+    hives[0]!.id,
+    "2026-10-18",
+    "Cuadro sintético",
+    new Date("2026-11-02T12:00:00Z"),
+  );
   await first.close();
 
   const reopened = repository(file);
@@ -138,6 +146,7 @@ it("seeds eight demo hives offline, reads WAVs, and preserves inspections on reo
   expect(await reopened.get("inspections", inspection.id)).toMatchObject(
     inspection,
   );
+  expect(await reopened.get("brood_cycles", cycle.id)).toMatchObject(cycle);
   expect((await reopened.list("audio_samples")).map((s) => s.id)).toEqual(
     samples.map((s) => s.id),
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { AppScreen } from "../components/AppScreen";
 import {
@@ -20,8 +20,12 @@ export default function Inspection() {
     [notes, setNotes] = useState(""),
     [tags, setTags] = useState(""),
     [queen, setQueen] = useState(false);
-  const hive =
-    app.data.hives.find((h) => h.id === selected) ?? app.data.hives[0];
+  const hive = selected
+    ? app.data.hives.find((h) => h.id === selected)
+    : app.data.hives[0];
+  useEffect(() => {
+    setSelected(hiveId ?? "");
+  }, [hiveId]);
   const save = () =>
     task.run(
       async () => {
@@ -57,6 +61,11 @@ export default function Inspection() {
       back
     >
       <Badge label="Guardado local · Disponible sin señal" tone="blue" />
+      <Label bold>
+        {hive
+          ? `Observaciones de ${hive.code}`
+          : "Selecciona una colmena válida"}
+      </Label>
       <Segmented
         value={hive?.id ?? ""}
         onChange={setSelected}
@@ -95,7 +104,9 @@ export default function Inspection() {
           onPress={save}
         />
       </Card>
-      {task.message ? <Label>{task.message}</Label> : null}
+      {task.message ? (
+        <Label accessibilityLiveRegion="polite">{task.message}</Label>
+      ) : null}
       {hive ? (
         <Button
           label="Volver al detalle de colmena"

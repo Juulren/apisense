@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import {
   setAudioModeAsync,
@@ -20,7 +20,7 @@ import {
 import { AcousticChart } from "../components/AcousticChart";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
-import { dateLabel, latestSample } from "../state/selectors";
+import { dateLabel, selectedReading } from "../state/selectors";
 import { simulate, type SimulationPattern } from "../services/iot/Simulator";
 import { supabase } from "../services/supabase";
 const labels = {
@@ -31,18 +31,31 @@ const labels = {
   unknown: "Sin clasificación fiable",
 };
 export default function Monitor() {
-  const params = useLocalSearchParams<{ hiveId?: string }>(),
+  const params = useLocalSearchParams<{ hiveId?: string; sampleId?: string }>(),
     app = useApp(),
     task = useTask(),
     player = useAudioPlayer(null),
     playback = useAudioPlayerStatus(player);
   const [selected, setSelected] = useState(params.hiveId ?? ""),
+    [focusedSample, setFocusedSample] = useState(params.sampleId),
     [technical, setTechnical] = useState(false),
     [pattern, setPattern] = useState<SimulationPattern>("healthy");
-  const hive =
-      app.data.hives.find((h) => h.id === selected) ?? app.data.hives[0],
-    sample = hive ? latestSample(app.data.samples, hive.id) : undefined,
-    mic = app.data.microphones.find((m) => m.hive_id === hive?.id);
+  const hive = selected
+      ? app.data.hives.find((h) => h.id === selected)
+      : app.data.hives[0],
+    sample = hive
+      ? selectedReading(app.data.samples, hive.id, focusedSample)
+      : undefined,
+    mic = app.data.microphones.find(
+      (m) => m.hive_id === hive?.id && (!sample || m.id === sample.device_id),
+    );
+  useEffect(() => {
+    setSelected(params.hiveId ?? "");
+    setFocusedSample(params.sampleId);
+  }, [params.hiveId, params.sampleId]);
+  useEffect(() => {
+    player.pause();
+  }, [hive?.id, sample?.id, player]);
   const play = () =>
     task.run(async () => {
       if (!sample) throw new Error("No hay muestras para escuchar");
@@ -82,10 +95,27 @@ export default function Monitor() {
       <Segmented
         value={hive?.id ?? ""}
         options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
-        onChange={setSelected}
+        onChange={(id) => {
+          setSelected(id);
+          setFocusedSample(undefined);
+        }}
       />
       {hive ? (
         <>
+          {focusedSample ? (
+            <Card>
+              <Label bold>
+                {sample
+                  ? "Lectura seleccionada del historial"
+                  : "La lectura solicitada no está disponible en esta colmena"}
+              </Label>
+              <Button
+                label="Mostrar última lectura"
+                variant="secondary"
+                onPress={() => setFocusedSample(undefined)}
+              />
+            </Card>
+          ) : null}
           <Card>
             <Badge
               label={
