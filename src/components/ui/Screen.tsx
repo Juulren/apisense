@@ -1,6 +1,15 @@
-import type { ReactNode } from "react";
-import { Image, Pressable, ScrollView, View } from "react-native";
-import { router, usePathname, type Href } from "expo-router";
+import { useCallback, useRef, useState, type ReactNode } from "react";
+import {
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
+import { router, useFocusEffect, usePathname, type Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Badge, Icon, Label, Row, type IconName } from ".";
 import { tokens, useTheme } from "./theme";
@@ -57,8 +66,37 @@ export function Screen({
   const { colors } = useTheme();
   const path = usePathname();
   const inset = useSafeAreaInsets();
+  const scroll = useRef<ScrollView>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      setKeyboardVisible(Keyboard.isVisible());
+      let frame: number | undefined;
+      const shown = Keyboard.addListener("keyboardDidShow", () => {
+        setKeyboardVisible(true);
+        frame = requestAnimationFrame(() => {
+          const input = TextInput.State.currentlyFocusedInput();
+          if (input)
+            scroll.current?.scrollResponderScrollNativeHandleToKeyboard(
+              input,
+              16,
+              true,
+            );
+        });
+      });
+      const hidden = Keyboard.addListener("keyboardDidHide", () =>
+        setKeyboardVisible(false),
+      );
+      return () => {
+        shown.remove();
+        hidden.remove();
+        if (frame !== undefined) cancelAnimationFrame(frame);
+      };
+    }, []),
+  );
   return (
-    <View
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{
         flex: 1,
         backgroundColor: colors.background,
@@ -128,6 +166,7 @@ export function Screen({
         </View>
       ) : null}
       <ScrollView
+        ref={scroll}
         keyboardDismissMode="on-drag"
         contentContainerStyle={{
           padding: 20,
@@ -157,7 +196,7 @@ export function Screen({
         ) : null}
         {children}
       </ScrollView>
-      {nav ? (
+      {nav && !keyboardVisible ? (
         <View
           style={{
             backgroundColor: colors.card,
@@ -207,6 +246,6 @@ export function Screen({
           </Row>
         </View>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 }

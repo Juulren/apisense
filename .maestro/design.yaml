@@ -23,6 +23,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - tapOn:
     id: login-email
 - inputText: qa-design@example.com
+- assertVisible: qa-design@example.com
 - takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-keyboard
 - hideKeyboard
 - scrollUntilVisible:
