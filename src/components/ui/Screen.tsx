@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useRef, type ReactNode } from "react";
 import {
   Image,
   Keyboard,
@@ -10,47 +10,15 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { router, useFocusEffect, usePathname, type Href } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Badge, Icon, Label, Row, type IconName } from ".";
-import { tokens, useTheme } from "./theme";
-const navigation: {
-  route: Href;
-  label: string;
-  icon: IconName;
-  prefix: string[];
-}[] = [
-  {
-    route: "/dashboard",
-    label: "Inicio",
-    icon: "dashboard",
-    prefix: ["/dashboard", "/hives"],
-  },
-  {
-    route: "/monitor",
-    label: "Acústica",
-    icon: "graphic-eq",
-    prefix: ["/monitor", "/pairing"],
-  },
-  {
-    route: "/history",
-    label: "Diagnóstico",
-    icon: "health-and-safety",
-    prefix: ["/history", "/hive", "/inspection"],
-  },
-  {
-    route: "/settings",
-    label: "Ajustes",
-    icon: "settings",
-    prefix: ["/settings", "/ui-catalog"],
-  },
-];
+import { Badge, Icon, Label, Row } from ".";
+import { useTheme } from "./theme";
 export function Screen({
   children,
   title,
   subtitle,
   back = false,
-  nav = true,
   header = true,
   status = "Local",
   action,
@@ -59,24 +27,19 @@ export function Screen({
   title?: string;
   subtitle?: string;
   back?: boolean;
-  nav?: boolean;
   header?: boolean;
   status?: string;
   action?: ReactNode;
 }) {
   const { colors } = useTheme();
-  const path = usePathname();
   const inset = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.2;
   const scroll = useRef<ScrollView>(null);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   useFocusEffect(
     useCallback(() => {
-      setKeyboardVisible(Keyboard.isVisible());
       let frame: number | undefined;
       const shown = Keyboard.addListener("keyboardDidShow", () => {
-        setKeyboardVisible(true);
         frame = requestAnimationFrame(() => {
           const input = TextInput.State.currentlyFocusedInput();
           if (input)
@@ -87,12 +50,8 @@ export function Screen({
             );
         });
       });
-      const hidden = Keyboard.addListener("keyboardDidHide", () =>
-        setKeyboardVisible(false),
-      );
       return () => {
         shown.remove();
-        hidden.remove();
         if (frame !== undefined) cancelAnimationFrame(frame);
       };
     }, []),
@@ -216,63 +175,6 @@ export function Screen({
         ) : null}
         {children}
       </ScrollView>
-      {nav && !keyboardVisible ? (
-        <View
-          style={{
-            backgroundColor: colors.card,
-            paddingBottom: Math.max(inset.bottom, 8),
-            borderTopWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Row
-            style={{
-              width: "100%",
-              maxWidth: 480,
-              alignSelf: "center",
-              paddingHorizontal: 12,
-              paddingTop: 8,
-              gap: 0,
-              flexWrap: largeText ? "wrap" : "nowrap",
-            }}
-          >
-            {navigation.map((item) => {
-              const selected = item.prefix.some(
-                (prefix) => path === prefix || path.startsWith(prefix + "/"),
-              );
-              const color = selected ? colors.amberText : colors.muted;
-              return (
-                <Pressable
-                  key={item.label}
-                  testID={`nav-${item.label}`}
-                  accessibilityRole="tab"
-                  accessibilityLabel={item.label}
-                  accessibilityState={{ selected }}
-                  onPress={() => router.navigate(item.route)}
-                  style={{
-                    flexGrow: 1,
-                    flexBasis: largeText ? "48%" : 0,
-                    minHeight: 48,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 5,
-                  }}
-                >
-                  <Icon name={item.icon} color={color} />
-                  <Label
-                    size={11}
-                    bold={selected}
-                    color={color}
-                    style={{ textAlign: "center" }}
-                  >
-                    {item.label}
-                  </Label>
-                </Pressable>
-              );
-            })}
-          </Row>
-        </View>
-      ) : null}
     </KeyboardAvoidingView>
   );
 }

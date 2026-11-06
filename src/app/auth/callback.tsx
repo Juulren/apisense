@@ -45,7 +45,7 @@ export default function AuthCallback() {
           : null))
       : null);
   return (
-    <Screen nav={false} header={false}>
+    <Screen header={false}>
       <Label bold size={24}>
         Confirmación de tu cuenta
       </Label>

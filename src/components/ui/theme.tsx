@@ -1,5 +1,19 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { StatusBar, useColorScheme } from "react-native";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { Appearance, StatusBar, StyleSheet, useColorScheme } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 export const tokens = {
   honey: "#F59E0B",
@@ -54,9 +68,32 @@ type Theme = {
 const ThemeContext = createContext<Theme | null>(null);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
-  const [preference, setPreference] = useState<ThemePreference>("system");
+  const [preference, setPreferenceState] = useState<ThemePreference>("system");
+  // Same model as AppCompatDelegate.setDefaultNightMode: tell the OS layer the
+  // chosen night mode so native pieces (keyboard, dialogs, system bar icons)
+  // follow it, instead of only recoloring our own views.
+  const setPreference = useCallback((value: ThemePreference) => {
+    setPreferenceState(value);
+    Appearance.setColorScheme(value === "system" ? "unspecified" : value);
+  }, []);
   const dark =
     preference === "dark" || (preference === "system" && system === "dark");
+  // Material cross-fade: cover the swap with the outgoing background and fade
+  // it away, rather than an abrupt one-frame flip.
+  const previous = useRef(dark);
+  const [veil, setVeil] = useState(palettes[dark ? "dark" : "light"].background);
+  const fade = useSharedValue(0);
+  useEffect(() => {
+    if (previous.current === dark) return;
+    setVeil(palettes[previous.current ? "dark" : "light"].background);
+    previous.current = dark;
+    fade.value = 1;
+    fade.value = withTiming(0, {
+      duration: 280,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [dark, fade]);
+  const veilStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
   return (
     <ThemeContext.Provider
       value={{
@@ -66,8 +103,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setPreference,
       }}
     >
-      <StatusBar barStyle={dark ? "light-content" : "dark-content"} />
+      <StatusBar
+        barStyle={dark ? "light-content" : "dark-content"}
+        translucent
+        backgroundColor="transparent"
+      />
       {children}
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: veil }, veilStyle]}
+      />
     </ThemeContext.Provider>
   );
 }

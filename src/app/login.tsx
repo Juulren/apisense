@@ -45,7 +45,7 @@ export default function Login() {
       }
     });
   return (
-    <Screen header={false} nav={false}>
+    <Screen header={false}>
       <View
         style={{
           alignItems: "center",

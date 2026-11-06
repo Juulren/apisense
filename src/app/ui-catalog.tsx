@@ -24,7 +24,6 @@ export default function Catalog() {
       title="Componentes UI"
       subtitle="Apisense · Especificación de Stitch"
       back
-      nav={false}
     >
       <Section title="Botones y acciones">
         <Card>

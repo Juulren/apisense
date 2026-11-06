@@ -10,7 +10,7 @@ export default function Welcome() {
     task = useTask();
   if (app.workspace) return <Redirect href="/dashboard" />;
   return (
-    <Screen nav={false} header={false}>
+    <Screen header={false}>
       <View style={{ alignItems: "center", paddingTop: 64, gap: 18 }}>
         <Image
           source={require("../../assets/brand-logo.png")}

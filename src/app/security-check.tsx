@@ -26,7 +26,7 @@ export default function SecurityCheck() {
     }
   };
   return (
-    <Screen nav={false} header={false}>
+    <Screen header={false}>
       <Label bold size={24}>
         Comprobación nativa de cifrado
       </Label>

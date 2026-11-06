@@ -8,7 +8,7 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
   const { workspace, busy, syncState, error } = useApp();
   if (busy)
     return (
-      <Screen nav={false}>
+      <Screen>
         <ActivityIndicator />
         <Label>Abriendo tu base local…</Label>
       </Screen>
