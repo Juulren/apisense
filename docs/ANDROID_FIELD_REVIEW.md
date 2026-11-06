@@ -1,10 +1,10 @@
 # Revisión de campo Android — observaciones, lecturas y ciclo
 
-Preparada el 3 de noviembre de 2026 para el Galaxy S21 Ultra / Android 15 indicado por el usuario. Tiempo aproximado: 15–20 minutos, más el recorrido con TalkBack. Esta guía prepara la aceptación del #25; no cambia el alcance ni el estado de #15/#27. iOS sigue en espera.
+Preparada el 3 de noviembre de 2026 y actualizada al APK 0.1.3 el 5 de noviembre para el Galaxy S21 Ultra / Android 15 indicado por el usuario. Tiempo aproximado: 15–20 minutos, más el recorrido con TalkBack. Esta guía prepara la aceptación del #25; no cambia el alcance ni el estado de #15/#27. iOS sigue en espera.
 
 ## Antes de comenzar
 
-Usa Apisense de desarrollo **0.1.2 / código 3**, paquete `com.apisense.app`. La [entrega validada](https://github.com/Juulren/apisense/actions/runs/41584654869) contiene el APK; en el workspace está en `dist/development/Apisense-Android-Development-0.1.2.apk`. SHA-256: `b8e858dfd231be9f3ad3a97dfcc619157c4b95ea61532c42734a3b476a4646c5`.
+Usa Apisense de desarrollo **0.1.3 / código 4**, paquete `com.apisense.app`. La [entrega validada](https://github.com/Juulren/apisense/actions/runs/41701287024) contiene el APK; en el workspace está en `dist/development/Apisense-Android-Development-0.1.3.apk`. SHA-256: `6215cdfaf03f78078e9f814602d68eb4485e56f215359b6f60ea480e0a9c00a6`.
 
 Instala como actualización. Si Android rechaza la firma, conserva los datos y registra el error; no desinstales ni borres datos pendientes. No publiques capturas con correos, ubicaciones o información privada. Usa primero **Explorar demo local**, que se identifica como sintética y no sincroniza. En una cuenta propia usa colmenas de prueba claramente identificadas y anota el espacio empleado en el resultado. No interpretes el simulador como hardware real.
 

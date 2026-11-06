@@ -4,7 +4,7 @@
 - Persona que prueba:
 - Modelo: Galaxy S21 Ultra (indicado por el usuario; confirmar)
 - Android: 15 (indicado por el usuario; confirmar)
-- App: 0.1.2 / código 3 (confirmar instalada)
+- App: 0.1.3 / código 4 (confirmar instalada)
 - Espacio: demo sintética / cuenta propia de prueba
 - Tema y tamaño de fuente:
 - Red: conectada / sin conexión

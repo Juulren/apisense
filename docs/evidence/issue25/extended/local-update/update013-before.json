@@ -1,0 +1,13 @@
+{
+  "version": "0.1.2",
+  "android_code": 3,
+  "package": "com.apisense.app",
+  "device": "agent-owned Android15 emulator",
+  "viewport": "1080x2400 density420 font1.0",
+  "workspace": "synthetic local",
+  "legacy_note": "QA-pre-migracion-V2-por-colmena",
+  "no_data_reset": true,
+  "persisted_cycle_label": "QA-update-013",
+  "cycle_started_on": "2026-10-19",
+  "cycle_day": 16
+}

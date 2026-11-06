@@ -1,0 +1,6 @@
+{
+  "screenshot_seconds_after_tap": 1.75,
+  "xml_seconds_after_tap": 6.532000000006519,
+  "screenshot_retake_after_play_command_seconds": 4.031999999991967,
+  "note": "First screenshot showed loading and was rejected. Accepted screenshot retaken during same old clip on another playback; retained native XML captured Audio en reproduccion 6.532s after first tap."
+}

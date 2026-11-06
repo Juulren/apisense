@@ -1,0 +1,7 @@
+{
+  "run": 41687875458,
+  "version": "0.1.3/code4 intermediate build; not delivered",
+  "apk_source_sha": "47beaa14090539cb4eea4895a5a21a49ba1b57c8",
+  "font_scale": 2.0,
+  "observed": "cohort date labels fragmented in narrow options after header fix; final correction in 3ce655e separates label and date and uses full rows"
+}

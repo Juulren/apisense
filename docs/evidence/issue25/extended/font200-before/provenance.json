@@ -1,0 +1,17 @@
+{
+  "run": 41684432185,
+  "apk_source_sha": "8649126d9edfdc78c3f574c92db8146b61e4e6cc",
+  "flow_source_sha": "a042a90",
+  "version": "0.1.2/code3",
+  "font_scale": 2.0,
+  "viewport_px": [
+    1080,
+    2400
+  ],
+  "density": 420,
+  "observed_defects": [
+    "Header status overlaps Apiario label",
+    "Hive choice labels split inside Colmena at large text"
+  ],
+  "native_flow_passed_but_visual_rejected": true
+}

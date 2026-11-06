@@ -1,6 +1,10 @@
 # Design QA — Apisense
 
-Resultado actual: Android 0.1.2 correcto en ambos temas y en observaciones, lecturas y ciclo, incluido texto al 150%. Pendiente de aceptación visual completa y TalkBack físico.
+Resultado actual: Android 0.1.3, siete casos/0 fallos y 57 capturas revisadas, incluidos texto al 150%/200%, varios cuadros y listas largas. Pendiente de aceptación visual completa y TalkBack físico.
+
+## Continuación del #25 — revisión ampliada, 3 de noviembre de 2026
+
+[Informe ampliado con comparaciones y evidencia](docs/ANDROID_EXTENDED_QA.md). Añade cobertura de varios cuadros, edición/detención, notas largas/anteriores, paginación de lecturas, mapa/estados vacíos, destinos inválidos y texto al 200%. Los siete casos pasaron en la ejecución 41701287024 y sus 57 capturas se revisaron y conservaron. La inspección al 200% detectó superposición del encabezado y opciones partidas; se corrigen en 0.1.3/código 4 con comprobación de límites nativos. El APK y los flujos proceden de 3ce655e; la actualización local conservó nota, ciclo y audio. El informe ampliado contiene resultados, checksum y evidencia. [Guía física y plantilla del S21 Ultra](docs/ANDROID_FIELD_REVIEW.md). La aprobación visual y TalkBack físico no se deducen de estos recorridos.
 
 ## Entrega Android 0.1.2 — funciones de colmena, 2 de noviembre de 2026
 

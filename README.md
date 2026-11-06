@@ -4,7 +4,7 @@ Apisense es una aplicación móvil para el seguimiento de apiarios y colmenas, d
 
 Su enfoque es **offline-first**: guarda los cambios en SQLite y prepara su sincronización con Supabase cuando hay conexión. Los adaptadores BLE y MQTT permiten integrar micrófonos IoT; el análisis acústico genera resúmenes orientativos en español. Las reglas actuales son experimentales y no constituyen un diagnóstico de la colmena.
 
-**Prioridad actual (2 de noviembre de 2026): Android.** iOS queda en espera por decisión del usuario; se conserva el código multiplataforma y la evidencia anterior. La demo fue confirmada en Samsung Galaxy S21 Ultra con Android 15.
+**Prioridad actual (5 de noviembre de 2026): Android.** iOS queda en espera por decisión del usuario; se conserva el código multiplataforma y la evidencia anterior. La demo fue confirmada en Samsung Galaxy S21 Ultra con Android 15.
 
 ## Estado del proyecto
 
@@ -63,11 +63,15 @@ La demo del [PR #30](https://github.com/Juulren/apisense/pull/30), integrada en 
 
 ## APK de la app de desarrollo Android
 
-La entrega actual es **0.1.2 (código Android 3)** de la app real `com.apisense.app`, conectada al Supabase de desarrollo y separada de la demo. El APK independiente de Metro está en el artefacto `apisense-android-development` de [la ejecución validada](https://github.com/Juulren/apisense/actions/runs/41584654869); la copia local se entrega en `dist/development/Apisense-Android-Development-0.1.2.apk`, con checksum e instrucciones. Requiere Android 7/API 24 o superior en ARM64 o x86_64. SHA-256: `b8e858dfd231be9f3ad3a97dfcc619157c4b95ea61532c42734a3b476a4646c5`.
+La entrega actual es **0.1.3 (código Android 4)** de la app real `com.apisense.app`, conectada al Supabase de desarrollo y separada de la demo. El APK independiente de Metro está en el artefacto `apisense-android-development` de [la ejecución validada](https://github.com/Juulren/apisense/actions/runs/41701287024); la copia local se entrega en `dist/development/Apisense-Android-Development-0.1.3.apk`, con checksum e instrucciones. Requiere Android 7/API 24 o superior en ARM64 o x86_64. SHA-256: `6215cdfaf03f78078e9f814602d68eb4485e56f215359b6f60ea480e0a9c00a6`.
 
 Desde el detalle de cada colmena puedes **anotar observaciones**, consultar **lecturas individuales** y abrir su audio, y registrar el **ciclo de cría por cuadro o lote**. El círculo calcula el progreso desde una fecha guardada; las etapas observadas y el cierre por emergencia se confirman manualmente. [Guía de uso y límites](docs/HIVE_WORKFLOWS.md).
 
-La 0.1.2 incorpora las correcciones de dependencias de [#36](https://github.com/Juulren/apisense/pull/36) y las funciones de colmena de [#37](https://github.com/Juulren/apisense/pull/37). Pasaron 139 pruebas, siete pruebas reales de backend y cuatro recorridos Android: claro/oscuro, guardado/reapertura, lectura/audio, ciclo y texto al 150%. La actualización local conservó una nota anterior y su audio. [Capturas, procedencia y aceptación pendiente](design-qa.md). Los recorridos de UI usan el espacio sintético dentro de la app de campo; no acreditan hardware, broker ni un modelo entrenado.
+Para revisar observaciones, lecturas y ciclos en el S21 Ultra, sigue la [guía de prueba física](docs/ANDROID_FIELD_REVIEW.md) y su plantilla. La [revisión ampliada Android](docs/ANDROID_EXTENDED_QA.md) conserva comparaciones con Stitch y resultados por estado; las adaptaciones y TalkBack físico siguen pendientes de aceptación.
+
+La 0.1.3 corrige encabezados, opciones de colmena y fechas de cuadros con texto grande mediante [#38](https://github.com/Juulren/apisense/pull/38). Pasaron **165 pruebas locales y siete recorridos Android**, incluidos claro/oscuro, reapertura, varios cuadros, siete notas, doce lecturas/audio histórico, estados vacíos/inválidos y texto al 150%/200%. Se revisaron 57 capturas y se comprobó la actualización local conservando nota, ciclo y audio anteriores. [Resultados y procedencia](docs/ANDROID_EXTENDED_QA.md). Los recorridos usan datos sintéticos dentro de la app de campo; la aceptación visual, TalkBack físico, hardware y modelo entrenado conservan sus pendientes.
+
+La 0.1.2 integró [#36](https://github.com/Juulren/apisense/pull/36) y [#37](https://github.com/Juulren/apisense/pull/37), con 139 pruebas locales y siete pruebas reales de backend. Esa validación de backend se conserva como antecedente; no se repitió para los cambios de presentación de 0.1.3.
 
 La entrega anterior del [PR #32](https://github.com/Juulren/apisense/pull/32) validó acceso con dos cuentas temporales, audio privado, inspección, reapertura sin red, sincronización, salida, claves incorrectas/perdidas, DB/WAL y PKCE S256. El recorrido visual de 0.1.2 no repite esas pruebas de cuentas/PKCE; sus siete pruebas separadas de backend sí incluyen el ciclo. Usa **Comenzar** para entrar con tu propia cuenta; las cuentas temporales fueron eliminadas. Firma de prueba para desarrollo; aceptación física, correo real y distribución conservan sus pendientes en [la guía Android](docs/ANDROID_SECURITY_QA.md).
 
