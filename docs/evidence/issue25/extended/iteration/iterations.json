@@ -1,0 +1,32 @@
+[
+  {
+    "run": 41597364870,
+    "outcome": "cancelled for flow correction",
+    "evidence": "five current-audit source comparison captures only"
+  },
+  {
+    "run": 41597814898,
+    "outcome": "4 baseline cases pass; volume case fails near end-of-list control",
+    "correction": "remove forced centering and retain full visibility/tap/older-note assertion"
+  },
+  {
+    "run": 41600315120,
+    "outcome": "device offline during launchApp before any actions",
+    "correction": "one retry guarded by existing pre-launch transport recognizer, retain original report"
+  },
+  {
+    "run": 41682880418,
+    "outcome": "volume case searched downward for a cycle action above the success message",
+    "correction": "scroll upward; continue independent phases while preserving failing exit status"
+  },
+  {
+    "run": 41684432185,
+    "outcome": "volume and font200 assertions passed; visual review rejected header overlap and fragmented hive labels; states flow searched below invalid-hive heading",
+    "correction": "app header/segmented layout fixed; states searches upward; negative geometry control rejects old APK"
+  },
+  {
+    "run": 41687875458,
+    "outcome": "six cases passed; volume flow failed after stopped cohort reduced card height; visual review found cohort dates fragmented despite corrected header",
+    "correction": "verify persisted stopped state upward rather than transient toast; separate cohort name/date, full-width choices with large text"
+  }
+]

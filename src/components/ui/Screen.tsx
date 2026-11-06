@@ -123,8 +123,21 @@ export function Screen({
               paddingVertical: 16,
             }}
           >
-            <Row>
-              <Row style={{ flex: 1, justifyContent: "flex-start", gap: 10 }}>
+            <Row
+              style={
+                largeText
+                  ? { flexDirection: "column", alignItems: "stretch" }
+                  : undefined
+              }
+            >
+              <Row
+                style={{
+                  flex: largeText ? undefined : 1,
+                  justifyContent: "flex-start",
+                  gap: 10,
+                  flexWrap: largeText ? "wrap" : "nowrap",
+                }}
+              >
                 {back ? (
                   <Pressable
                     accessibilityRole="button"
@@ -160,7 +173,11 @@ export function Screen({
                 accessibilityRole="button"
                 accessibilityLabel="Ver estado de sincronización"
                 onPress={() => router.push("/settings")}
-                style={{ minHeight: 48, justifyContent: "center" }}
+                style={{
+                  minHeight: 48,
+                  justifyContent: "center",
+                  alignSelf: largeText ? "flex-start" : undefined,
+                }}
               >
                 <Badge label={status} tone="green" />
               </Pressable>

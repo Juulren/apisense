@@ -47,3 +47,9 @@ El [Issue #25](https://github.com/Juulren/apisense/issues/25) conserva la aproba
 Tokens de la spec: primario `#F59E0B`, audio `#B45309`, sync `#92400E`, secundario `#10B981`, terciario `#0284C7`, tinta `#1E293B`, lienzo `#F8FAFC`, borde `#E2E8F0`; oscuro `#0B0F17`/`#162032`. Plus Jakarta Sans para títulos y cuerpo; Inter para etiquetas. Botones primarios 52/48 px y radio 16 px; secundarios 42 px y radio 12 px; navegación con área táctil de 48 px.
 
 Las afirmaciones biológicas de las maquetas son contenido de diseño. La app mantiene la distinción entre hipótesis acústicas experimentales y observaciones de campo verificadas; no incorpora como hechos las temperaturas, probabilidades ni diagnósticos sintéticos del mockup.
+
+## Revisión ampliada Android — 3 de noviembre de 2026
+
+Se prepararon cinco [comparaciones cualitativas con nuevas capturas nativas](docs/ANDROID_EXTENDED_QA.md), mostrando dimensiones y diferencias de contenido/jerarquía. Se normaliza solo el ancho de presentación, sin afirmar igualdad de viewport/estado ni fidelidad píxel a píxel. La comparación final usa el APK de campo 0.1.3 y datos sintéticos identificados.
+
+Las decisiones sobre inicio, lista/mapa, historial, vinculación e inspección continúan pendientes del responsable. Se conserva la base actual; esta revisión no marca esas adaptaciones como aprobadas. La guía y plantilla de aceptación física están en [ANDROID_FIELD_REVIEW.md](docs/ANDROID_FIELD_REVIEW.md). iOS sigue en espera; #15/#27 no cambian.

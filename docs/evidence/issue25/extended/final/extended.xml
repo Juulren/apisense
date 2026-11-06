@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="533.338" timestamp="2026-11-03T19:36:36">
+    <testcase id="Varios cuadros notas largas y paginacion de lecturas" name="Varios cuadros notas largas y paginacion de lecturas" classname="Varios cuadros notas largas y paginacion de lecturas" file=".maestro/extended-hives.yaml" time="533.288" timestamp="2026-11-03T19:36:36" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

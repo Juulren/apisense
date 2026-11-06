@@ -1,0 +1,47 @@
+{
+  "header_overlap": false,
+  "navigation": [
+    {
+      "label": "Inicio",
+      "bounds_px": [
+        32,
+        2033,
+        540,
+        2185
+      ],
+      "selected": false
+    },
+    {
+      "label": "Acústica",
+      "bounds_px": [
+        540,
+        2033,
+        1049,
+        2185
+      ],
+      "selected": false
+    },
+    {
+      "label": "Diagnóstico",
+      "bounds_px": [
+        32,
+        2185,
+        540,
+        2337
+      ],
+      "selected": true
+    },
+    {
+      "label": "Ajustes",
+      "bounds_px": [
+        540,
+        2185,
+        1049,
+        2337
+      ],
+      "selected": false
+    }
+  ],
+  "save_height_dp": 58.285714285714285,
+  "limits": "Native attributes/geometry only; physical TalkBack announcements and focus order pending"
+}

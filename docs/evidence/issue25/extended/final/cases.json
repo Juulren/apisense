@@ -1,0 +1,37 @@
+{
+  "light": {
+    "status": "SUCCESS",
+    "seconds": 93.134,
+    "failures": []
+  },
+  "dark": {
+    "status": "SUCCESS",
+    "seconds": 91.566,
+    "failures": []
+  },
+  "functional": {
+    "status": "SUCCESS",
+    "seconds": 176.468,
+    "failures": []
+  },
+  "large-font": {
+    "status": "SUCCESS",
+    "seconds": 71.223,
+    "failures": []
+  },
+  "extended": {
+    "status": "SUCCESS",
+    "seconds": 533.288,
+    "failures": []
+  },
+  "states": {
+    "status": "SUCCESS",
+    "seconds": 102.898,
+    "failures": []
+  },
+  "font200": {
+    "status": "SUCCESS",
+    "seconds": 54.652,
+    "failures": []
+  }
+}

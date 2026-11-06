@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="54.674" timestamp="2026-11-03T19:47:33">
+    <testcase id="Navegacion ciclo y formulario con texto al 200 por ciento" name="Navegacion ciclo y formulario con texto al 200 por ciento" classname="Navegacion ciclo y formulario con texto al 200 por ciento" file=".maestro/extended-font.yaml" time="54.652" timestamp="2026-11-03T19:47:33" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

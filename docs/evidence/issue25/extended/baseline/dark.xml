@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="test" tests="1" failures="0" time="80.343" timestamp="2026-11-03T07:45:06">
+    <testcase id="Pantallas Android con datos sintéticos y tema explícito" name="Pantallas Android con datos sintéticos y tema explícito" classname="Pantallas Android con datos sintéticos y tema explícito" file=".maestro/design.yaml" time="80.294" timestamp="2026-11-03T07:45:06" status="SUCCESS"/>
+  </testsuite>
+</testsuites>

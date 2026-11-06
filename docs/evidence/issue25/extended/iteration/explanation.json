@@ -1,0 +1,18 @@
+{
+  "run": 41597814898,
+  "failure": "scrollUntilVisible attempted centerElement at bottom of long list",
+  "observed_button_bounds_px": [
+    53,
+    1804,
+    1028,
+    1930
+  ],
+  "observed_viewport_px": [
+    1080,
+    2400
+  ],
+  "button_enabled": true,
+  "button_clickable": true,
+  "fix": "require full visibility without forced centering; allow 60s for long list; keep tap and saved-note assertion",
+  "app_code_changed": false
+}

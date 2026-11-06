@@ -2,7 +2,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { mkdtemp, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
   prepareDataset,
   splitGroups,
@@ -321,7 +321,9 @@ it("runs both CLI commands end to end and refuses to overwrite a report", async 
     output = path.join(folder, "prepared.json");
   await writeFile(input, JSON.stringify(config));
   const cli = path.resolve("scripts/model-evaluation-cli.mjs");
-  execFileSync(process.execPath, [cli, "prepare", input, output]);
+  execFileSync(process.execPath, [cli, "prepare", input, output], {
+    timeout: 10000,
+  });
   const saved = JSON.parse(await readFile(output, "utf8"));
   expect(saved.normalization).toEqual(prepared.normalization);
   await writeFile(
@@ -339,13 +341,15 @@ it("runs both CLI commands end to end and refuses to overwrite a report", async 
     path.join(folder, "model.json"),
     path.join(folder, "report.json"),
   ];
-  execFileSync(process.execPath, args);
+  execFileSync(process.execPath, args, { timeout: 10000 });
   const report = JSON.parse(
     await readFile(path.join(folder, "report.json"), "utf8"),
   );
   expect(report.inputs.preparedSha256).toHaveLength(64);
   expect(report.metrics.accuracy).toBe(1);
-  expect(() =>
-    execFileSync(process.execPath, args, { stdio: "pipe" }),
-  ).toThrow();
-});
+  const before = await readFile(path.join(folder, "report.json"));
+  const blocked = spawnSync(process.execPath, args, { timeout: 10000 });
+  expect(blocked.status).toBe(1);
+  expect(blocked.stderr.toString()).toContain("EEXIST");
+  expect(await readFile(path.join(folder, "report.json"))).toEqual(before);
+}, 30000);

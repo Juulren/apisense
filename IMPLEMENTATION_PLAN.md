@@ -184,4 +184,17 @@ Uso y límites: [HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md). Esta continuación 
 - [x] Fixture de tonos y predicciones fabricadas identificada como sintética; prueba de CLI completa. 26 regresiones nuevas y 165 pruebas locales/TypeScript correctas.
 - [ ] Dataset real autorizado, anotación verificada, entrenamiento/ONNX y paridad en Android; revisión científica y aceptación física del #8 siguen pendientes.
 
-Uso y límites: [MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md). La herramienta no ejecuta ONNX ni acredita qué modelo produjo los vectores; no se añade un modelo al APK. #15/#27 e iOS siguen en pausa.
+[PR #39 integrado en main](https://github.com/Juulren/apisense/pull/39). Uso y límites: [MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md). La herramienta no ejecuta ONNX ni acredita qué modelo produjo los vectores; no se añade un modelo al APK. #15/#27 e iOS siguen en pausa.
+
+## Avance #25 — revisión ampliada, 3 de noviembre de 2026
+
+- [x] Cinco comparaciones cualitativas entre fuentes Stitch verificadas y capturas nuevas de Android; dimensiones y diferencias de jerarquía/contenido explícitas, sin certificar igualdad de viewport o píxeles.
+- [x] Nuevas capturas revisadas del recorrido base: claro/oscuro, teclado/error, ciclo/observación/audio/reapertura y texto al 150%. Cuatro casos correctos en 41597814898; la iteración ampliada falló al intentar centrar un botón ya visible al final de la lista. Corregido el recorrido, sin cambiar la app.
+- [x] Recorridos ampliados implementados: varios cuadros, edición/cancelación/detención, notas largas/anteriores, doce lecturas/audio histórico, mapa/búsqueda vacía, colmena sin lecturas, IDs inválidos y texto al 200%.
+- [x] Repetición selectiva de casos nuevos y único reintento solo ante pérdida ADB probada antes de cualquier acción. Se conservan fallos/transportes y no se reintentan errores o aserciones de la app.
+- [x] Guía y plantilla del S21 Ultra preparadas; resultados físicos iniciales como no probado. TypeScript y 165 pruebas locales correctas; artefactos temporales excluidos de la detección de tests.
+- [x] El caso de siete notas/doce lecturas pasó en 41684432185. La inspección visual al 200% encontró superposición del encabezado y palabras partidas en opciones, aunque sus aserciones pasaron. Corrección implementada en 0.1.3/código 4, con guardia de límites nativos que rechaza 0.1.2. La inspección posterior separa también nombre/fecha en los selectores de cuadros para conservar las fechas legibles.
+- [x] APK nuevo 0.1.3/código 4 validado en 41701287024: siete casos/0 fallos, 57 capturas revisadas, guardia nativa correcta y cinco pares Stitch regenerados sobre la versión final. Actualización local sin borrar datos conservando nota, ciclo y audio; entrega y checksum en dist/development. Código, README y evidencia reunidos en [PR #38](https://github.com/Juulren/apisense/pull/38); comprobación local y documentación completadas el 5 de noviembre.
+- [ ] Aprobación de adaptaciones, comparación completa con fuentes aprobadas y TalkBack/aceptación física. iOS continúa en espera; #15/#27 se mantienen en pausa.
+
+Informe: [ANDROID_EXTENDED_QA.md](docs/ANDROID_EXTENDED_QA.md). Guía de campo: [ANDROID_FIELD_REVIEW.md](docs/ANDROID_FIELD_REVIEW.md). El APK 0.1.2 se conserva como versión anterior; el arreglo de texto grande genera 0.1.3 sin cambiar dominio, migraciones o servicios.
