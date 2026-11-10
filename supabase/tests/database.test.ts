@@ -43,6 +43,7 @@ beforeAll(async () => {
     "202610200001_core.sql",
     "202610210001_summary_queue.sql",
     "202611020001_brood_cycles.sql",
+    "202611090001_apiary_profile_observations.sql",
   ]) {
     await db.exec(
       await readFile(
@@ -118,6 +119,84 @@ describe("Postgres RLS from migrations", () => {
       observed_stage: "emerged",
     });
     expect(rows.rows[0]).toHaveProperty("updated_at");
+  });
+  it("rejects an unknown stores level", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.inspections(id,hive_id,inspected_at,notes,tags_json,queen_seen,stores) values(gen_random_uuid(),$1,now(),'nota','[]',0,'huge')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects an oversized season calendar and a preset without data", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("update public.apiaries set seasons_json=$2 where id=$1", [
+        apiaryA,
+        "x".repeat(4097),
+      ]),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects a region preset that has no documented calendar", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "update public.apiaries set region_preset='tropical' where id=$1",
+        [apiaryA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects an unknown check-in frequency", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "update public.apiaries set checkin_frequency='hourly' where id=$1",
+        [apiaryA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects an unknown eggs state", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.inspections(id,hive_id,inspected_at,notes,tags_json,queen_seen,eggs_state) values(gen_random_uuid(),$1,now(),'nota','[]',0,'many')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects an invalid weather flag", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("update public.apiaries set weather_enabled=2 where id=$1", [
+        apiaryA,
+      ]),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("keeps 0.2.0 columns additive: defaults for writers that omit them", async () => {
+    await asUser(ownerA);
+    const note = await db.query(
+      "insert into public.inspections(id,hive_id,inspected_at,notes,tags_json,queen_seen) values(gen_random_uuid(),$1,now(),'nota','[]',0) returning queen_state,eggs_state,queen_cells,activity,population,stores",
+      [hiveA],
+    );
+    expect(note.rows[0]).toEqual({
+      queen_state: null,
+      eggs_state: null,
+      queen_cells: null,
+      activity: null,
+      population: null,
+      stores: null,
+    });
+    const apiary = await db.query(
+      "select region_preset,seasons_json,weather_enabled,checkin_frequency from public.apiaries where id=$1",
+      [apiaryA],
+    );
+    expect(apiary.rows[0]).toEqual({
+      region_preset: null,
+      seasons_json: null,
+      weather_enabled: 0,
+      checkin_frequency: "weekly",
+    });
   });
   it("isolates apiaries and hives between users", async () => {
     await asUser(ownerB);

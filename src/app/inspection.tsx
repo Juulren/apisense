@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { AppScreen } from "../components/AppScreen";
+import { CheckinFields } from "../components/CheckinFields";
 import {
   Badge,
   Button,
@@ -8,8 +9,8 @@ import {
   Field,
   Label,
   Segmented,
-  Toggle,
 } from "../components/ui";
+import { emptyCheckin, saveCheckin } from "../services/Checkin";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 export default function Inspection() {
@@ -17,9 +18,7 @@ export default function Inspection() {
     app = useApp(),
     task = useTask();
   const [selected, setSelected] = useState(hiveId ?? ""),
-    [notes, setNotes] = useState(""),
-    [tags, setTags] = useState(""),
-    [queen, setQueen] = useState(false);
+    [form, setForm] = useState(emptyCheckin);
   const hive = selected
     ? app.data.hives.find((h) => h.id === selected)
     : app.data.hives[0];
@@ -30,40 +29,24 @@ export default function Inspection() {
     task.run(
       async () => {
         if (!app.workspace || !hive) throw new Error("Selecciona una colmena");
-        if (notes.trim().length < 10)
-          throw new Error("Describe tu observación con al menos 10 caracteres");
-        if (notes.length > 5000 || tags.length > 300)
-          throw new Error("Acorta la nota o las etiquetas");
-        const labels = tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        await app.workspace.repo.save("inspections", {
-          hive_id: hive.id,
-          inspected_at: new Date().toISOString(),
-          notes: notes.trim(),
-          tags_json: JSON.stringify(labels),
-          queen_seen: queen ? 1 : 0,
-        });
+        await saveCheckin(app.workspace.repo, hive.id, form);
         await app.refresh();
-        setNotes("");
-        setTags("");
-        setQueen(false);
+        setForm(emptyCheckin);
       },
       app.workspace?.demo
-        ? "Inspección de demo guardada localmente."
-        : "Inspección guardada en este dispositivo. Se sincronizará al recuperar red.",
+        ? "Registro de demo guardado localmente."
+        : "Registro guardado en este dispositivo. Se sincronizará al recuperar red.",
     );
   return (
     <AppScreen
       title="Anotar inspección"
-      subtitle="Observaciones que ayudan a entender el audio"
+      subtitle="Todo es opcional: elige lo que quieras registrar"
       back
     >
       <Badge label="Guardado local · Disponible sin señal" tone="blue" />
       <Label bold>
         {hive
-          ? `Observaciones de ${hive.code}`
+          ? `Registro de ${hive.code}`
           : "Selecciona una colmena válida"}
       </Label>
       <Segmented
@@ -72,29 +55,24 @@ export default function Inspection() {
         options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
       />
       <Card>
+        <CheckinFields value={form} onChange={setForm} />
         <Field
-          label="Observaciones de campo"
+          label="Nota (opcional)"
           testID="inspection-notes"
-          placeholder="Describe cría, piquera, alimentación, ventilación o posibles plagas…"
+          placeholder="Qué viste o hiciste: piquera, alimentación, ventilación, posibles plagas…"
           multiline
-          numberOfLines={6}
-          style={{ minHeight: 150, textAlignVertical: "top" }}
-          value={notes}
-          onChangeText={setNotes}
+          numberOfLines={4}
+          style={{ minHeight: 110, textAlignVertical: "top" }}
+          value={form.notes}
+          onChangeText={(notes) => setForm({ ...form, notes })}
           maxLength={5000}
         />
         <Field
           label="Etiquetas (separadas por comas)"
           placeholder="Alimentación, ventilación, revisión de cría"
-          value={tags}
-          onChangeText={setTags}
+          value={form.tags}
+          onChangeText={(tags) => setForm({ ...form, tags })}
           maxLength={300}
-        />
-        <Toggle
-          label="Reina observada en esta inspección"
-          caption="Marca solo si la viste directamente"
-          value={queen}
-          onChange={setQueen}
         />
         <Button
           label="Guardar inspección"

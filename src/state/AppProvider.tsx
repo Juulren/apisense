@@ -131,15 +131,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const value = await w.repo.setting(key);
       if (value !== undefined) settings[key] = value;
     }
+    // Records of a removed hive stay in the database (and in sync) but are not
+    // shown: readings and summaries are not tombstoned with the hive.
+    const live = new Set(hives.map((h) => h.id));
+    const ofLive = <T extends { hive_id: string }>(rows: T[]) =>
+      rows.filter((row) => live.has(row.hive_id));
     if (current.current === w)
       setData({
         apiaries,
         hives,
-        microphones,
-        samples,
-        summaries,
-        inspections,
-        cycles,
+        microphones: ofLive(microphones),
+        samples: ofLive(samples),
+        summaries: ofLive(summaries),
+        inspections: ofLive(inspections),
+        cycles: ofLive(cycles),
         pending,
         settings,
       });

@@ -12,6 +12,7 @@ import {
 } from "../components/ui";
 import { ApiaryMap } from "../components/ApiaryMap";
 import { HiveTile } from "../components/HiveTile";
+import { addHive } from "../services/Hives";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 export default function Hives() {
@@ -59,25 +60,10 @@ export default function Hives() {
       setLon("");
       await app.refresh();
     }, "Apiario guardado en este dispositivo");
-  const addHive = () =>
+  const createHive = () =>
     task.run(async () => {
       if (!app.workspace || !apiary) throw new Error("Primero crea un apiario");
-      if (!code.trim()) throw new Error("Escribe el código de la colmena");
-      if (
-        app.data.hives.some(
-          (h) =>
-            h.apiary_id === apiary.id &&
-            h.code.toLowerCase() === code.trim().toLowerCase(),
-        )
-      )
-        throw new Error("Ese código ya existe en el apiario");
-      await app.workspace.repo.save("hives", {
-        apiary_id: apiary.id,
-        code: code.trim(),
-        queen_status: "unknown",
-        health_score: null,
-        last_audio_check_at: null,
-      });
+      await addHive(app.workspace.repo, apiary.id, code);
       setCode("");
       await app.refresh();
     }, "Colmena guardada localmente");
@@ -157,7 +143,7 @@ export default function Hives() {
             label="Guardar colmena"
             icon="add"
             loading={task.busy}
-            onPress={addHive}
+            onPress={createHive}
           />
         </Card>
       ) : null}

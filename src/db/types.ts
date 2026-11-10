@@ -12,7 +12,14 @@ export interface Apiary extends BaseRow {
   latitude: number | null;
   longitude: number | null;
   check_interval_minutes: number;
+  region_preset: RegionPreset | null;
+  seasons_json: string | null;
+  weather_enabled: number;
+  checkin_frequency: CheckinFrequency;
 }
+export type CheckinFrequency = "daily" | "weekly" | "off";
+// Only calendars with some documented basis are offered; "custom" starts empty.
+export type RegionPreset = "yucatan" | "custom";
 export interface Hive extends BaseRow {
   apiary_id: string;
   code: string;
@@ -65,7 +72,19 @@ export interface Inspection extends BaseRow {
   notes: string;
   tags_json: string;
   queen_seen: number;
+  queen_state: QueenState | null;
+  eggs_state: EggsState | null;
+  queen_cells: QueenCells | null;
+  activity: Level3 | null;
+  population: Trend | null;
+  stores: StoresLevel | null;
 }
+export type Level3 = "low" | "normal" | "high";
+export type StoresLevel = "low" | "medium" | "high";
+export type Trend = "down" | "stable" | "up";
+export type QueenState = "seen" | "not_seen" | "virgin_seen";
+export type EggsState = "none" | "fresh" | "multiple";
+export type QueenCells = "none" | "present";
 export type BroodStage = "unknown" | "egg" | "larva" | "capped" | "emerged";
 export interface BroodCycle extends BaseRow {
   hive_id: string;
@@ -95,10 +114,33 @@ export const TABLES = [
   "brood_cycles",
 ] as const;
 export type Table = (typeof TABLES)[number];
-export type Input<K extends Table> = Omit<EntityMap[K], keyof BaseRow> & {
-  id?: string;
-  deleted_at?: string | null;
+// Columns added after 1.0 may be omitted on write: the database default (or
+// NULL) applies on insert and an existing value is kept on update.
+type Defaulted = {
+  apiaries:
+    | "region_preset"
+    | "seasons_json"
+    | "weather_enabled"
+    | "checkin_frequency";
+  inspections:
+    | "queen_state"
+    | "eggs_state"
+    | "queen_cells"
+    | "activity"
+    | "population"
+    | "stores";
 };
+type DefaultedKeys<K extends Table> = K extends keyof Defaulted
+  ? Defaulted[K]
+  : never;
+export type Input<K extends Table> = Omit<
+  EntityMap[K],
+  keyof BaseRow | DefaultedKeys<K>
+> &
+  Partial<Pick<EntityMap[K], Extract<DefaultedKeys<K>, keyof EntityMap[K]>>> & {
+    id?: string;
+    deleted_at?: string | null;
+  };
 export type AnyRow = EntityMap[Table];
 export interface QueueItem {
   table_name: Table;

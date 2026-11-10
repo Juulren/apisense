@@ -13,7 +13,7 @@ Instala como actualización. Si Android rechaza la firma, conserva los datos y r
 | Paso | Acción | Resultado esperado |
 | --- | --- | --- |
 | 1 | Abre lista y mapa; busca un código inexistente y borra la búsqueda. | Estado vacío comprensible y recuperación de la lista. El mapa de demo dice que es ilustrativo. |
-| 2 | Entra a Colmena 01 > Anotar observación de esta colmena. Intenta guardar vacía. | La pantalla identifica la colmena y pide al menos diez caracteres. |
+| 2 | Entra a Colmena 01 > Anotar observación de esta colmena. Intenta guardar vacía. | La pantalla identifica la colmena y pide una nota de al menos tres caracteres o elegir cómo la ves. |
 | 3 | Escribe una nota de varias líneas, guarda y vuelve al detalle. | El teclado permite escribir/desplazar; la nota aparece en su bitácora. |
 | 4 | Guarda seis notas más y pulsa Ver observaciones anteriores. | Puedes consultar la primera; no desaparece por superar cinco entradas. |
 | 5 | Abre Ver lecturas guardadas > Abrir lectura 1. Escucha y detén el audio. | Registro identificado, estado de reproducción correcto y botón Detener. Audio sintético en demo. Sin audio disponible se informa el límite; no se inventa una grabación. |

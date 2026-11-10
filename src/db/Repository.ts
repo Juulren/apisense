@@ -1,4 +1,4 @@
-import { columns, migrationV1, migrationV2 } from "./schema";
+import { columns, migrationV1, migrationV2, migrationV3 } from "./schema";
 import {
   TABLES,
   type AnyRow,
@@ -59,12 +59,13 @@ export class Repository {
     const version =
       (await this.sql.all<{ user_version: number }>("PRAGMA user_version"))[0]
         ?.user_version ?? 0;
-    if (version > 2)
+    if (version > 3)
       throw new Error(
         "La base local requiere una versión más reciente de Apisense",
       );
     if (version < 1) await this.transaction(() => this.sql.exec(migrationV1));
     if (version < 2) await this.transaction(() => this.sql.exec(migrationV2));
+    if (version < 3) await this.transaction(() => this.sql.exec(migrationV3));
   }
   private async insert(table: Table, row: Dictionary) {
     const allowed = new Set<string>([...metadata, ...columns[table]]);
@@ -101,11 +102,59 @@ export class Repository {
         local_revision: (old?.local_revision ?? 0) + 1,
       } as EntityMap[K];
       await this.insert(table, row as unknown as Dictionary);
-      await this.sql.run(
-        "INSERT INTO sync_queue(table_name,record_id,revision,next_retry_at) VALUES (?,?,?,?) ON CONFLICT(table_name,record_id) DO UPDATE SET revision=excluded.revision,attempts=0,next_retry_at=excluded.next_retry_at,last_error=NULL",
-        [table, id, row.local_revision, this.now().toISOString()],
-      );
+      await this.enqueue(table, id, row.local_revision);
       return row;
+    });
+  }
+  private enqueue(table: Table, id: string, revision: number) {
+    return this.sql.run(
+      "INSERT INTO sync_queue(table_name,record_id,revision,next_retry_at) VALUES (?,?,?,?) ON CONFLICT(table_name,record_id) DO UPDATE SET revision=excluded.revision,attempts=0,next_retry_at=excluded.next_retry_at,last_error=NULL",
+      [table, id, revision, this.now().toISOString()],
+    );
+  }
+  private async tombstone(table: Table, row: AnyRow) {
+    const stamp = new Date(
+      Math.max(this.now().getTime(), Date.parse(row.updated_at) + 1),
+    ).toISOString();
+    const next = {
+      ...row,
+      updated_at: stamp,
+      deleted_at: stamp,
+      synced_at: null,
+      local_revision: row.local_revision + 1,
+    };
+    await this.insert(table, next as unknown as Dictionary);
+    await this.enqueue(table, row.id, next.local_revision);
+  }
+  /**
+   * Removes a hive and the records that only make sense with it (microphones,
+   * inspections, brood cycles) as tombstones, atomically, so every change syncs.
+   * Readings and summaries are intentionally left alone: they are hidden by the
+   * hive's absence, which avoids uploading clips of a hive nobody can see.
+   * Does not call save(): a nested transaction would wait on itself.
+   */
+  async removeHive(hiveId: string): Promise<void> {
+    await this.transaction(async () => {
+      const hive = (
+        await this.sql.all<EntityMap["hives"]>(
+          "SELECT * FROM hives WHERE id=?",
+          [hiveId],
+        )
+      )[0];
+      if (!hive || hive.deleted_at)
+        throw new Error("La colmena ya no está disponible");
+      for (const table of [
+        "iot_microphones",
+        "inspections",
+        "brood_cycles",
+      ] as const) {
+        const rows = await this.sql.all<AnyRow>(
+          `SELECT * FROM ${table} WHERE hive_id=? AND deleted_at IS NULL`,
+          [hiveId],
+        );
+        for (const row of rows) await this.tombstone(table, row);
+      }
+      await this.tombstone("hives", hive);
     });
   }
   async list<K extends Table>(

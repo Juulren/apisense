@@ -51,7 +51,7 @@ name: Mapa errores y colmena sin lecturas
     element: { text: "Guardar inspección" }
 - tapOn: "Guardar inspección"
 - scrollUntilVisible:
-    element: { text: "Describe tu observación con al menos 10 caracteres" }
+    element: { text: "Escribe una nota de al menos 3 caracteres o elige cómo la ves" }
 - takeScreenshot: .artifacts/design/states/04-inspection-validation
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000009999
 - scrollUntilVisible:

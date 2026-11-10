@@ -1,11 +1,12 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
   Badge,
   Button,
   Card,
+  Field,
   Label,
   Metric,
   Row,
@@ -13,7 +14,10 @@ import {
 } from "../../components/ui";
 import { SummaryCard } from "../../components/SummaryCard";
 import { BroodCycleTracker } from "../../components/BroodCycleTracker";
+import { SeasonTracker } from "../../components/SeasonTracker";
 import { HiveReadings } from "../../components/HiveReadings";
+import { checkinSummary } from "../../services/Checkin";
+import { removeHive, renameHive } from "../../services/Hives";
 import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
 import {
@@ -30,6 +34,28 @@ export default function HiveDetail() {
     sample = latestSample(app.data.samples, id),
     summary = latestSummary(app.data.summaries, id);
   const [inspectionLimit, setInspectionLimit] = useState(5);
+  const [draft, setDraft] = useState<string | null>(null);
+  const confirmRemove = () => {
+    if (!hive || !app.workspace) return;
+    const repo = app.workspace.repo;
+    Alert.alert(
+      "Quitar colmena",
+      `Se quitará ${hive.code} con sus observaciones, seguimientos y micrófonos. Dejará de aparecer en la app y el cambio se sincroniza. No se puede deshacer desde aquí.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Quitar",
+          style: "destructive",
+          onPress: () =>
+            task.run(async () => {
+              await removeHive(repo, hive.id);
+              await app.refresh();
+              router.replace("/hives");
+            }),
+        },
+      ],
+    );
+  };
   const inspections = app.data.inspections
     .filter((i) => i.hive_id === id)
     .sort((a, b) => b.inspected_at.localeCompare(a.inspected_at));
@@ -50,21 +76,7 @@ export default function HiveDetail() {
               router.push({ pathname: "/inspection", params: { hiveId: id } })
             }
           />
-          <Card>
-            <Badge label="Seguimiento de campo" tone="blue" />
-            <Label bold size={20}>
-              Estado de la reina
-            </Label>
-            <Label>
-              {inspections[0]?.queen_seen === 1
-                ? `Observada en inspección del ${dateLabel(inspections[0].inspected_at)}`
-                : "Sin verificación reciente en campo"}
-            </Label>
-            <Label muted size={12}>
-              El audio no confirma por sí solo la presencia de reina. Las
-              observaciones manuales quedan en la bitácora.
-            </Label>
-          </Card>
+          <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
           <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
             <Metric
               label="Frecuencia reciente"
@@ -146,7 +158,12 @@ export default function HiveDetail() {
                   <Label muted size={11}>
                     {dateLabel(inspection.inspected_at)}
                   </Label>
-                  <Label>{inspection.notes}</Label>
+                  {checkinSummary(inspection).length ? (
+                    <Label bold size={12}>
+                      {checkinSummary(inspection).join(" · ")}
+                    </Label>
+                  ) : null}
+                  {inspection.notes ? <Label>{inspection.notes}</Label> : null}
                   <Label muted size={12}>
                     {parseTags(inspection.tags_json).join(" · ")}
                   </Label>
@@ -169,6 +186,37 @@ export default function HiveDetail() {
                 router.push({ pathname: "/inspection", params: { hiveId: id } })
               }
             />
+          </Section>
+          <Section title="Administrar colmena">
+            <Card>
+              <Field
+                label="Nombre o código"
+                value={draft ?? hive.code}
+                onChangeText={setDraft}
+                maxLength={40}
+              />
+              <Button
+                label="Guardar nombre"
+                icon="check"
+                variant="secondary"
+                loading={task.busy}
+                disabled={draft === null || draft.trim() === hive.code}
+                onPress={() =>
+                  task.run(async () => {
+                    if (!app.workspace) return;
+                    await renameHive(app.workspace.repo, hive.id, draft ?? "");
+                    setDraft(null);
+                    await app.refresh();
+                  }, "Nombre guardado")
+                }
+              />
+              <Button
+                label="Quitar colmena"
+                icon="delete-outline"
+                variant="ghost"
+                onPress={confirmRemove}
+              />
+            </Card>
           </Section>
           {task.message ? <Label>{task.message}</Label> : null}
         </>
