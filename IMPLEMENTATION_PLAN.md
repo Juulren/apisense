@@ -198,3 +198,17 @@ Uso y límites: [HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md). Esta continuación 
 - [ ] Aprobación de adaptaciones, comparación completa con fuentes aprobadas y TalkBack/aceptación física. iOS continúa en espera; #15/#27 se mantienen en pausa.
 
 Informe: [ANDROID_EXTENDED_QA.md](docs/ANDROID_EXTENDED_QA.md). Guía de campo: [ANDROID_FIELD_REVIEW.md](docs/ANDROID_FIELD_REVIEW.md). El APK 0.1.2 se conserva como versión anterior; el arreglo de texto grande genera 0.1.3 sin cambiar dominio, migraciones o servicios.
+
+## 0.2.0 — Apiario real, editable y menos saturado (en curso, 2026-11-09)
+
+Plan, decisiones y revisiones del asesor en [docs/PLAN_0.2.0_APIARIO_REAL.md](docs/PLAN_0.2.0_APIARIO_REAL.md); uso en [docs/HIVE_WORKFLOWS.md](docs/HIVE_WORKFLOWS.md).
+
+- [x] Esquema local v3 y migración remota aditiva (pruebas v2→v3 con datos y PGlite).
+- [x] Añadir, renombrar y quitar colmenas (cascada transaccional; lecturas y resúmenes se ocultan, no se borran).
+- [x] Registro rápido opcional (regla: nota de 3+ caracteres o algún estado).
+- [x] Tracker de temporada con calendario orientativo de Yucatán (parser estricto, señales descriptivas, recordatorio sin culpa).
+- [x] Ajustes > Mi apiario: ubicación, búsqueda de lugar, calendario editable, recordatorio y clima Open-Meteo (opcional, con caché).
+- [x] Detalle de colmena y dashboard con menos bloques.
+- [ ] **Pendiente del dueño:** aplicar la migración remota al Supabase de desarrollo antes de usar 0.2.0 con cuenta real.
+- [ ] APK 0.2.0 / código 6 por CI y revisión en emulador (el dueño no tiene teléfono Android por ahora); actualización 0.1.4→0.2.0 sin borrar datos.
+- [ ] Calendario de Yucatán: validar con un apicultor local; normales climáticas del SMN para Mérida.

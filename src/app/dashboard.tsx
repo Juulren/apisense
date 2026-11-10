@@ -12,6 +12,8 @@ import {
 } from "../components/ui";
 import { useTheme } from "../components/ui/theme";
 import { HiveTile } from "../components/HiveTile";
+import { WeatherCard } from "../components/WeatherCard";
+import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { latestSummary } from "../state/selectors";
@@ -31,6 +33,7 @@ export default function Dashboard() {
     );
   });
   const summary = alert ? latestSummary(data.summaries, alert.id) : undefined;
+  const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
   const percentage = data.hives.length
     ? Math.round((normal / data.hives.length) * 100)
     : 0;
@@ -43,10 +46,14 @@ export default function Dashboard() {
         <Label muted>
           {data.apiaries[0]?.name || "Tu próximo apiario comienza aquí"}
         </Label>
+        {season ? (
+          <Badge label={`Fase típica: ${phaseLabels[season.phase]}`} tone="amber" />
+        ) : null}
       </View>
       {app.workspace?.demo ? (
         <Badge label="Datos de demostración · Sin envío a nube" tone="blue" />
       ) : null}
+      <WeatherCard apiary={data.apiaries[0]} />
       <Card tone="green">
         <Row>
           <Icon name="verified" color="#10B981" size={40} />
@@ -67,35 +74,6 @@ export default function Dashboard() {
           </View>
           <Badge label={`${percentage}%`} />
         </Row>
-        <Row>
-          <Label muted size={12}>
-            Distribución actual
-          </Label>
-          <Label color={colors.greenText} size={12}>
-            {data.hives.length - normal} por revisar
-          </Label>
-        </Row>
-        <View
-          accessibilityLabel={`${normal} colmenas estables`}
-          style={{ flexDirection: "row", gap: 6 }}
-        >
-          {statuses.map((s, i) => (
-            <View
-              key={data.hives[i]?.id}
-              style={{
-                flex: 1,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor:
-                  s?.overall_status === "optimal"
-                    ? "#34D399"
-                    : s
-                      ? "#FCD34D"
-                      : "#CBD5E1",
-              }}
-            />
-          ))}
-        </View>
       </Card>
       {alert && summary && data.settings.alerts !== "0" ? (
         <Card tone="amber">
@@ -158,11 +136,6 @@ export default function Dashboard() {
         ) : (
           <Empty>Crea tu apiario y añade la primera colmena.</Empty>
         )}
-        <Button
-          label="Gestionar apiario"
-          variant="secondary"
-          onPress={() => router.push("/hives")}
-        />
       </Section>
       {task.message ? <Label>{task.message}</Label> : null}
       <Label muted size={11}>

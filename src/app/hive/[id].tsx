@@ -8,7 +8,6 @@ import {
   Card,
   Field,
   Label,
-  Metric,
   Row,
   Section,
 } from "../../components/ui";
@@ -22,7 +21,6 @@ import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
 import {
   dateLabel,
-  latestSample,
   latestSummary,
   parseTags,
 } from "../../state/selectors";
@@ -31,7 +29,6 @@ export default function HiveDetail() {
     app = useApp(),
     task = useTask();
   const hive = app.data.hives.find((h) => h.id === id),
-    sample = latestSample(app.data.samples, id),
     summary = latestSummary(app.data.summaries, id);
   const [inspectionLimit, setInspectionLimit] = useState(5);
   const [draft, setDraft] = useState<string | null>(null);
@@ -77,68 +74,6 @@ export default function HiveDetail() {
             }
           />
           <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
-          <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
-            <Metric
-              label="Frecuencia reciente"
-              value={sample ? String(Math.round(sample.dominant_freq_hz)) : "—"}
-              unit="Hz"
-              icon="graphic-eq"
-            />
-            <Metric
-              label="Nivel digital"
-              value={sample ? sample.amplitude_db.toFixed(1) : "—"}
-              unit="dBFS"
-              icon="volume-up"
-            />
-          </View>
-          {sample ? (
-            <Label muted size={12}>
-              Última lectura: {dateLabel(sample.recorded_at)} ·{" "}
-              {sample.source === "simulator"
-                ? "Audio sintético"
-                : sample.source.toUpperCase()}
-            </Label>
-          ) : null}
-          <BroodCycleTracker key={`cycle-${id}`} hiveId={id} />
-          <HiveReadings key={`readings-${id}`} hiveId={id} />
-          {summary ? (
-            <SummaryCard summary={summary} />
-          ) : (
-            <Empty>
-              Aún no hay resúmenes. Recibe una muestra para comenzar.
-            </Empty>
-          )}
-          <Button
-            label="Generar resumen local"
-            icon="auto-awesome"
-            loading={task.busy}
-            onPress={() =>
-              task.run(async () => {
-                await app.workspace?.summaries.generate(id);
-                await app.refresh();
-              }, "Resumen guardado localmente")
-            }
-          />
-          <Row>
-            <View style={{ flex: 1 }}>
-              <Button
-                label="Monitor acústico"
-                variant="audio"
-                onPress={() =>
-                  router.push({ pathname: "/monitor", params: { hiveId: id } })
-                }
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Button
-                label="Ver historial"
-                variant="secondary"
-                onPress={() =>
-                  router.push({ pathname: "/history", params: { hiveId: id } })
-                }
-              />
-            </View>
-          </Row>
           <Section
             title="Bitácora de campo"
             caption="Tus observaciones y acciones guardadas localmente"
@@ -187,6 +122,51 @@ export default function HiveDetail() {
               }
             />
           </Section>
+          <Section
+            title="Cuadros de cría (opcional)"
+            caption="Seguimiento de 21 días de un cuadro o lote concreto"
+          >
+            <BroodCycleTracker key={`cycle-${id}`} hiveId={id} />
+          </Section>
+          <HiveReadings key={`readings-${id}`} hiveId={id} />
+          {summary ? (
+            <SummaryCard summary={summary} />
+          ) : (
+            <Empty>
+              Aún no hay resúmenes. Recibe una muestra para comenzar.
+            </Empty>
+          )}
+          <Button
+            label="Generar resumen local"
+            icon="auto-awesome"
+            loading={task.busy}
+            onPress={() =>
+              task.run(async () => {
+                await app.workspace?.summaries.generate(id);
+                await app.refresh();
+              }, "Resumen guardado localmente")
+            }
+          />
+          <Row>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="Monitor acústico"
+                variant="audio"
+                onPress={() =>
+                  router.push({ pathname: "/monitor", params: { hiveId: id } })
+                }
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button
+                label="Ver historial"
+                variant="secondary"
+                onPress={() =>
+                  router.push({ pathname: "/history", params: { hiveId: id } })
+                }
+              />
+            </View>
+          </Row>
           <Section title="Administrar colmena">
             <Card>
               <Field

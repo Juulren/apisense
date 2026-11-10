@@ -11,6 +11,7 @@ import {
   Section,
   Toggle,
 } from "../components/ui";
+import { ApiaryProfile } from "../components/ApiaryProfile";
 import { useTheme } from "../components/ui/theme";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
@@ -58,6 +59,22 @@ export default function Settings() {
             }}
           />
         </Card>
+      </Section>
+      <Section
+        title="Mi apiario"
+        caption="Ubicación, temporadas, recordatorios y clima"
+      >
+        {app.data.apiaries.length > 1 ? (
+          <Segmented
+            value={apiary?.id ?? ""}
+            onChange={setApiaryId}
+            options={app.data.apiaries.map((a) => ({
+              value: a.id,
+              label: a.name,
+            }))}
+          />
+        ) : null}
+        <ApiaryProfile apiary={apiary} />
       </Section>
       <Section title="Resúmenes y avisos">
         <Card>
