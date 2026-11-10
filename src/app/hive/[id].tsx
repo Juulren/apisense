@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
@@ -7,12 +7,12 @@ import {
   Button,
   Card,
   Field,
+  Icon,
   Label,
   Row,
   Section,
 } from "../../components/ui";
 import { SummaryCard } from "../../components/SummaryCard";
-import { BroodCycleTracker } from "../../components/BroodCycleTracker";
 import { SeasonTracker } from "../../components/SeasonTracker";
 import { NodeCard } from "../../components/NodeCard";
 import { HiveReadings } from "../../components/HiveReadings";
@@ -25,6 +25,39 @@ import {
   latestSummary,
   parseTags,
 } from "../../state/selectors";
+// A section that stays closed until asked for, so the screen starts short.
+function Fold({
+  title,
+  children,
+  testID,
+}: {
+  title: string;
+  children: React.ReactNode;
+  testID?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={{ gap: 12 }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        testID={testID}
+        onPress={() => setOpen(!open)}
+        style={{ minHeight: 48, justifyContent: "center" }}
+      >
+        <Card style={{ paddingVertical: 12 }}>
+          <Row>
+            <Label bold style={{ flex: 1 }}>
+              {title}
+            </Label>
+            <Icon name={open ? "expand-less" : "expand-more"} size={24} />
+          </Row>
+        </Card>
+      </Pressable>
+      {open ? children : null}
+    </View>
+  );
+}
 export default function HiveDetail() {
   const { id } = useLocalSearchParams<{ id: string }>(),
     app = useApp(),
@@ -74,8 +107,26 @@ export default function HiveDetail() {
               router.push({ pathname: "/inspection", params: { hiveId: id } })
             }
           />
-          <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
           <NodeCard key={`node-${id}`} hiveId={id} />
+          {summary ? (
+            <SummaryCard summary={summary} />
+          ) : (
+            <Empty>
+              Aún no hay resúmenes. Recibe una muestra para comenzar.
+            </Empty>
+          )}
+          <Button
+            label="Generar resumen local"
+            icon="auto-awesome"
+            variant="secondary"
+            loading={task.busy}
+            onPress={() =>
+              task.run(async () => {
+                await app.workspace?.summaries.generate(id);
+                await app.refresh();
+              }, "Resumen guardado localmente")
+            }
+          />
           <Section
             title="Bitácora de campo"
             caption="Tus observaciones y acciones guardadas localmente"
@@ -118,39 +169,11 @@ export default function HiveDetail() {
                 onPress={() => setInspectionLimit(inspectionLimit + 5)}
               />
             ) : null}
-            <Button
-              label="Anotar inspección"
-              icon="add-circle-outline"
-              onPress={() =>
-                router.push({ pathname: "/inspection", params: { hiveId: id } })
-              }
-            />
-          </Section>
-          <Section
-            title="Cuadros de cría (opcional)"
-            caption="Seguimiento de 21 días de un cuadro o lote concreto"
-          >
-            <BroodCycleTracker key={`cycle-${id}`} hiveId={id} />
           </Section>
           <HiveReadings key={`readings-${id}`} hiveId={id} />
-          {summary ? (
-            <SummaryCard summary={summary} />
-          ) : (
-            <Empty>
-              Aún no hay resúmenes. Recibe una muestra para comenzar.
-            </Empty>
-          )}
-          <Button
-            label="Generar resumen local"
-            icon="auto-awesome"
-            loading={task.busy}
-            onPress={() =>
-              task.run(async () => {
-                await app.workspace?.summaries.generate(id);
-                await app.refresh();
-              }, "Resumen guardado localmente")
-            }
-          />
+          <Fold title="Temporada y calendario de la zona" testID="fold-season">
+            <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
+          </Fold>
           <Row>
             <View style={{ flex: 1 }}>
               <Button
@@ -171,7 +194,7 @@ export default function HiveDetail() {
               />
             </View>
           </Row>
-          <Section title="Administrar colmena">
+          <Fold title="Administrar colmena" testID="fold-admin">
             <Card>
               <Field
                 label="Nombre o código"
@@ -201,7 +224,7 @@ export default function HiveDetail() {
                 onPress={confirmRemove}
               />
             </Card>
-          </Section>
+          </Fold>
           {task.message ? <Label>{task.message}</Label> : null}
         </>
       )}

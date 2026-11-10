@@ -1,5 +1,5 @@
 appId: com.apisense.app
-name: Navegacion ciclo y formulario con texto al 200 por ciento
+name: Formulario con texto al 200 por ciento
 ---
 - launchApp
 - openLink: apisense:///
@@ -10,19 +10,6 @@ name: Navegacion ciclo y formulario con texto al 200 por ciento
     visible: "Datos de demostración · Sin envío a nube"
     timeout: 60000
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
-- scrollUntilVisible:
-    centerElement: true
-    element: { text: "QA Lote B ·.*" }
-- takeScreenshot: .artifacts/design/font200/00-cohort-options
-- scrollUntilVisible:
-    centerElement: true
-    element: { id: "brood-cycle-ring" }
-- takeScreenshot: .artifacts/design/font200/01-cycle-navigation
-- tapOn: { id: "brood-cycle-ring" }
-- scrollUntilVisible:
-    centerElement: true
-    element: { id: "cycle-label" }
-- takeScreenshot: .artifacts/design/font200/02-cycle-editor
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
     direction: UP

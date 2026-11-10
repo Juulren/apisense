@@ -30,6 +30,8 @@ Las iteraciones también corrigieron el recorrido: búsqueda hacia arriba despu�
 
 ## Casos ampliados
 
+> **Nota posterior:** la interfaz de cuadros de cría se retiró del detalle de colmena. Los recorridos actuales ya no cubren ciclo, cuadros ni el caso de texto 150% con día 21 (`hive-large-font.yaml` se eliminó); `hive-cycle.yaml` pasó a «Observaciones y lecturas por colmena» y `extended-font.yaml` a «Formulario con texto al 200 por ciento». Las filas y la sección sobre ciclos/cuadros de abajo son el registro histórico de la ejecución 0.1.3 y no se repiten.
+
 Los recorridos reproducibles están en `.maestro/extended-hives.yaml`, `extended-states.yaml` y `extended-font.yaml`, incorporados a `scripts/test-design-android.sh`. La ejecución final usa Android 15/API 35, viewport 1080×2400 y densidad 420; escalas 1,0/1,5/2,0 según el caso. **Siete casos/0 fallos**; 57 capturas inspeccionadas y conservadas en [final/](evidence/issue25/extended/final/). Los casos anteriores fallidos quedan en el registro de iteraciones, sin contarse como éxitos de esta ejecución.
 
 | Paso/caso | Estado | Segundos | Evidencia |

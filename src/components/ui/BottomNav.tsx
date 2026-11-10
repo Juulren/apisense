@@ -39,7 +39,7 @@ const items: {
     prefix: ["/monitor", "/pairing"],
   },
   {
-    route: "/history",
+    route: "/hive",
     label: "Diagnóstico",
     icon: "health-and-safety",
     prefix: ["/history", "/hive", "/inspection"],

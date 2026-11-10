@@ -1,27 +1,13 @@
-import { Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 import { router } from "expo-router";
 import { Badge, Card, Icon, Label, Row } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { latestSample, latestSummary, statusLabel } from "../state/selectors";
-import { latestVerdict } from "../services/EdgeVerdicts";
 import type { Hive } from "../db/types";
-import { useTheme } from "./ui/theme";
 export function HiveTile({ hive }: { hive: Hive }) {
   const { data } = useApp();
-  const { colors } = useTheme();
   const sample = latestSample(data.samples, hive.id),
-    summary = latestSummary(data.summaries, hive.id),
-    mic = data.microphones.find((m) => m.hive_id === hive.id),
-    verdict = latestVerdict(data.verdicts, hive.id);
-  // A LoRaWAN node reports volts in its uplinks, not a percentage.
-  const nodeBattery =
-    mic?.firmware_version === "lorawan"
-      ? verdict?.battery_v != null
-        ? `${verdict.battery_v.toFixed(1).replace(".", ",")} V`
-        : "—"
-      : mic
-        ? `${Math.round(mic.battery_level)}%`
-        : "—";
+    summary = latestSummary(data.summaries, hive.id);
   const warning = summary && summary.overall_status !== "optimal";
   return (
     <Pressable
@@ -34,7 +20,7 @@ export function HiveTile({ hive }: { hive: Hive }) {
     >
       <Card
         tone={warning ? "amber" : undefined}
-        style={{ padding: 14, minHeight: 170, gap: 12 }}
+        style={{ padding: 14, minHeight: 104, gap: 8 }}
       >
         <Row>
           <Label bold size={12} style={{ flex: 1 }}>
@@ -57,18 +43,6 @@ export function HiveTile({ hive }: { hive: Hive }) {
               : "Actividad acústica estable"
             : "Vincula un micrófono"}
         </Label>
-        <View style={{ height: 1, backgroundColor: colors.border }} />
-        <Row>
-          <Label muted size={11}>
-            {sample ? `${Math.round(sample.dominant_freq_hz)} Hz` : "— Hz"}
-          </Label>
-          <Row style={{ gap: 2 }}>
-            <Icon name="battery-full" size={14} color={colors.muted} />
-            <Label muted size={11}>
-              {nodeBattery}
-            </Label>
-          </Row>
-        </Row>
       </Card>
     </Pressable>
   );
