@@ -1,4 +1,4 @@
-import type { Apiary, Inspection } from "../db/types";
+import type { Apiary, Inspection, RegionPreset } from "../db/types";
 import { localDate } from "./BroodCycle";
 
 // A season calendar is a guide, never a promise. The only built-in calendar is
@@ -135,12 +135,42 @@ export const yucatanCalendar: Calendar = [
 export const calendarDisclaimer =
   "Es una guía, no una promesa: las floraciones cambian de año en año y las sequías, los ciclones y los frentes fríos pueden desplazar o cancelar un flujo. Puede variar entre el norte, el oriente y el sur del estado.";
 
-// Rough box around the state of Yucatán (and its neighbours on the peninsula).
+/**
+ * Regional calendars are data, not code. A region needs a citable source; adding
+ * one is a new entry here (plus the database value, see RegionPreset). Anywhere
+ * else the calendar starts empty and the user fills it in; the climate context
+ * (Climate.ts) still adapts to the actual location.
+ */
+export interface RegionalCalendar {
+  id: Exclude<RegionPreset, "custom">;
+  label: string;
+  reference: string;
+  /** Rough box where the calendar is suggested, never imposed. */
+  bounds: { minLat: number; maxLat: number; minLon: number; maxLon: number };
+  calendar: Calendar;
+}
+export const regionalCalendars: RegionalCalendar[] = [
+  {
+    id: "yucatan",
+    label: "Yucatán",
+    reference: YUCATAN_REFERENCE,
+    bounds: { minLat: 19.5, maxLat: 21.7, minLon: -90.5, maxLon: -87.4 },
+    calendar: yucatanCalendar,
+  },
+];
+export const regionById = (id: string | null | undefined) =>
+  regionalCalendars.find((r) => r.id === id);
 export function suggestPreset(lat: number | null, lon: number | null) {
   if (lat === null || lon === null) return null;
-  return lat >= 19.5 && lat <= 21.7 && lon >= -90.5 && lon <= -87.4
-    ? ("yucatan" as const)
-    : null;
+  return (
+    regionalCalendars.find(
+      (r) =>
+        lat >= r.bounds.minLat &&
+        lat <= r.bounds.maxLat &&
+        lon >= r.bounds.minLon &&
+        lon <= r.bounds.maxLon,
+    )?.id ?? null
+  );
 }
 
 /** Strict parser: exactly 12 entries, known phases, bounded text. Never throws. */
@@ -212,15 +242,15 @@ export function serializeCalendar(calendar: Calendar) {
   return json;
 }
 
-export type CalendarSource = "custom" | "yucatan" | "none";
+export type CalendarSource = "custom" | "regional" | "none";
 export function calendarFor(
   apiary: Pick<Apiary, "region_preset" | "seasons_json"> | undefined,
 ): { calendar: Calendar | null; source: CalendarSource } {
   if (!apiary) return { calendar: null, source: "none" };
   const own = parseCalendar(apiary.seasons_json);
   if (own && own.some(Boolean)) return { calendar: own, source: "custom" };
-  if (apiary.region_preset === "yucatan")
-    return { calendar: yucatanCalendar, source: "yucatan" };
+  const region = regionById(apiary.region_preset);
+  if (region) return { calendar: region.calendar, source: "regional" };
   return { calendar: null, source: "none" };
 }
 

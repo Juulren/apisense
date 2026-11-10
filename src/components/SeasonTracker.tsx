@@ -5,9 +5,16 @@ import { Badge, Button, Card, Icon, Label } from "./ui";
 import { useTheme } from "./ui/theme";
 import { SeasonRing } from "./SeasonRing";
 import { useApp } from "../state/AppProvider";
+import { useClimate } from "../state/useClimate";
 import {
+  CLIMATE_NOTE,
+  CLIMATE_SOURCE,
+  contextLabel,
+  monthContexts,
+} from "../services/Climate";
+import {
+  regionById,
   suggestPreset,
-  YUCATAN_REFERENCE,
   calendarDisclaimer,
   calendarFor,
   checkinDue,
@@ -49,6 +56,10 @@ export function SeasonTracker({
   const apiary = app.data.apiaries.find((a) => a.id === hive?.apiary_id);
   const { calendar } = useMemo(() => calendarFor(apiary), [apiary]);
   const position = phaseOn(calendar, today);
+  const climate = useClimate(apiary);
+  const monthClimate = climate?.reading
+    ? contextLabel(monthContexts(climate.reading.months)[position.month])
+    : "";
   const info = position.info;
   const checkins = useMemo(
     () => app.data.inspections.filter((i) => i.hive_id === hiveId),
@@ -71,8 +82,8 @@ export function SeasonTracker({
           <Label muted size={12}>
             {info.confidence ? `Confianza: ${info.confidence}` : "Tu calendario"}
             {info.single ? " · fuente única" : ""}
-            {info.confidence && apiary?.region_preset === "yucatan"
-              ? ` · ${YUCATAN_REFERENCE}`
+            {info.confidence && regionById(apiary?.region_preset)
+              ? ` · ${regionById(apiary?.region_preset)?.reference}`
               : ""}
           </Label>
           {position.changesIn !== null && position.next ? (
@@ -90,10 +101,11 @@ export function SeasonTracker({
           <Label>
             {calendar
               ? "Este mes no tiene datos en tu calendario."
-              : suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null) ===
-                  "yucatan"
-                ? "Tu apiario está en la península de Yucatán: elige ese calendario en Ajustes > Mi apiario."
-                : "Aún no hay un calendario para esta ubicación. Elige o edita uno en Ajustes."}
+              : regionById(
+                    suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null),
+                  )
+                ? `Tu apiario está en la zona del calendario «${regionById(suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null))?.label}»: elígelo en Ajustes > Mi apiario.`
+                : "Aún no hay un calendario regional para este lugar. Completa el tuyo en Ajustes > Mi apiario: ahí ves el clima de cada mes en tu ubicación."}
           </Label>
           <Button
             label="Ir a Ajustes"
@@ -102,6 +114,15 @@ export function SeasonTracker({
           />
         </View>
       )}
+      {climate?.reading ? (
+        <Label muted size={12}>
+          {monthClimate
+            ? `Clima de este mes en tu lugar: ${monthClimate}. `
+            : "Clima de este mes en tu lugar: sin diferencia marcada con el resto del año. "}
+          ({CLIMATE_SOURCE}, {climate.reading.fromYear}–{climate.reading.toYear}).{" "}
+          {CLIMATE_NOTE}
+        </Label>
+      ) : null}
       <View style={{ gap: 8 }}>
         <Label bold>Registro rápido</Label>
         {checkins.length === 0 ? (

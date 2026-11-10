@@ -122,3 +122,11 @@ ALTER TABLE inspections ADD COLUMN population TEXT CHECK(population IS NULL OR p
 ALTER TABLE inspections ADD COLUMN stores TEXT CHECK(stores IS NULL OR stores IN ('low','medium','high'));
 PRAGMA user_version = 3;
 `;
+// 0.2.1: the weather is on by default wherever the apiary has a location. Rows
+// that were saved before (switch off by default) are turned on once and queued
+// to sync like any other edit.
+export const migrationV4 = `
+UPDATE apiaries SET weather_enabled = 1, synced_at = NULL, local_revision = local_revision + 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE weather_enabled = 0 AND latitude IS NOT NULL AND longitude IS NOT NULL AND deleted_at IS NULL;
+INSERT INTO sync_queue(table_name,record_id,revision,next_retry_at) SELECT 'apiaries', id, local_revision, strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM apiaries WHERE synced_at IS NULL AND weather_enabled = 1 AND deleted_at IS NULL ON CONFLICT(table_name,record_id) DO UPDATE SET revision=excluded.revision, attempts=0, next_retry_at=excluded.next_retry_at, last_error=NULL;
+PRAGMA user_version = 4;
+`;

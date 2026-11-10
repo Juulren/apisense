@@ -40,14 +40,15 @@ describe("local schema v3", () => {
     const repository = repo(db);
     await repository.initialize();
     expect(db.prepare("PRAGMA user_version").get()).toMatchObject({
-      user_version: 3,
+      user_version: 4,
     });
     expect(await repository.get("apiaries", "a1")).toMatchObject({
       name: "Apiario viejo",
       latitude: 20.4,
       region_preset: null,
       seasons_json: null,
-      weather_enabled: 0,
+      // v4 switches the weather on for an apiary that already has a location.
+      weather_enabled: 1,
     });
     expect(await repository.get("inspections", "i1")).toMatchObject({
       notes: "Nota anterior conservada",
@@ -76,10 +77,10 @@ describe("local schema v3", () => {
     await repository.initialize();
     await repository.initialize();
     expect(fresh.prepare("PRAGMA user_version").get()).toMatchObject({
-      user_version: 3,
+      user_version: 4,
     });
     const newer = new DatabaseSync(":memory:");
-    newer.exec("PRAGMA user_version = 4");
+    newer.exec("PRAGMA user_version = 5");
     await expect(repo(newer).initialize()).rejects.toThrow(
       "versión más reciente",
     );
@@ -173,5 +174,58 @@ describe("local schema v3", () => {
         checkin_frequency: "hourly" as never,
       }),
     ).rejects.toThrow();
+  });
+});
+
+describe("local schema v4 (weather on by default where there is a location)", () => {
+  it("turns it on once for located apiaries, queues them, and leaves the rest alone", async () => {
+    const db = new DatabaseSync(":memory:");
+    db.exec(migrationV1);
+    db.exec(migrationV2);
+    const stamp = "2026-11-01T10:00:00.000Z";
+    db.exec(`
+      INSERT INTO apiaries(id,updated_at,user_id,name,latitude,longitude) VALUES ('with','${stamp}','u','Con ubicación',20.4,-89.3);
+      INSERT INTO apiaries(id,updated_at,user_id,name) VALUES ('without','${stamp}','u','Sin ubicación');
+      INSERT INTO apiaries(id,updated_at,deleted_at,user_id,name,latitude,longitude) VALUES ('gone','${stamp}','${stamp}','u','Quitado',1,2);
+    `);
+    const repository = repo(db);
+    await repository.initialize();
+    const row = (id: string) =>
+      db
+        .prepare(
+          "SELECT weather_enabled, synced_at, local_revision FROM apiaries WHERE id=?",
+        )
+        .get(id) as {
+        weather_enabled: number;
+        synced_at: string | null;
+        local_revision: number;
+      };
+    expect(row("with")).toMatchObject({ weather_enabled: 1, synced_at: null });
+    expect(row("with").local_revision).toBe(1);
+    expect(row("without").weather_enabled).toBe(0);
+    expect(row("gone").weather_enabled).toBe(0);
+    const queued = db
+      .prepare("SELECT record_id, revision FROM sync_queue WHERE table_name='apiaries'")
+      .all() as { record_id: string; revision: number }[];
+    expect(queued).toEqual([{ record_id: "with", revision: 1 }]);
+    // Running the initializer again must not flip or re-queue anything.
+    await repository.initialize();
+    expect(row("with").local_revision).toBe(1);
+  });
+
+  it("does not turn it back on after the user switched it off", async () => {
+    const db = new DatabaseSync(":memory:");
+    const repository = repo(db);
+    await repository.initialize();
+    const apiary = await repository.save("apiaries", {
+      user_id: "u",
+      name: "Apiario",
+      latitude: 20,
+      longitude: -89,
+      check_interval_minutes: 15,
+      weather_enabled: 0,
+    });
+    await repository.initialize();
+    expect((await repository.get("apiaries", apiary.id))?.weather_enabled).toBe(0);
   });
 });

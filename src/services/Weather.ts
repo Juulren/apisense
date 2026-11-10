@@ -168,18 +168,18 @@ export interface WeatherState {
   /** True when the shown reading is older than the refresh window. */
   stale: boolean;
   /** Why nothing was requested, so the screen can explain instead of guessing. */
-  disabled: "demo" | "off" | "no-location" | "offline" | null;
+  disabled: "off" | "no-location" | "offline" | null;
 }
 /**
  * Never throws and never blocks saving anything: on any failure it returns the
- * last saved reading. Makes no request in the demo, with the apiary toggle off,
- * without coordinates, in offline mode, or while the saved reading is fresh.
+ * last saved reading. Makes no request with the apiary toggle off, without
+ * coordinates, in offline mode, or while the saved reading is fresh. The demo
+ * is allowed: it only looks up its own fictitious location.
  */
 export async function loadWeather(
   settings: SettingsPort,
   apiary: Pick<Apiary, "id" | "latitude" | "longitude" | "weather_enabled">,
   options: {
-    demo: boolean;
     offline: boolean;
     now?: Date;
     fetchImpl?: FetchLike;
@@ -195,7 +195,6 @@ export async function loadWeather(
     stale: stale(cached),
     disabled,
   });
-  if (options.demo) return { reading: null, stale: false, disabled: "demo" };
   if (apiary.weather_enabled !== 1) return state("off");
   if (apiary.latitude === null || apiary.longitude === null)
     return state("no-location");

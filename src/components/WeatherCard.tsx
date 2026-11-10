@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { router } from "expo-router";
 import { Button, Card, Icon, Label, Row } from "./ui";
+import { useApp } from "../state/AppProvider";
 import { useWeather } from "../state/useWeather";
 import { ageLabel, WEATHER_LABEL } from "../services/Weather";
 import type { Apiary } from "../db/types";
@@ -8,7 +9,8 @@ import type { Apiary } from "../db/types";
 /** Current weather for the apiary, or a one-line way to turn it on. Hidden in the demo. */
 export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
   const state = useWeather(apiary);
-  if (!apiary || !state || state.disabled === "demo") return null;
+  const demo = Boolean(useApp().workspace?.demo);
+  if (!apiary || !state) return null;
   if (state.disabled === "off" || state.disabled === "no-location")
     return (
       <Card>
@@ -52,6 +54,7 @@ export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
               ? " · dato guardado, sin actualizar"
               : ""}{" "}
             · {WEATHER_LABEL}
+            {demo ? " · Ubicación ficticia del demo" : ""}
           </Label>
         </>
       ) : (

@@ -37,7 +37,7 @@ const apiary = {
   longitude: -89.623,
   weather_enabled: 1,
 };
-const live = { demo: false, offline: false, now: NOW };
+const live = { offline: false, now: NOW };
 
 describe("what leaves the device", () => {
   it("rounds coordinates to ~1 km and sends only the requested variables over HTTPS", () => {
@@ -111,10 +111,9 @@ describe("parsing", () => {
 });
 
 describe("loading with cache and every opt-out", () => {
-  it("makes no request in the demo, with the toggle off, without location or offline", async () => {
+  it("makes no request with the toggle off, without location or offline", async () => {
     const fetchImpl = vi.fn(ok(body));
     const s = memory();
-    expect((await loadWeather(s, apiary, { ...live, demo: true, fetchImpl })).disabled).toBe("demo");
     expect(
       (await loadWeather(s, { ...apiary, weather_enabled: 0 }, { ...live, fetchImpl })).disabled,
     ).toBe("off");

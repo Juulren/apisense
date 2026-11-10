@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { Badge, Button, Card, Field, Icon, Label, Row, Segmented, Toggle } from "./ui";
 import { useApp } from "../state/AppProvider";
+import { useClimate } from "../state/useClimate";
+import { contextLabel, monthContexts } from "../services/Climate";
 import { useTask } from "../state/useTask";
 import { saveApiaryProfile } from "../services/Apiaries";
 import {
@@ -11,13 +13,13 @@ import {
   type Place,
 } from "../services/Weather";
 import {
-  YUCATAN_REFERENCE,
   calendarDisclaimer,
   calendarFor,
   monthShort,
   phaseLabels,
+  regionById,
+  regionalCalendars,
   suggestPreset,
-  yucatanCalendar,
   type Calendar,
   type Phase,
 } from "../services/Seasons";
@@ -42,6 +44,10 @@ function Form({ apiary }: { apiary: Apiary }) {
     [places, setPlaces] = useState<Place[]>([]);
   const demo = Boolean(app.workspace?.demo),
     offline = app.data.settings.offline === "1";
+  const climate = useClimate(apiary);
+  const contexts = climate?.reading
+    ? monthContexts(climate.reading.months)
+    : null;
   const canSearch = !demo && !offline;
   useEffect(() => {
     setPlaces([]);
@@ -63,7 +69,12 @@ function Form({ apiary }: { apiary: Apiary }) {
   );
   const choosePreset = (next: RegionPreset) => {
     setPreset(next);
-    setCalendar(next === "yucatan" ? yucatanCalendar.map((m) => (m ? { ...m } : m)) : (calendar ?? empty()));
+    const region = regionById(next);
+    setCalendar(
+      region
+        ? region.calendar.map((m) => (m ? { ...m } : m))
+        : (calendar ?? empty()),
+    );
   };
   const cycleMonth = (index: number) => {
     const base = calendar ?? empty();
@@ -149,22 +160,23 @@ function Form({ apiary }: { apiary: Apiary }) {
         value={(preset ?? "custom") as RegionPreset}
         onChange={choosePreset}
         options={[
-          { value: "yucatan", label: "Yucatán" },
-          { value: "custom", label: "Personalizado" },
+          ...regionalCalendars.map((r) => ({ value: r.id as RegionPreset, label: r.label })),
+          { value: "custom" as RegionPreset, label: "Personalizado" },
         ]}
       />
-      {preset === "yucatan" ? (
+      {regionById(preset) ? (
         <Label muted size={12}>
-          Basado en pocas fuentes técnicas y reportes de apicultores ({YUCATAN_REFERENCE}).
+          Basado en pocas fuentes técnicas y reportes de apicultores ({regionById(preset)?.reference}).
         </Label>
-      ) : suggestion === "yucatan" ? (
+      ) : regionById(suggestion) ? (
         <Label muted size={12}>
-          Tu ubicación está en la península de Yucatán: puedes elegir ese calendario.
+          Tu ubicación está en la zona del calendario «{regionById(suggestion)?.label}»: puedes elegirlo.
         </Label>
       ) : (
         <Label muted size={12}>
-          Aún no hay un calendario verificado para otras zonas. Completa tu propio
-          calendario o déjalo vacío.
+          Aún no hay un calendario regional verificado para este lugar. Completa tu
+          propio calendario o déjalo vacío: abajo ves cómo es el clima de cada mes
+          en tu ubicación.
         </Label>
       )}
       <Pressable
@@ -191,7 +203,14 @@ function Form({ apiary }: { apiary: Apiary }) {
               style={{ minHeight: 44, justifyContent: "center" }}
             >
               <Row>
-                <Label bold>{month}</Label>
+                <View style={{ flex: 1 }}>
+                  <Label bold>{month}</Label>
+                  {contexts && contextLabel(contexts[i]) ? (
+                    <Label muted size={11}>
+                      Clima aquí: {contextLabel(contexts[i])}
+                    </Label>
+                  ) : null}
+                </View>
                 <Badge
                   label={calendar?.[i] ? phaseLabels[calendar[i]!.phase] : "Sin dato"}
                   tone={calendar?.[i] ? "amber" : "neutral"}
@@ -221,10 +240,10 @@ function Form({ apiary }: { apiary: Apiary }) {
         label="Mostrar el clima del apiario"
         caption={
           demo
-            ? "No se usa en el demo."
+            ? "En el demo solo consulta la ubicación ficticia del demo."
             : "Envía a Open-Meteo la ubicación redondeada (~1 km) para pedir el clima."
         }
-        value={weather && !demo}
+        value={weather}
         onChange={(value) => setWeather(value)}
       />
       <Button label="Guardar apiario" icon="save-alt" loading={task.busy} onPress={save} />

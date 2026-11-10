@@ -24,7 +24,7 @@ export function useWeather(apiary: Apiary | undefined) {
       void loadWeather(
         workspace.repo,
         { id, latitude: lat, longitude: lon, weather_enabled: enabled },
-        { demo: workspace.demo, offline },
+        { offline },
       )
         .then((next) => {
           if (!cancelled) setState(next);

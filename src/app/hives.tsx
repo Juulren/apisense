@@ -53,6 +53,8 @@ export default function Hives() {
         latitude,
         longitude,
         check_interval_minutes: 15,
+        // The weather is on by default wherever there is a location.
+        weather_enabled: latitude === null ? 0 : 1,
       });
       setSelected(created.id);
       setName("");

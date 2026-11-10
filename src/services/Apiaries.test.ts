@@ -121,7 +121,7 @@ describe("apiary profile", () => {
       profile({ region_preset: "yucatan", calendar: yucatanCalendar }),
     );
     expect(preset).toMatchObject({ region_preset: "yucatan", seasons_json: null });
-    expect(calendarFor(preset).source).toBe("yucatan");
+    expect(calendarFor(preset).source).toBe("regional");
     const edited: Calendar = yucatanCalendar.map((m, i) =>
       i === 4 && m ? { ...m, phase: "hard" as const } : m,
     );

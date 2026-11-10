@@ -131,7 +131,7 @@ describe("which calendar applies", () => {
   it("uses the Yucatán calendar only when chosen, and never invents one", () => {
     expect(
       calendarFor({ region_preset: "yucatan", seasons_json: null }).source,
-    ).toBe("yucatan");
+    ).toBe("regional");
     expect(
       calendarFor({ region_preset: "custom", seasons_json: null }),
     ).toEqual({ calendar: null, source: "none" });
@@ -147,7 +147,7 @@ describe("which calendar applies", () => {
     ).toBe("custom");
     expect(
       calendarFor({ region_preset: "yucatan", seasons_json: "{bad" }).source,
-    ).toBe("yucatan");
+    ).toBe("regional");
     expect(
       calendarFor({ region_preset: "custom", seasons_json: "{bad" }).source,
     ).toBe("none");

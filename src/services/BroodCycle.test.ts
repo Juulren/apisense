@@ -98,7 +98,7 @@ describe("Worker brood calendar", () => {
     });
     await repository.initialize();
     expect(db.prepare("PRAGMA user_version").get()).toMatchObject({
-      user_version: 3,
+      user_version: 4,
     });
     expect((await repository.get("inspections", note.id))?.notes).toBe(
       note.notes,
