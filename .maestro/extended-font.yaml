@@ -23,5 +23,5 @@ name: Formulario con texto al 200 por ciento
 - takeScreenshot: .artifacts/design/font200/04-notes-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar inspección" }
+    element: { text: "Guardar observación" }
 - takeScreenshot: .artifacts/design/font200/05-save-reachable

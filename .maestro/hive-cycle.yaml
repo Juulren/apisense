@@ -22,10 +22,10 @@ name: Observaciones y lecturas por colmena
 - inputText: Observacion QA persistente de Colmena 01
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar inspección" }
-- tapOn: "Guardar inspección"
+    element: { text: "Guardar observación" }
+- tapOn: "Guardar observación"
 - scrollUntilVisible:
-    element: { text: "Inspección de demo guardada localmente." }
+    element: { text: "Observación de demo guardada localmente." }
 - takeScreenshot: .artifacts/design/functional/03-observation-saved
 - scrollUntilVisible:
     element: { text: "Volver al detalle de colmena" }

@@ -45,7 +45,7 @@ for label in ["Inicio", "Acústica", "Diagnóstico", "Ajustes"]:
 if selected != 1:
     raise SystemExit("Exactly one native navigation item must be selected")
 
-save = unique("content-desc", "Guardar inspección")
+save = unique("content-desc", "Guardar observación")
 left, top, right, bottom = bounds(save)
 if bottom-top < 52*density-1 or save.get("enabled") != "true" or save.get("clickable") != "true":
     raise SystemExit("Large-text save action lost its native touch target/state")

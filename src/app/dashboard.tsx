@@ -52,10 +52,16 @@ export default function Dashboard() {
           <Badge label={`Fase típica: ${phaseLabels[season.phase]}`} tone="amber" />
         ) : null}
       </View>
+      {data.hives.length ? (
+        <Button
+          label="Anotar observación"
+          icon="edit-note"
+          onPress={() => router.push("/inspection")}
+        />
+      ) : null}
       {app.workspace?.demo ? (
         <Badge label="Datos de demostración · Sin envío a nube" tone="blue" />
       ) : null}
-      <WeatherCard apiary={data.apiaries[0]} />
       {nodeAlerts.length ? (
         <Card tone="amber">
           <Row>
@@ -74,6 +80,7 @@ export default function Dashboard() {
           </Row>
           <Button
             label="Ver alertas"
+            variant="secondary"
             onPress={() => router.push("/alerts")}
           />
         </Card>
@@ -115,6 +122,7 @@ export default function Dashboard() {
           </Label>
           <Button
             label="Ver cómo actuar"
+            variant="secondary"
             icon="lightbulb-outline"
             onPress={() =>
               router.push({ pathname: "/hive/[id]", params: { id: alert.id } })
@@ -161,6 +169,7 @@ export default function Dashboard() {
           <Empty>Crea tu apiario y añade la primera colmena.</Empty>
         )}
       </Section>
+      <WeatherCard apiary={data.apiaries[0]} />
       {task.message ? <Label>{task.message}</Label> : null}
       <Label muted size={11}>
         Los patrones acústicos son orientativos. Confirma el estado de reina y

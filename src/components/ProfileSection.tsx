@@ -144,7 +144,7 @@ export function ProfileSection() {
             <View style={{ gap: 16 }}>
               <Label tone="warning">
                 Se borrarán para siempre tu cuenta y todos tus datos en la nube
-                (apiarios, colmenas, inspecciones, lecturas y avisos), y también
+                (apiarios, colmenas, observaciones, lecturas y avisos), y también
                 los de este dispositivo. Lo que aún no se haya sincronizado (
                 {app.data.pending} registros) se perderá. No se puede deshacer.
               </Label>

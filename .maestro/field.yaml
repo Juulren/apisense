@@ -65,8 +65,8 @@ name: App de campo Android con cuentas Supabase, audio privado y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Anotar inspección"
-- tapOn: "Anotar inspección"
+      text: "Anotar observación de esta colmena"
+- tapOn: "Anotar observación de esta colmena"
 - tapOn:
     id: "inspection-notes"
 - inputText: ${MAESTRO_QA_NOTE}
@@ -74,10 +74,10 @@ name: App de campo Android con cuentas Supabase, audio privado y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Guardar inspección"
-- tapOn: "Guardar inspección"
+      text: "Guardar observación"
+- tapOn: "Guardar observación"
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Inspección guardada en este dispositivo.*"
+      text: "Observación guardada en este dispositivo.*"
 - stopApp

@@ -11,6 +11,7 @@ import {
   Section,
   Toggle,
 } from "../components/ui";
+import { Fold } from "../components/ui/Fold";
 import { ApiaryProfile } from "../components/ApiaryProfile";
 import { ProfileSection } from "../components/ProfileSection";
 import { useTheme } from "../components/ui/theme";
@@ -42,6 +43,7 @@ export default function Settings() {
       title="Ajustes y configuración"
       subtitle={apiary?.name ?? "Tu configuración de campo"}
     >
+      <ProfileSection />
       <Section
         title="Apariencia y modo oscuro"
         caption="Contraste y legibilidad para trabajo de campo"
@@ -76,7 +78,7 @@ export default function Settings() {
         ) : null}
         <ApiaryProfile apiary={apiary} />
       </Section>
-      <Section title="Resúmenes y avisos">
+      <Fold title="Resúmenes y avisos" testID="fold-summaries">
         <Card>
           {app.data.apiaries.length > 1 ? (
             <Segmented
@@ -122,7 +124,7 @@ export default function Settings() {
             el cron requiere un proyecto Supabase configurado.
           </Label>
         </Card>
-      </Section>
+      </Fold>
       <Section title="Guardado local y sincronización">
         <Card>
           <Toggle
@@ -163,7 +165,6 @@ export default function Settings() {
           </Label>
         </Card>
       </Section>
-      <ProfileSection />
       <Button
         label="Ver catálogo de componentes"
         variant="ghost"

@@ -67,7 +67,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - assertVisible: "Micrófonos IoT"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/08-pairing
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000101
-- assertVisible: "Anotar inspección"
+- assertVisible: "Anotar observación"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection
 - tapOn:
     id: inspection-notes

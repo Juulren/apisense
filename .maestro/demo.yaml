@@ -54,8 +54,8 @@ name: Demo nativa offline, audio y persistencia
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Anotar inspección"
-- tapOn: "Anotar inspección"
+      text: "Anotar observación de esta colmena"
+- tapOn: "Anotar observación de esta colmena"
 - tapOn:
     id: "inspection-notes"
 - inputText: "Inspeccion de prueba nativa persistente"
@@ -63,13 +63,13 @@ name: Demo nativa offline, audio y persistencia
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Guardar inspección"
-- tapOn: "Guardar inspección"
+      text: "Guardar observación"
+- tapOn: "Guardar observación"
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Inspección de demo guardada localmente."
-- assertVisible: "Inspección de demo guardada localmente."
+      text: "Observación de demo guardada localmente."
+- assertVisible: "Observación de demo guardada localmente."
 - scrollUntilVisible:
     centerElement: true
     element:

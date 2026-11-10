@@ -30,7 +30,7 @@ const items: {
     route: "/dashboard",
     label: "Inicio",
     icon: "dashboard",
-    prefix: ["/dashboard", "/hives", "/alerts"],
+    prefix: ["/dashboard", "/alerts"],
   },
   {
     route: "/monitor",
@@ -42,7 +42,7 @@ const items: {
     route: "/hive",
     label: "Diagnóstico",
     icon: "health-and-safety",
-    prefix: ["/history", "/hive", "/inspection"],
+    prefix: ["/history", "/hive", "/hives", "/inspection"],
   },
   {
     route: "/settings",

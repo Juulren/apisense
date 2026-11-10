@@ -10,6 +10,7 @@ import {
   Segmented,
   Section,
 } from "../components/ui";
+import { Fold } from "../components/ui/Fold";
 import { ApiaryMap } from "../components/ApiaryMap";
 import { HiveTile } from "../components/HiveTile";
 import { addHive } from "../services/Hives";
@@ -149,7 +150,11 @@ export default function Hives() {
           />
         </Card>
       ) : null}
-      <Section title="Nuevo apiario">
+      <Fold
+        title="Nuevo apiario"
+        testID="fold-new-apiary"
+        initiallyOpen={app.data.apiaries.length === 0}
+      >
         <Card>
           <Field
             label="Nombre del apiario"
@@ -179,7 +184,7 @@ export default function Hives() {
           />
           <Badge label="Guardado local primero" tone="blue" />
         </Card>
-      </Section>
+      </Fold>
       {task.message ? <Label>{task.message}</Label> : null}
     </AppScreen>
   );

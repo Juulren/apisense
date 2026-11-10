@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, Pressable, View } from "react-native";
+import { Alert, View } from "react-native";
 import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
@@ -7,11 +7,11 @@ import {
   Button,
   Card,
   Field,
-  Icon,
   Label,
   Row,
   Section,
 } from "../../components/ui";
+import { Fold } from "../../components/ui/Fold";
 import { SummaryCard } from "../../components/SummaryCard";
 import { SeasonTracker } from "../../components/SeasonTracker";
 import { NodeCard } from "../../components/NodeCard";
@@ -25,46 +25,13 @@ import {
   latestSummary,
   parseTags,
 } from "../../state/selectors";
-// A section that stays closed until asked for, so the screen starts short.
-function Fold({
-  title,
-  children,
-  testID,
-}: {
-  title: string;
-  children: React.ReactNode;
-  testID?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <View style={{ gap: 12 }}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded: open }}
-        testID={testID}
-        onPress={() => setOpen(!open)}
-        style={{ minHeight: 48, justifyContent: "center" }}
-      >
-        <Card style={{ paddingVertical: 12 }}>
-          <Row>
-            <Label bold style={{ flex: 1 }}>
-              {title}
-            </Label>
-            <Icon name={open ? "expand-less" : "expand-more"} size={24} />
-          </Row>
-        </Card>
-      </Pressable>
-      {open ? children : null}
-    </View>
-  );
-}
 export default function HiveDetail() {
   const { id } = useLocalSearchParams<{ id: string }>(),
     app = useApp(),
     task = useTask();
   const hive = app.data.hives.find((h) => h.id === id),
     summary = latestSummary(app.data.summaries, id);
-  const [inspectionLimit, setInspectionLimit] = useState(5);
+  const [inspectionLimit, setInspectionLimit] = useState(3);
   const [draft, setDraft] = useState<string | null>(null);
   const confirmRemove = () => {
     if (!hive || !app.workspace) return;
@@ -81,7 +48,7 @@ export default function HiveDetail() {
             task.run(async () => {
               await removeHive(repo, hive.id);
               await app.refresh();
-              router.replace("/hives");
+              (router.canGoBack() ? router.back() : router.replace("/hive"));
             }),
         },
       ],
@@ -109,7 +76,7 @@ export default function HiveDetail() {
           />
           <NodeCard key={`node-${id}`} hiveId={id} />
           {summary ? (
-            <SummaryCard summary={summary} />
+            <SummaryCard summary={summary} compact />
           ) : (
             <Empty>
               Aún no hay resúmenes. Recibe una muestra para comenzar.
@@ -135,7 +102,7 @@ export default function HiveDetail() {
               inspections.slice(0, inspectionLimit).map((inspection) => (
                 <Card key={inspection.id}>
                   <Row>
-                    <Label bold>Inspección manual</Label>
+                    <Label bold>Observación</Label>
                     <Badge
                       label={
                         inspection.synced_at ? "Sincronizada" : "Guardada local"
@@ -160,7 +127,7 @@ export default function HiveDetail() {
                 </Card>
               ))
             ) : (
-              <Empty>Aún no has registrado inspecciones.</Empty>
+              <Empty>Aún no has anotado observaciones.</Empty>
             )}
             {inspections.length > inspectionLimit ? (
               <Button

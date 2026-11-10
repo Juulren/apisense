@@ -5,11 +5,11 @@ El detalle de una colmena reúne tres funciones de campo. La app de desarrollo u
 ## Anotar y consultar observaciones
 
 1. Abre una colmena desde Inicio o la lista.
-2. Pulsa **Anotar observación de esta colmena** o **Anotar inspección** en la bitácora.
+2. Pulsa **Anotar observación de esta colmena**.
 3. Elige lo que quieras registrar (actividad, reservas, población; en «Más detalles» reina, huevos y celdas reales) y/o escribe una nota de al menos tres caracteres. Todo es opcional, pero hace falta al menos algo; puedes añadir etiquetas.
-4. Pulsa **Guardar inspección**. La nota se conserva localmente, aparece en la bitácora de esa colmena y entra en la cola de sincronización si es una cuenta real.
+4. Pulsa **Guardar observación**. La nota se conserva localmente, aparece en la bitácora de esa colmena y entra en la cola de sincronización si es una cuenta real.
 
-**Ver observaciones anteriores** amplía la lista cuando hay más de cinco. Una URL con una colmena inválida no guarda la nota en otra colmena por defecto. El modo offline y las claves por cuenta siguen usando el repositorio existente.
+**Ver observaciones anteriores** amplía la lista cuando hay más de tres. Una URL con una colmena inválida no guarda la nota en otra colmena por defecto. El modo offline y las claves por cuenta siguen usando el repositorio existente.
 
 ## Lecturas individuales
 

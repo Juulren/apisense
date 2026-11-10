@@ -33,7 +33,7 @@ export default function Catalog() {
             onPress={() => setNotice("Acción primaria seleccionada")}
           />
           <Button
-            label="Anotar inspección"
+            label="Anotar observación"
             icon="add-circle-outline"
             onPress={() => setNotice("Acción de campo seleccionada")}
           />

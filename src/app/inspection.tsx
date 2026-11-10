@@ -34,12 +34,12 @@ export default function Inspection() {
         setForm(emptyCheckin);
       },
       app.workspace?.demo
-        ? "Inspección de demo guardada localmente."
-        : "Inspección guardada en este dispositivo. Se sincronizará al recuperar red.",
+        ? "Observación de demo guardada localmente."
+        : "Observación guardada en este dispositivo. Se sincronizará al recuperar red.",
     );
   return (
     <AppScreen
-      title="Anotar inspección"
+      title="Anotar observación"
       subtitle="Todo es opcional: elige lo que quieras registrar"
       back
     >
@@ -75,7 +75,7 @@ export default function Inspection() {
           maxLength={300}
         />
         <Button
-          label="Guardar inspección"
+          label="Guardar observación"
           icon="save-alt"
           disabled={!hive}
           loading={task.busy}
@@ -90,7 +90,7 @@ export default function Inspection() {
           label="Volver al detalle de colmena"
           variant="secondary"
           onPress={() =>
-            router.replace({ pathname: "/hive/[id]", params: { id: hive.id } })
+            router.dismissTo({ pathname: "/hive/[id]", params: { id: hive.id } })
           }
         />
       ) : null}

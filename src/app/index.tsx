@@ -30,7 +30,7 @@ export default function Welcome() {
           El campo no siempre tiene señal.
         </Label>
         <Label muted>
-          Tus inspecciones y lecturas se guardan primero en este dispositivo. La
+          Tus observaciones y lecturas se guardan primero en este dispositivo. La
           sincronización continúa cuando vuelves a conectarte.
         </Label>
         <Label muted size={12}>

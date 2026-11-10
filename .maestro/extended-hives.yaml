@@ -21,10 +21,10 @@ name: Varios cuadros notas largas y paginacion de lecturas
 - takeScreenshot: .artifacts/design/extended/04-long-note-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar inspección" }
-- tapOn: "Guardar inspección"
+    element: { text: "Guardar observación" }
+- tapOn: "Guardar observación"
 - scrollUntilVisible:
-    element: { text: "Inspección de demo guardada localmente." }
+    element: { text: "Observación de demo guardada localmente." }
 - repeat:
     times: 6
     commands:
@@ -33,10 +33,10 @@ name: Varios cuadros notas largas y paginacion de lecturas
       - inputText: QA visita adicional para consultar observaciones anteriores
       - hideKeyboard
       - scrollUntilVisible:
-          element: { text: "Guardar inspección" }
-      - tapOn: "Guardar inspección"
+          element: { text: "Guardar observación" }
+      - tapOn: "Guardar observación"
       - scrollUntilVisible:
-          element: { text: "Inspección de demo guardada localmente." }
+          element: { text: "Observación de demo guardada localmente." }
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
     # This control is near the bottom; centering it is physically impossible.
@@ -44,6 +44,12 @@ name: Varios cuadros notas largas y paginacion de lecturas
     timeout: 60000
     element: { text: "Ver observaciones anteriores" }
 - tapOn: "Ver observaciones anteriores"
+# The log shows 3 entries first and loads 5 more per tap; tap again if more remain.
+- runFlow:
+    when:
+      visible: "Ver observaciones anteriores"
+    commands:
+      - tapOn: "Ver observaciones anteriores"
 - scrollUntilVisible:
     timeout: 60000
     element: { text: ".*FINAL NOTA LARGA QA.*" }
