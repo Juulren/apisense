@@ -19,6 +19,9 @@ export async function seedDemo(
       latitude: 20.388,
       longitude: -89.323,
       check_interval_minutes: 15,
+      // The demo shows the season tracker; weather stays off (no network in the demo).
+      region_preset: "yucatan",
+      weather_enabled: 0,
     });
   for (let i = 1; i <= 8; i++) {
     const hiveId = `00000000-0000-4000-8000-${String(100 + i).padStart(12, "0")}`;

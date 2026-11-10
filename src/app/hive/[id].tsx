@@ -99,9 +99,11 @@ export default function HiveDetail() {
                     </Label>
                   ) : null}
                   {inspection.notes ? <Label>{inspection.notes}</Label> : null}
-                  <Label muted size={12}>
-                    {parseTags(inspection.tags_json).join(" · ")}
-                  </Label>
+                  {parseTags(inspection.tags_json).length ? (
+                    <Label muted size={12}>
+                      {parseTags(inspection.tags_json).join(" · ")}
+                    </Label>
+                  ) : null}
                 </Card>
               ))
             ) : (

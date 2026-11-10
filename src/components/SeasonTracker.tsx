@@ -6,6 +6,7 @@ import { useTheme } from "./ui/theme";
 import { SeasonRing } from "./SeasonRing";
 import { useApp } from "../state/AppProvider";
 import {
+  suggestPreset,
   YUCATAN_REFERENCE,
   calendarDisclaimer,
   calendarFor,
@@ -89,7 +90,10 @@ export function SeasonTracker({
           <Label>
             {calendar
               ? "Este mes no tiene datos en tu calendario."
-              : "Aún no hay un calendario para esta ubicación. Elige o edita uno en Ajustes."}
+              : suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null) ===
+                  "yucatan"
+                ? "Tu apiario está en la península de Yucatán: elige ese calendario en Ajustes > Mi apiario."
+                : "Aún no hay un calendario para esta ubicación. Elige o edita uno en Ajustes."}
           </Label>
           <Button
             label="Ir a Ajustes"
