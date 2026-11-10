@@ -47,12 +47,13 @@ export function ageText(iso: string, now = new Date()) {
 export function verdictSummary(v: EdgeVerdict, now = new Date()) {
   const parts = [
     verdictLabel(v),
-    `confianza ${Math.round(v.confidence * 100)} %`,
+    // Non-breaking spaces keep a number and its unit on the same line.
+    `confianza ${Math.round(v.confidence * 100)} %`,
   ];
   if (v.temperature_c !== null)
-    parts.push(`${v.temperature_c.toFixed(1).replace(".", ",")} °C`);
+    parts.push(`${v.temperature_c.toFixed(1).replace(".", ",")} °C`);
   if (v.battery_v !== null)
-    parts.push(`batería ${v.battery_v.toFixed(2).replace(".", ",")} V`);
+    parts.push(`batería ${v.battery_v.toFixed(2).replace(".", ",")} V`);
   parts.push(ageText(v.recorded_at, now));
   return parts.join(" · ");
 }

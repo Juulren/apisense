@@ -88,7 +88,7 @@ describe("what the app says about a verdict", () => {
       NOW,
     );
     expect(text).toBe(
-      "Sonido diferente al habitual · confianza 80 % · 27,4 °C · batería 3,86 V · hace 12 min",
+      "Sonido diferente al habitual · confianza 80 % · 27,4 °C · batería 3,86 V · hace 12 min",
     );
     expect(text).not.toMatch(/reina|plaga|enjambr|ataque/i);
   });
