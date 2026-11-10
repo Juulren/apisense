@@ -15,6 +15,15 @@ additional_redirect_urls = ["apisense://auth/callback"]
 
 [auth.email]
 enable_confirmations = true
+# Changing the password requires a recent sign-in, enforced by the server.
+secure_password_change = true
+otp_length = 6
+otp_expiry = 3600
+
+# The recovery email carries the 6-digit code the app asks for.
+[auth.email.template.recovery]
+subject = "Tu código para recuperar la contraseña de Apisense"
+content_path = "./supabase/templates/recovery.html"
 
 [storage]
 enabled = true
@@ -26,4 +35,9 @@ verify_jwt = false
 # LoRaWAN uplinks come from The Things Stack, not from a signed-in user: the
 # function authenticates them with a shared secret (LORA_UPLINK_SECRET).
 [functions.lora-uplink]
+verify_jwt = false
+
+# Called by a signed-in user; the function validates the token itself and asks
+# for the password again before deleting anything.
+[functions.delete-account]
 verify_jwt = false

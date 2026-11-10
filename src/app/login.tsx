@@ -16,11 +16,13 @@ import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { DEMO_ONLY } from "../config/runtime";
+import { cleanName, isEmail, newPasswordProblem } from "../services/Profile";
 export default function Login() {
   const app = useApp(),
     task = useTask();
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
+    [name, setName] = useState(""),
     [visible, setVisible] = useState(false),
     [offline, setOffline] = useState(false),
     [mode, setMode] = useState<"login" | "register">("login");
@@ -33,13 +35,15 @@ export default function Login() {
         router.replace("/dashboard");
         return;
       }
-      if (!/^\S+@\S+\.\S+$/.test(email.trim()))
+      if (!isEmail(email))
         throw new Error("Escribe un correo electrónico válido");
-      if (password.length < 8)
-        throw new Error("La contraseña debe tener al menos 8 caracteres");
       if (mode === "register") {
-        task.setMessage(await app.register(email, password));
+        const problem = newPasswordProblem(password, email);
+        if (problem) throw new Error(problem);
+        task.setMessage(await app.register(email, password, cleanName(name)));
       } else {
+        // Existing accounts keep working whatever the current policy is.
+        if (!password) throw new Error("Escribe tu contraseña");
         await app.login(email, password);
         router.replace("/dashboard");
       }
@@ -79,6 +83,18 @@ export default function Login() {
             { value: "register", label: "Registrarme" },
           ]}
         />
+        {mode === "register" && !offline ? (
+          <Field
+            testID="login-name"
+            label="Tu nombre (opcional)"
+            autoComplete="name"
+            autoCapitalize="words"
+            maxLength={50}
+            placeholder="Cómo quieres que te saludemos"
+            value={name}
+            onChangeText={setName}
+          />
+        ) : null}
         <Field
           testID="login-email"
           label="Correo electrónico"
@@ -98,7 +114,9 @@ export default function Login() {
               mode === "register" ? "new-password" : "current-password"
             }
             secureTextEntry={!visible}
-            placeholder="Mínimo 8 caracteres"
+            placeholder={
+              mode === "register" ? "Mínimo 10 caracteres" : "Tu contraseña"
+            }
             value={password}
             onChangeText={setPassword}
             editable={!offline}
@@ -127,6 +145,15 @@ export default function Login() {
             </Row>
           </Pressable>
         </View>
+        {mode === "login" && !offline ? (
+          <Button
+            label="Olvidé mi contraseña"
+            variant="ghost"
+            icon="lock-reset"
+            disabled={task.busy || app.busy}
+            onPress={() => router.push("/forgot-password")}
+          />
+        ) : null}
         <Card>
           <Toggle
             label="Modo sin internet (Campo)"

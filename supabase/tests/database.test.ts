@@ -28,7 +28,7 @@ beforeAll(async () => {
   // Supabase service scaffolding only. Application tables, RLS and queue use the real migrations.
   await db.exec(`
     create role anon; create role authenticated; create role service_role bypassrls;
-    create schema auth; create table auth.users(id uuid primary key);
+    create schema auth; create table auth.users(id uuid primary key, raw_user_meta_data jsonb);
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     grant usage on schema auth, public to anon,authenticated,service_role;
     create schema storage;
@@ -45,6 +45,8 @@ beforeAll(async () => {
     "202611020001_brood_cycles.sql",
     "202611090001_apiary_profile_observations.sql",
     "202611100001_edge_verdicts.sql",
+    "202611110001_profiles.sql",
+    "202611110002_delete_account_data.sql",
   ]) {
     await db.exec(
       await readFile(
@@ -53,7 +55,7 @@ beforeAll(async () => {
       ),
     );
   }
-  await db.query("insert into auth.users values ($1),($2)", [ownerA, ownerB]);
+  await db.query("insert into auth.users(id) values ($1),($2)", [ownerA, ownerB]);
   await db.query(
     "insert into public.apiaries(id,user_id,name) values ($1,$2,'A'),($3,$4,'B')",
     [apiaryA, ownerA, apiaryB, ownerB],
@@ -445,6 +447,123 @@ describe("Postgres RLS from migrations", () => {
     await expect(db.query("select public.prune_edge_verdicts()")).rejects.toMatchObject({
       code: "42501",
     });
+  });
+  it("creates a profile at sign-up, taking the name from the metadata", async () => {
+    await db.query(
+      "insert into auth.users(id,raw_user_meta_data) values ('cccccccc-cccc-4ccc-cccc-cccccccccccc','{\"display_name\":\"  Damaris  \"}')",
+    );
+    const rows = await db.query(
+      "select display_name from public.profiles where id='cccccccc-cccc-4ccc-cccc-cccccccccccc'",
+    );
+    expect(rows.rows).toEqual([{ display_name: "Damaris" }]);
+  });
+  it("never blocks sign-up because of a bad or missing name", async () => {
+    const bad = [
+      "'{\"display_name\":\"" + "x".repeat(51) + "\"}'",
+      "'{\"display_name\":\"a\\u0007b\"}'",
+      "null",
+    ];
+    for (const [i, meta] of bad.entries()) {
+      const id = `dddddddd-dddd-4ddd-dddd-ddddddddddd${i}`;
+      await db.query(
+        `insert into auth.users(id,raw_user_meta_data) values ('${id}',${meta})`,
+      );
+      const rows = await db.query(
+        "select display_name from public.profiles where id=$1",
+        [id],
+      );
+      expect(rows.rows).toEqual([{ display_name: null }]);
+    }
+  });
+  it("lets users read and rename only their own profile", async () => {
+    await asUser(ownerA);
+    const mine = await db.query("select id from public.profiles");
+    expect(mine.rows).toEqual([{ id: ownerA }]);
+    await db.query("update public.profiles set display_name='Ana' where id=$1", [ownerA]);
+    const other = await db.query(
+      "update public.profiles set display_name='Hackeado' where id=$1 returning id",
+      [ownerB],
+    );
+    expect(other.rows).toEqual([]);
+    const seen = await db.query("select display_name from public.profiles");
+    expect(seen.rows).toEqual([{ display_name: "Ana" }]);
+  });
+  it("refuses an empty name", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("update public.profiles set display_name='' where id=$1", [ownerA]),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("refuses a name with surrounding spaces", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("update public.profiles set display_name=' Ana' where id=$1", [ownerA]),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("refuses changing any column other than the name", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("update public.profiles set id=$2 where id=$1", [ownerA, ownerB]),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("gives clients no way to create profiles", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("insert into public.profiles(id) values (gen_random_uuid())"),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("gives clients no way to delete profiles", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("delete from public.profiles where id=$1", [ownerA]),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("removes the profile together with the account", async () => {
+    await db.query("delete from auth.users where id='cccccccc-cccc-4ccc-cccc-cccccccccccc'");
+    await db.query("insert into auth.users(id) values ('cccccccc-cccc-4ccc-cccc-cccccccccccc')");
+    await db.query("delete from auth.users where id='cccccccc-cccc-4ccc-cccc-cccccccccccc'");
+    const rows = await db.query(
+      "select 1 from public.profiles where id='cccccccc-cccc-4ccc-cccc-cccccccccccc'",
+    );
+    expect(rows.rows).toEqual([]);
+  });
+  it("does not let a signed-in user call the account wipe", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("select public.delete_account_data($1)", [ownerB]),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("wipes everything one account owns, child rows first, and nothing else", async () => {
+    await db.query(
+      `insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online)
+         values ('aaaaaaaa-0000-4000-a000-0000000000f1',$1,'AA','v1',90,16000,0)`,
+      [hiveA],
+    );
+    await db.query(
+      `insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence)
+         values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8),(gen_random_uuid(),$2,now(),'lora',1,1,1,0.8)`,
+      [hiveA, hiveB],
+    );
+    await db.query(
+      `insert into public.lora_nodes(dev_eui,claim_hash,owner)
+         values ('70b3d57ed0000020',encode(sha256(convert_to('codigo-secreto-1','UTF8')),'hex'),$1)`,
+      [ownerA],
+    );
+    await db.query("select public.delete_account_data($1)", [ownerA]);
+    const mine = await db.query(
+      "select (select count(*) from public.apiaries where user_id=$1)::int a, (select count(*) from public.hives where id=$2)::int h, (select count(*) from public.edge_verdicts where hive_id=$2)::int v, (select count(*) from public.iot_microphones where hive_id=$2)::int m",
+      [ownerA, hiveA],
+    );
+    expect(mine.rows).toEqual([{ a: 0, h: 0, v: 0, m: 0 }]);
+    const theirs = await db.query(
+      "select (select count(*) from public.apiaries where user_id=$1)::int a, (select count(*) from public.hives where id=$2)::int h, (select count(*) from public.edge_verdicts where hive_id=$2)::int v",
+      [ownerB, hiveB],
+    );
+    expect(theirs.rows).toEqual([{ a: 1, h: 1, v: 1 }]);
+    const node = await db.query("select owner from public.lora_nodes where dev_eui='70b3d57ed0000020'");
+    expect(node.rows).toEqual([{ owner: null }]);
+    // With the data gone the auth user can be removed (no foreign key blocks it).
+    await db.query("delete from auth.users where id=$1", [ownerA]);
   });
   it("isolates apiaries and hives between users", async () => {
     await asUser(ownerB);

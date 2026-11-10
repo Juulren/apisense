@@ -12,6 +12,10 @@ export class NetworkGate implements NetworkPort {
   private listener?: (online: boolean) => void;
   private online = false;
   constructor(private offline = false) {}
+  /** True when the beekeeper chose field (offline) mode. */
+  isOffline() {
+    return this.offline;
+  }
   setOffline(value: boolean) {
     this.offline = value;
     this.listener?.(this.online && !this.offline);

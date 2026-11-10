@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { AppState } from "react-native";
-import { openRepository } from "../db/openRepository";
+import * as SecureStore from "expo-secure-store";
+import { eraseLocalData, openRepository } from "../db/openRepository";
 import type { Repository } from "../db/Repository";
 import { SyncEngine, type SyncState } from "../db/SyncEngine";
 import { SupabaseRemote } from "../db/SupabaseRemote";
@@ -25,6 +26,13 @@ import type {
 } from "../db/types";
 import { verdictSince } from "../services/EdgeVerdicts";
 import { supabase } from "../services/supabase";
+import {
+  cleanName,
+  newPasswordProblem,
+  reconcileName,
+  saveName,
+  type ProfileRemote,
+} from "../services/Profile";
 import { AUTH_REDIRECT_URL } from "../services/authCallback";
 import { AcousticClassifier } from "../services/ai/Classifier";
 import { HiveSummaryEngine } from "../services/ai/HiveSummaryEngine";
@@ -81,13 +89,69 @@ type State = {
   syncState: SyncState;
   enterDemo: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<string>;
+  register: (
+    email: string,
+    password: string,
+    name?: string,
+  ) => Promise<string>;
+  /** Saves the display name locally and on the account's profile. */
+  saveName: (name: string) => Promise<{ synced: boolean }>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  /** Recovery step 1: check the emailed code. */
+  verifyRecoveryCode: (email: string, code: string) => Promise<void>;
+  /** Recovery step 2: set the new password and open the account. */
+  setRecoveredPassword: (newPassword: string, email?: string) => Promise<void>;
+  cancelRecovery: () => Promise<void>;
+  /** Re-authenticates with the current password before changing it. */
+  changePassword: (current: string, next: string) => Promise<void>;
+  /** Deletes the account on the server (after re-authenticating) and erases local data. */
+  deleteAccount: (password: string) => Promise<void>;
   offlineLogin: () => Promise<void>;
   logout: () => Promise<void>;
   saveSetting: (key: string, value: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
 const Context = createContext<State | null>(null);
+// Set while a password recovery is under way. A recovery session must never
+// open the app: the new password has to be set first.
+const RECOVERY_KEY = "apisense.recovery_pending";
+const clearRecovery = () =>
+  SecureStore.deleteItemAsync(RECOVERY_KEY).catch(() => {});
+const profileRemote = (): ProfileRemote | null => {
+  const client = supabase;
+  if (!client) return null;
+  return {
+    fetchName: async (id) => {
+      const { data, error } = await client
+        .from("profiles")
+        .select("display_name")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.display_name as string | null | undefined) ?? null;
+    },
+    pushName: async (id, name) => {
+      const { data, error } = await client
+        .from("profiles")
+        .update({ display_name: name })
+        .eq("id", id)
+        .select("id");
+      if (error) throw error;
+      if (!data?.length) throw new Error("Perfil no encontrado");
+    },
+  };
+};
+/** The Edge Function answers { error } in Spanish; fall back to a generic text. */
+async function functionError(error: unknown) {
+  const context = (error as { context?: Response })?.context;
+  try {
+    const body = (await context?.json()) as { error?: string } | undefined;
+    if (body?.error) return new Error(body.error);
+  } catch {
+    // not JSON
+  }
+  return new Error("No se pudo completar la operación. Revisa tu conexión.");
+}
 export function AppProvider({ children }: { children: ReactNode }) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null),
     [data, setData] = useState<Data>(empty),
@@ -101,7 +165,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const current = useRef<Workspace | null>(null),
     epoch = useRef(0),
     desired = useRef<string | null>(null),
-    activation = useRef<Promise<void> | null>(null);
+    activation = useRef<Promise<void> | null>(null),
+    recovering = useRef(false);
   const { setPreference } = useTheme();
   const refresh = useCallback(async () => {
     const w = current.current;
@@ -260,6 +325,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
           );
           await refresh();
           sync?.start();
+          const remote = profileRemote();
+          if (!demo && remote && !gate.isOffline())
+            void reconcileName(repo, remote, userId)
+              .then(async () => {
+                // The name given at sign-up also sits in the auth metadata (and
+                // in every token); the profile is its home, so drop that copy.
+                const user = (await supabase?.auth.getUser())?.data.user;
+                if (user?.user_metadata?.display_name)
+                  await supabase?.auth.updateUser({
+                    data: { display_name: null },
+                  });
+                if (current.current === w) await refresh();
+              })
+              .catch(() => {});
           void summaries.runDue().catch((e) => setError(String(e)));
         } catch (e) {
           if (sequence === epoch.current) {
@@ -282,10 +361,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (supabase) {
       void supabase.auth
         .getSession()
-        .then(({ data, error: authError }) => {
+        .then(async ({ data, error: authError }) => {
           if (!mounted) return;
           if (authError) setError(authError.message);
-          if (data.session) return activate(data.session.user.id, false);
+          if (data.session) {
+            // An interrupted recovery left a session without a new password.
+            if ((await SecureStore.getItemAsync(RECOVERY_KEY)) === "1") {
+              await supabase?.auth.signOut({ scope: "local" });
+              await clearRecovery();
+              setBusy(false);
+              return;
+            }
+            return activate(data.session.user.id, false);
+          }
           setBusy(false);
         })
         .catch((e) => {
@@ -314,7 +402,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               if (mounted && sequence === epoch.current) setBusy(false);
             });
         }
-        if (event === "SIGNED_IN" && session)
+        if (event === "SIGNED_IN" && session && !recovering.current)
           void activate(session.user.id, false).catch((e) =>
             setError(String(e)),
           );
@@ -362,12 +450,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!data.user) throw new Error("No se pudo iniciar sesión");
     await activate(data.user.id, false);
   };
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, name = "") => {
     if (!supabase) throw new Error("Configura Supabase en .env");
+    const displayName = cleanName(name);
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: AUTH_REDIRECT_URL },
+      options: {
+        emailRedirectTo: AUTH_REDIRECT_URL,
+        data: displayName ? { display_name: displayName } : {},
+      },
     });
     if (error) throw error;
     if (data.session && data.user) {
@@ -412,6 +504,125 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (sequence === epoch.current) setBusy(false);
     }
   };
+  const saveProfileName = async (name: string) => {
+    const w = current.current;
+    if (!w) throw new Error("Abre una sesión local");
+    const result = await saveName(
+      w.repo,
+      w.demo || w.gate.isOffline() ? null : profileRemote(),
+      w.userId,
+      name,
+    );
+    // Offline or demo: the change is local; flag it so it is sent later.
+    if (!w.demo && !result.synced) await w.repo.setSetting("name_pending", "1");
+    await refresh();
+    return result;
+  };
+  const requestPasswordReset = async (email: string) => {
+    if (!supabase) throw new Error("Configura Supabase en .env");
+    // GoTrue answers the same for known and unknown addresses.
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    if (error)
+      throw new Error(
+        "No se pudo enviar el código. Inténtalo de nuevo en un momento.",
+      );
+  };
+  /** Step 1: the code opens a recovery session that cannot enter the app yet. */
+  const verifyRecoveryCode = async (email: string, code: string) => {
+    if (!supabase) throw new Error("Configura Supabase en .env");
+    recovering.current = true;
+    await SecureStore.setItemAsync(RECOVERY_KEY, "1");
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code.trim(),
+      type: "recovery",
+    });
+    if (error) {
+      recovering.current = false;
+      await clearRecovery();
+      throw new Error("El código no es válido o ya venció");
+    }
+  };
+  /** Step 2: set the new password; only then does the account open. */
+  const setRecoveredPassword = async (newPassword: string, email = "") => {
+    if (!supabase || !recovering.current)
+      throw new Error("Pide un código nuevo para continuar");
+    const problem = newPasswordProblem(newPassword, email);
+    if (problem) throw new Error(problem);
+    const update = await supabase.auth.updateUser({ password: newPassword });
+    if (update.error) {
+      // Keep the recovery session so another password can be tried.
+      const same = /different from the old/i.test(update.error.message);
+      throw new Error(
+        same
+          ? "Elige una contraseña distinta de la anterior"
+          : /weak|pwned|compromised|easy to guess/i.test(update.error.message)
+            ? "Esa contraseña es demasiado débil o apareció en filtraciones; elige otra"
+            : "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
+      );
+    }
+    recovering.current = false;
+    await clearRecovery();
+    await activate(update.data.user.id, false);
+  };
+  /** Leaves a recovery that the user abandoned. */
+  const cancelRecovery = async () => {
+    if (!recovering.current) return;
+    recovering.current = false;
+    await clearRecovery();
+    await supabase?.auth.signOut({ scope: "local" });
+  };
+  const changePassword = async (currentPassword: string, next: string) => {
+    if (!supabase) throw new Error("Configura Supabase en .env");
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user?.email) throw new Error("Inicia sesión en línea para cambiarla");
+    const problem = newPasswordProblem(next, user.email);
+    if (problem) throw new Error(problem);
+    const check = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (check.error) throw new Error("La contraseña actual no es correcta");
+    const { error } = await supabase.auth.updateUser({ password: next });
+    if (error) throw error;
+  };
+  const deleteAccount = async (password: string) => {
+    const w = current.current;
+    if (!supabase || !w || w.demo) throw new Error("No hay una cuenta que borrar");
+    // Nothing may be pushed while the server copy is being removed.
+    w.gate.setOffline(true);
+    await w.sync?.stop();
+    let confirmed = false;
+    try {
+      const { error } = await supabase.functions.invoke("delete-account", {
+        body: { password },
+      });
+      if (!error) confirmed = true;
+      else {
+        // The reply may have been lost after the server finished: if the
+        // account no longer exists, the deletion did happen.
+        const gone = await supabase.auth.getUser();
+        if (gone.error && /not exist|user_not_found/i.test(
+          `${gone.error.code ?? ""} ${gone.error.message}`,
+        ))
+          confirmed = true;
+        else throw await functionError(error);
+      }
+    } catch (e) {
+      if (!confirmed) {
+        // Back to how it was: sync resumes unless field mode was chosen.
+        w.gate.setOffline((await w.repo.setting("offline")) === "1");
+        w.sync?.start();
+        throw e;
+      }
+    }
+    // The server confirmed: now the local copy and its key can go.
+    try {
+      await logout();
+    } finally {
+      await eraseLocalData(w.userId);
+    }
+  };
   const saveSetting = async (key: string, value: string) => {
     const w = current.current;
     if (!w) throw new Error("Abre una sesión local");
@@ -432,6 +643,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         enterDemo: () => activate(DEMO_USER, true),
         login,
         register,
+        saveName: saveProfileName,
+        requestPasswordReset,
+        verifyRecoveryCode,
+        setRecoveredPassword,
+        cancelRecovery,
+        changePassword,
+        deleteAccount,
         offlineLogin,
         logout,
         saveSetting,

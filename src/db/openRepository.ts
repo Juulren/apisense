@@ -15,6 +15,7 @@ export function repositoryStorage(userId: string) {
     : `file://${defaultDatabaseDirectory}`;
   const databaseName = `apisense-encrypted-v1-${userId}.db`;
   return {
+    directoryUri,
     databaseName,
     keyName: `apisense.db-key.${userId}`,
     file: new File(directoryUri, databaseName),
@@ -65,4 +66,17 @@ export async function openRepository(userId: string) {
     await db.closeAsync();
     throw error;
   }
+}
+/**
+ * Deliberately erases this account's local database and its key (account
+ * deletion). Unlike openRepository, which never discards data, this is only
+ * called after the server confirmed the account is gone.
+ */
+export async function eraseLocalData(userId: string) {
+  const { directoryUri, databaseName, keyName } = repositoryStorage(userId);
+  for (const suffix of ["", "-wal", "-shm", "-journal"]) {
+    const file = new File(directoryUri, databaseName + suffix);
+    if (file.exists) file.delete();
+  }
+  await SecureStore.deleteItemAsync(keyName);
 }

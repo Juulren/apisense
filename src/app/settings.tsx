@@ -12,6 +12,7 @@ import {
   Toggle,
 } from "../components/ui";
 import { ApiaryProfile } from "../components/ApiaryProfile";
+import { ProfileSection } from "../components/ProfileSection";
 import { useTheme } from "../components/ui/theme";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
@@ -21,7 +22,6 @@ export default function Settings() {
     task = useTask(),
     theme = useTheme();
   const [minutes, setMinutes] = useState(""),
-    [name, setName] = useState(""),
     [apiaryId, setApiaryId] = useState("");
   const apiary =
     app.data.apiaries.find((a) => a.id === apiaryId) ?? app.data.apiaries[0];
@@ -163,27 +163,7 @@ export default function Settings() {
           </Label>
         </Card>
       </Section>
-      <Section title="Perfil de campo">
-        <Card>
-          <Field
-            label="Nombre para el saludo"
-            value={name}
-            onChangeText={setName}
-            placeholder={app.data.settings.name || "Tu nombre"}
-            maxLength={50}
-          />
-          <Button
-            label="Guardar nombre"
-            variant="secondary"
-            onPress={() =>
-              task.run(async () => {
-                if (!name.trim()) throw new Error("Escribe tu nombre");
-                await app.saveSetting("name", name.trim());
-              }, "Nombre guardado")
-            }
-          />
-        </Card>
-      </Section>
+      <ProfileSection />
       <Button
         label="Ver catálogo de componentes"
         variant="ghost"
