@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { AppScreen } from "../components/AppScreen";
 import { CheckinFields } from "../components/CheckinFields";
+import { Fold } from "../components/ui/Fold";
 import {
   Badge,
   Button,
@@ -25,6 +26,13 @@ export default function Inspection() {
   useEffect(() => {
     setSelected(hiveId ?? "");
   }, [hiveId]);
+  const hiveSelector = (
+    <Segmented
+      value={hive?.id ?? ""}
+      onChange={setSelected}
+      options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
+    />
+  );
   const save = () =>
     task.run(
       async () => {
@@ -49,13 +57,15 @@ export default function Inspection() {
           ? `Observaciones de ${hive.code}`
           : "Selecciona una colmena válida"}
       </Label>
-      <Segmented
-        value={hive?.id ?? ""}
-        onChange={setSelected}
-        options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
-      />
+      {hiveId ? (
+        // Coming from a hive: it is already chosen, so keep the form short.
+        <Fold title="Cambiar de colmena" testID="fold-change-hive">
+          {hiveSelector}
+        </Fold>
+      ) : (
+        hiveSelector
+      )}
       <Card>
-        <CheckinFields value={form} onChange={setForm} />
         <Field
           label="Nota (opcional)"
           testID="inspection-notes"
@@ -67,6 +77,7 @@ export default function Inspection() {
           onChangeText={(notes) => setForm({ ...form, notes })}
           maxLength={5000}
         />
+        <CheckinFields value={form} onChange={setForm} />
         <Field
           label="Etiquetas (separadas por comas)"
           placeholder="Alimentación, ventilación, revisión de cría"
