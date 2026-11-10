@@ -14,6 +14,7 @@ import { useTheme } from "../components/ui/theme";
 import { HiveTile } from "../components/HiveTile";
 import { WeatherCard } from "../components/WeatherCard";
 import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
+import { pendingAlerts } from "../services/EdgeVerdicts";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { latestSummary } from "../state/selectors";
@@ -34,6 +35,7 @@ export default function Dashboard() {
   });
   const summary = alert ? latestSummary(data.summaries, alert.id) : undefined;
   const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
+  const nodeAlerts = pendingAlerts(data.verdicts);
   const percentage = data.hives.length
     ? Math.round((normal / data.hives.length) * 100)
     : 0;
@@ -54,6 +56,28 @@ export default function Dashboard() {
         <Badge label="Datos de demostración · Sin envío a nube" tone="blue" />
       ) : null}
       <WeatherCard apiary={data.apiaries[0]} />
+      {nodeAlerts.length ? (
+        <Card tone="amber">
+          <Row>
+            <Icon name="notifications-active" color="#D97706" size={28} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Label bold>
+                {nodeAlerts.length === 1
+                  ? "1 alerta del nodo sin revisar"
+                  : `${nodeAlerts.length} alertas del nodo sin revisar`}
+              </Label>
+              <Label muted size={12}>
+                El nodo detectó un sonido diferente al habitual. Revisa la
+                colmena.
+              </Label>
+            </View>
+          </Row>
+          <Button
+            label="Ver alertas"
+            onPress={() => router.push("/alerts")}
+          />
+        </Card>
+      ) : null}
       <Card tone="green">
         <Row>
           <Icon name="verified" color="#10B981" size={40} />

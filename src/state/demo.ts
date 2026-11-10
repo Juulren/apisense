@@ -4,6 +4,22 @@ import type { AudioIngestionService } from "../services/iot/AudioIngestionServic
 import type { HiveSummaryEngine } from "../services/ai/HiveSummaryEngine";
 import { simulate } from "../services/iot/Simulator";
 export const DEMO_USER = "00000000-0000-4000-8000-000000000001";
+/**
+ * The demo looks up the weather of its fictitious location. Applied once, as an
+ * ordinary edit, so a demo database created before this still gets it, and a later
+ * switch-off by the user is respected.
+ */
+export async function applyDemoWeatherDefault(repo: Repository) {
+  if (await repo.setting("demo_weather_default")) return;
+  for (const apiary of await repo.list("apiaries"))
+    if (
+      apiary.weather_enabled === 0 &&
+      apiary.latitude !== null &&
+      apiary.longitude !== null
+    )
+      await repo.save("apiaries", { ...apiary, weather_enabled: 1 });
+  await repo.setSetting("demo_weather_default", "1");
+}
 export async function seedDemo(
   repo: Repository,
   ingestion: AudioIngestionService,

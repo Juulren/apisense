@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import type { AudioSample } from "../db/types";
-import { hiveReadings, selectedReading } from "./selectors";
+import { hiveReadings, onlyLiveHives, selectedReading } from "./selectors";
 
 const sample = (
   id: string,
@@ -47,4 +47,14 @@ it("opens the requested historical sample and never substitutes another hive or 
   expect(selectedReading(readings, "A")?.id).toBe("new");
   expect(selectedReading(readings, "A", "other")).toBeUndefined();
   expect(selectedReading(readings, "A", "missing")).toBeUndefined();
+});
+
+it("shows only records of hives that still exist", () => {
+  const rows = [
+    { id: "a", hive_id: "h1" },
+    { id: "b", hive_id: "gone" },
+    { id: "c", hive_id: "h2" },
+  ];
+  expect(onlyLiveHives([{ id: "h1" }, { id: "h2" }], rows).map((r) => r.id)).toEqual(["a", "c"]);
+  expect(onlyLiveHives([], rows)).toEqual([]);
 });

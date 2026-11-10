@@ -30,7 +30,7 @@ const items: {
     route: "/dashboard",
     label: "Inicio",
     icon: "dashboard",
-    prefix: ["/dashboard", "/hives"],
+    prefix: ["/dashboard", "/hives", "/alerts"],
   },
   {
     route: "/monitor",

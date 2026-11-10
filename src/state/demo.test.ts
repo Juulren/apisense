@@ -11,7 +11,7 @@ import { HiveSummaryEngine } from "../services/ai/HiveSummaryEngine";
 import { AudioIngestionService } from "../services/iot/AudioIngestionService";
 import { clips } from "../services/iot/ClipStore";
 import { decodeWav } from "../services/iot/wav";
-import { DEMO_USER, seedDemo } from "./demo";
+import { DEMO_USER, applyDemoWeatherDefault, seedDemo } from "./demo";
 import { simulate } from "../services/iot/Simulator";
 import { saveCycleStart } from "../services/BroodCycle";
 
@@ -154,4 +154,31 @@ it("seeds eight demo hives offline, reads WAVs, and preserves inspections on reo
   expect(await reopened.list("ai_summaries")).toHaveLength(8);
   expect(fetch).not.toHaveBeenCalled();
   await reopened.close();
+});
+
+it("turns the demo weather on once, as an ordinary edit, and respects a later switch-off", async () => {
+  const repo = repository(":memory:");
+  await repo.initialize();
+  const base = {
+    user_id: DEMO_USER,
+    latitude: 20.388 as number | null,
+    longitude: -89.323 as number | null,
+    check_interval_minutes: 15,
+    weather_enabled: 0,
+  };
+  const located = await repo.save("apiaries", { ...base, name: "Con ubicación" });
+  const unlocated = await repo.save("apiaries", {
+    ...base,
+    name: "Sin ubicación",
+    latitude: null,
+    longitude: null,
+  });
+  await applyDemoWeatherDefault(repo);
+  expect((await repo.get("apiaries", located.id))?.weather_enabled).toBe(1);
+  expect((await repo.get("apiaries", located.id))?.local_revision).toBe(2);
+  expect((await repo.get("apiaries", unlocated.id))?.weather_enabled).toBe(0);
+  // The user switches it off later: a second run must not turn it back on.
+  await repo.save("apiaries", { ...located, weather_enabled: 0 });
+  await applyDemoWeatherDefault(repo);
+  expect((await repo.get("apiaries", located.id))?.weather_enabled).toBe(0);
 });

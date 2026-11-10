@@ -57,3 +57,23 @@ Open-Meteo (sin clave). Solo se envían latitud y longitud **redondeadas a 2 dec
 
 ### Datos y sincronización
 Esquema local v3 (aditivo) y migración remota `202611090001_apiary_profile_observations.sql`. **Hay que aplicar la migración remota antes de usar la 0.2.0 con una cuenta real**: sin ella la sincronización de apiarios, inspecciones y ciclos falla y reintenta. El cuadro de cría de 21 días se conserva como sección opcional.
+
+## Clima y calendario por ubicación, nodo y alertas (0.2.1)
+
+### Clima por ubicación
+Está **activo por defecto** en los apiarios nuevos con ubicación y en el demo (con su ubicación ficticia); en cuentas que ya existían se enciende en Ajustes > Mi apiario, y se puede apagar en cualquier momento. Solo se envían a Open-Meteo coordenadas redondeadas. La app también obtiene **una vez al año por ubicación** el clima típico de los últimos 10 años (ERA5) para mostrar si el mes actual es más lluvioso, seco, cálido o fresco **respecto a ese lugar**. El clima describe el lugar: **no indica cuándo florece nada**.
+
+### Calendario no fijo
+Los calendarios regionales son datos con zona y fuente (hoy: Yucatán). En cualquier otro lugar el calendario empieza vacío y se completa mes a mes, con el clima de cada mes a la vista.
+
+### Nodo de colmena y alertas
+El nodo (ESP32 con micrófono) clasifica el sonido **dentro del propio dispositivo** y por LoRaWAN manda un mensaje de 8 bytes: código de clase (0 = sonido habitual, 1 = sonido diferente al habitual), confianza, temperatura, batería y contador. La app **recibe, muestra y registra**; no decide.
+1. **Vincular**: Micrófonos IoT > «Nodo LoRaWAN» > DevEUI (16 caracteres de la etiqueta) y, en cuentas reales, el **código de vinculación** que vino con el nodo (se comprueba en el servidor; hace falta conexión la primera vez).
+2. **Ver**: el panel avisa de las alertas sin revisar; cada colmena muestra el último mensaje de su nodo (confianza, temperatura, batería, hora y avisos del nodo).
+3. **Revisar** (Alertas del nodo): *Confirmada tras inspección*, *Falsa alarma* o *Marcar como vista*, con una nota opcional. Esas respuestas son las etiquetas reales para mejorar el modelo.
+4. **Probar sin hardware**: en el demo, «Simular sonido diferente / habitual» genera veredictos con el mismo formato que el nodo.
+
+«Sonido diferente» **solo significa que se oye distinto de lo habitual en esa colmena; el nodo no sabe por qué**. Los mensajes de las últimas dos semanas se guardan en el teléfono; los de «sonido habitual» más antiguos de 30 días se descartan (las alertas y lo revisado se conservan).
+
+### Para activar el servidor (acciones tuyas, no hechas)
+Aplicar las migraciones `202611090001` y `202611100001`; desplegar la función `lora-uplink` con el secreto `LORA_UPLINK_SECRET`; registrar cada nodo en `lora_nodes` con su DevEUI y el SHA-256 de su código de vinculación; en TTN, un webhook a la función con ese secreto (cabecera `x-uplink-secret` o autenticación básica). Detalle y fuentes: [PLAN_0.3.0](PLAN_0.3.0_IA_BORDE_CUENTA_DESPLIEGUE.md) §3 e [INVESTIGACION_AUDIO_ABEJAS](INVESTIGACION_AUDIO_ABEJAS.md).

@@ -48,3 +48,12 @@ export function parseTags(json: string): string[] {
     return [];
   }
 }
+
+/** Records of removed hives stay in the database (and in sync) but are never shown. */
+export const onlyLiveHives = <T extends { hive_id: string }>(
+  hives: { id: string }[],
+  rows: T[],
+) => {
+  const live = new Set(hives.map((h) => h.id));
+  return rows.filter((row) => live.has(row.hive_id));
+};

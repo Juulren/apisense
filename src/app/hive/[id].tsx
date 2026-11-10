@@ -14,6 +14,7 @@ import {
 import { SummaryCard } from "../../components/SummaryCard";
 import { BroodCycleTracker } from "../../components/BroodCycleTracker";
 import { SeasonTracker } from "../../components/SeasonTracker";
+import { NodeCard } from "../../components/NodeCard";
 import { HiveReadings } from "../../components/HiveReadings";
 import { checkinSummary } from "../../services/Checkin";
 import { removeHive, renameHive } from "../../services/Hives";
@@ -74,6 +75,7 @@ export default function HiveDetail() {
             }
           />
           <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
+          <NodeCard key={`node-${id}`} hiveId={id} />
           <Section
             title="Bitácora de campo"
             caption="Tus observaciones y acciones guardadas localmente"

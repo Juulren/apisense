@@ -44,6 +44,7 @@ beforeAll(async () => {
     "202610210001_summary_queue.sql",
     "202611020001_brood_cycles.sql",
     "202611090001_apiary_profile_observations.sql",
+    "202611100001_edge_verdicts.sql",
   ]) {
     await db.exec(
       await readFile(
@@ -196,6 +197,253 @@ describe("Postgres RLS from migrations", () => {
       seasons_json: null,
       weather_enabled: 0,
       checkin_frequency: "weekly",
+    });
+  });
+  it("isolates node verdicts between users and rejects cross-hive writes", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8),(gen_random_uuid(),$2,now(),'lora',1,1,0,0.9)",
+      [hiveA, hiveB],
+    );
+    await asUser(ownerB);
+    expect(
+      (await db.query("select class_code from public.edge_verdicts")).rows,
+    ).toEqual([{ class_code: 0 }]);
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values(gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("lets the owner review a verdict only with a review time", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values ('aaaaaaaa-0000-4000-a000-0000000000e1',$1,now(),'lora',1,1,1,0.8)",
+      [hiveA],
+    );
+    await asUser(ownerA);
+    const done = await db.query(
+      "update public.edge_verdicts set review='false_alarm', reviewed_at=now() where id='aaaaaaaa-0000-4000-a000-0000000000e1' returning review",
+    );
+    expect(done.rows).toEqual([{ review: "false_alarm" }]);
+  });
+  it("rejects a review without its time", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values ('aaaaaaaa-0000-4000-a000-0000000000e2',$1,now(),'lora',1,1,1,0.8)",
+      [hiveA],
+    );
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "update public.edge_verdicts set review='seen' where id='aaaaaaaa-0000-4000-a000-0000000000e2'",
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("makes a retried uplink idempotent through the dedupe key", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence,dedupe_key) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8,'0123456789abcdef:42:')",
+      [hiveA],
+    );
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence,dedupe_key) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8,'0123456789abcdef:42:')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23505" });
+  });
+  it("rejects an impossible confidence", async () => {
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,1.5)",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects an unknown source", async () => {
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'radio',1,1,1,0.5)",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("rejects a malformed DevEUI", async () => {
+    await expect(
+      db.query(
+        "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'AA','v1',90,16000,0,'ZZZ')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+  it("links a DevEUI to one node only", async () => {
+    await db.query(
+      "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'AA','v1',90,16000,0,'70b3d57ed0000001')",
+      [hiveA],
+    );
+    await expect(
+      db.query(
+        "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'BB','v1',90,16000,0,'70b3d57ed0000001')",
+        [hiveB],
+      ),
+    ).rejects.toMatchObject({ code: "23505" });
+  });
+  it("does not let an owner forge a LoRaWAN verdict", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("does not let an owner squat a dedupe key", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence,dedupe_key) values (gen_random_uuid(),$1,now(),'ble',1,1,1,0.8,'70b3d57ed0000099:1:')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("lets an owner add a verdict from the app's own transports", async () => {
+    await asUser(ownerA);
+    const rows = await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'ble',1,1,1,0.8) returning source",
+      [hiveA],
+    );
+    expect(rows.rows).toEqual([{ source: "ble" }]);
+  });
+  it("does not let an owner rewrite what the node reported", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values ('aaaaaaaa-0000-4000-a000-0000000000e3',$1,now(),'lora',1,1,1,0.8)",
+      [hiveA],
+    );
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "update public.edge_verdicts set class_code=0 where id='aaaaaaaa-0000-4000-a000-0000000000e3'",
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("lets the owner review with a full-row update whose other fields are unchanged", async () => {
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence,temperature_c) values ('aaaaaaaa-0000-4000-a000-0000000000e4',$1,now(),'lora',1,1,1,0.8,27.5)",
+      [hiveA],
+    );
+    await asUser(ownerA);
+    const done = await db.query(
+      "update public.edge_verdicts set class_code=class_code, confidence=confidence, temperature_c=temperature_c, source=source, review='confirmed', reviewed_at=now(), review_note='Revisada' where id='aaaaaaaa-0000-4000-a000-0000000000e4' returning review",
+    );
+    expect(done.rows).toEqual([{ review: "confirmed" }]);
+  });
+  const claimHash = "encode(sha256(convert_to('codigo-secreto-1','UTF8')),'hex')";
+  async function registerNode(eui = "70b3d57ed0000010") {
+    await db.query(
+      `insert into public.lora_nodes(dev_eui,claim_hash) values ($1,${claimHash})`,
+      [eui],
+    );
+  }
+  it("claims a node only with the right code, and only for one account", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    const wrong = await db.query(
+      "select public.claim_lora_node('70b3d57ed0000010','codigo-incorrecto') as ok",
+    );
+    expect(wrong.rows).toEqual([{ ok: false }]);
+    const right = await db.query(
+      "select public.claim_lora_node('70b3d57ed0000010','codigo-secreto-1') as ok",
+    );
+    expect(right.rows).toEqual([{ ok: true }]);
+    await asUser(ownerB);
+    const other = await db.query(
+      "select public.claim_lora_node('70b3d57ed0000010','codigo-secreto-1') as ok",
+    );
+    expect(other.rows).toEqual([{ ok: false }]);
+  });
+  it("answers false for unknown nodes, malformed input and short codes", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    const answers = [
+      "select public.claim_lora_node('70b3d57ed00000ff','codigo-secreto-1') as ok",
+      "select public.claim_lora_node('ZZ','codigo-secreto-1') as ok",
+      "select public.claim_lora_node('70b3d57ed0000010','corto') as ok",
+      "select public.claim_lora_node(null,null) as ok",
+    ];
+    for (const sql of answers)
+      expect((await db.query(sql)).rows).toEqual([{ ok: false }]);
+  });
+  it("locks a node after ten wrong codes, even for the right one", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    for (let i = 0; i < 10; i++)
+      await db.query(
+        "select public.claim_lora_node('70b3d57ed0000010','codigo-incorrecto') as ok",
+      );
+    const locked = await db.query(
+      "select public.claim_lora_node('70b3d57ed0000010','codigo-secreto-1') as ok",
+    );
+    expect(locked.rows).toEqual([{ ok: false }]);
+  });
+  it("keeps the claim table out of reach of users", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    await expect(db.query("select * from public.lora_nodes")).rejects.toMatchObject({
+      code: "42501",
+    });
+  });
+  it("links a DevEUI to a microphone only after claiming it", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    await expect(
+      db.query(
+        "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'AA','v1',90,16000,0,'70b3d57ed0000010')",
+        [hiveA],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("lets the claimant link it and refuses anybody else", async () => {
+    await registerNode();
+    await asUser(ownerA);
+    await db.query(
+      "select public.claim_lora_node('70b3d57ed0000010','codigo-secreto-1')",
+    );
+    const linked = await db.query(
+      "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'AA','v1',90,16000,0,'70b3d57ed0000010') returning dev_eui",
+      [hiveA],
+    );
+    expect(linked.rows).toEqual([{ dev_eui: "70b3d57ed0000010" }]);
+    await asUser(ownerB);
+    await expect(
+      db.query(
+        "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'BB','v1',90,16000,0,'70b3d57ed0000010')",
+        [hiveB],
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("still lets a microphone exist without a DevEUI (Bluetooth nodes)", async () => {
+    await asUser(ownerA);
+    const rows = await db.query(
+      "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online) values (gen_random_uuid(),$1,'AA','v1',90,16000,0) returning dev_eui",
+      [hiveA],
+    );
+    expect(rows.rows).toEqual([{ dev_eui: null }]);
+  });
+  it("prunes only old, unreviewed usual-sound verdicts, and only on the server side", async () => {
+    await db.query(
+      `insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence,review,reviewed_at) values
+         (gen_random_uuid(),$1,now()-interval '40 days','lora',1,1,0,0.9,null,null),
+         (gen_random_uuid(),$1,now()-interval '1 day','lora',1,1,0,0.9,null,null),
+         (gen_random_uuid(),$1,now()-interval '40 days','lora',1,1,1,0.8,null,null),
+         (gen_random_uuid(),$1,now()-interval '40 days','lora',1,1,0,0.9,'seen',now())`,
+      [hiveA],
+    );
+    await db.query("select public.prune_edge_verdicts()");
+    const left = await db.query(
+      "select class_code, review from public.edge_verdicts order by class_code, review nulls first",
+    );
+    expect(left.rows).toHaveLength(3);
+    await asUser(ownerA);
+    await expect(db.query("select public.prune_edge_verdicts()")).rejects.toMatchObject({
+      code: "42501",
     });
   });
   it("isolates apiaries and hives between users", async () => {

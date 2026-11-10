@@ -22,3 +22,8 @@ file_size_limit = "10MiB"
 
 [functions.generate-hive-summary]
 verify_jwt = false
+
+# LoRaWAN uplinks come from The Things Stack, not from a signed-in user: the
+# function authenticates them with a shared secret (LORA_UPLINK_SECRET).
+[functions.lora-uplink]
+verify_jwt = false

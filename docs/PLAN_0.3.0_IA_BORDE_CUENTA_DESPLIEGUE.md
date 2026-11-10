@@ -34,7 +34,7 @@ Fuentes: el tablero FigJam «Proyecto ganadería equipo 2» (leído en solo lect
 
 | Tema | Figma | App hoy | Qué hacer |
 |---|---|---|---|
-| **Dónde corre la IA** | En el nodo (TFLite Micro), manda un código | ONNX en el teléfono a partir de un vector MFCC de 13 valores | **Híbrido** (§3) |
+| **Dónde corre la IA** | En el nodo (TFLite Micro), manda un código | ONNX en el teléfono a partir de un vector MFCC de 13 valores | **El nodo clasifica; la app recibe, muestra y registra** (§3). El ONNX en el teléfono queda como camino opcional |
 | **Clases** | normal/enjambrazón/huérfana/intrusión/anomalía (tablero) vs ZUMBIDO_ATIPICO/PLAGA_PROBABLE/PERDIDA_REINA/ESTRES_CALOR (UML) | `audio_samples` ya guarda clase, confianza y versión del clasificador por muestra, con **CHECK fijo de 5 clases** (core.sql) y el orden fijado por el contrato de modelo | **Una sola taxonomía**; cambiarla **no es una migración aditiva**: exige cambiar el CHECK local y remoto y subir la versión del contrato |
 | **Stack documentado** | React Native + SQLite + **C# .NET Core + BD relacional**; una nota dice «app de Flutter» | Expo React Native + SQLCipher + **Supabase/Postgres** | **Pregunta para ti**: ¿actualizamos el tablero? |
 | **Hallazgos y tratamientos (RF03)** | Sí, con categoría, severidad, foto y seguimiento | No existe | H3 |
@@ -46,44 +46,45 @@ Fuentes: el tablero FigJam «Proyecto ganadería equipo 2» (leído en solo lect
 
 **Honestidad científica.** El tablero propone detectar **escarabajos** por sonido. La literatura acústica de colmenas se apoya sobre todo en reina ausente y enjambrazón; **no pude confirmar que el escarabajo sea detectable por audio**, y el propio tablero lo plantea como hipótesis con pruebas de campo [347:872]. Los datasets citados **no los verifiqué**, y la afirmación de «miles de horas» etiquetadas [183:731] **debe tratarse como no comprobada** (licencia, etiquetas y condiciones de grabación por revisar).
 
-## 3. IA en el borde: diseño propuesto
+## 3. IA en el borde (diseño del equipo, con lo que mostró la investigación)
 
-### 3.1 Principios
-1. **Sin diagnóstico**: salida = «variación acústica» con confianza y opción de abstenerse. La app no confirma reina, plagas ni enjambrazón (regla vigente).
-2. **Híbrido**: el nodo emite un **veredicto de borde** (barato, para alertar); el teléfono conserva clip y MFCC para escuchar, verificar y reentrenar. **Regla de desacuerdo**: se muestran ambos; si difieren, el estado es «sin consenso» y nunca se escala sola la alerta; el veredicto del teléfono es segunda opinión, no corrección.
-3. **Cada veredicto lleva procedencia** (modelo, versión, mapa de clases, confianza); sin ella no se muestra.
-4. **El bucle de datos es parte del producto**.
+> Esta sección **reemplaza** la versión anterior («híbrido»). Parte de lo que ya está planeado: **el modelo corre en el ESP32 y por LoRaWAN viaja solo un número**. Evidencia, fuentes y lo no verificado: [INVESTIGACION_AUDIO_ABEJAS.md](INVESTIGACION_AUDIO_ABEJAS.md).
 
-### 3.2 Contrato de características (hay una decisión técnica real)
-El contrato actual `apisense-mfcc-v1` **promedia los cuadros en un solo vector de 13 valores, sin eje de tiempo**. Una CNN como la del tablero necesita entrada 2-D (cuadros × coeficientes). Dos caminos:
-- **A. Mantener v1**: clasificador pequeño (MLP/GMM) sobre el vector promedio. Cabe de sobra en un ESP32 y coincide con la app; pierde información temporal (p. ej. el «zumbido lloroso» cambia en el tiempo).
-- **B. Contrato v2** con secuencia de MFCC (más expresivo): obliga a versionar contrato, validador, ONNX, firmware y dataset a la vez.
-- **Edge Impulse** trae su propio bloque MFCC (pre-énfasis, ventanas propias): **no coincide con el cálculo de la app**; usar un bloque DSP propio o no usarlo.
-- Sea cual sea: **una sola tasa de muestreo** fijada para firmware, WAV de la SD, app y entrenamiento (8 kHz o 16 kHz; las abejas tienen armónicos por encima de 500 Hz, así que 8 kHz hay que justificarlo con datos). Si no coinciden, la app se abstiene. **Paridad con vectores de referencia** entre firmware, app y entrenamiento.
-- ESP32 DevKit V1 **no tiene PSRAM**: procesar por ventanas mientras se lee, nunca guardar los 5–8 s completos en memoria. INMP441: 24 bits en palabras de 32 → PCM16, quitar DC.
+### 3.1 Cómo funciona (en palabras simples)
+1. **En el apiario**, el nodo (ESP32 + micrófono INMP441) despierta cada 10–15 min, graba unos segundos, saca características del sonido y **el modelo, dentro del propio ESP32, lo clasifica**.
+2. **Por el aire** (LoRaWAN) viaja un mensaje de **8 bytes**: el **código de clase** (0 = sonido habitual, 1 = sonido diferente al habitual), la **confianza**, la **temperatura**, la **batería** y un contador. Nunca viaja audio.
+3. **Un gateway** recibe el mensaje y lo sube a la red (TTN). **Una función de Supabase** lo decodifica, busca a qué colmena pertenece el nodo (por su **DevEUI**) y lo guarda.
+4. **La app** lo recibe como cualquier otro dato: muestra la alerta, y la apicultora la marca **«confirmada tras inspección»**, **«falsa alarma»** o **«vista»**. Esas respuestas son las **etiquetas reales** para mejorar el modelo.
 
-### 3.3 Protocolo y datos en la app
-- **Paquete v2** (compatible con v1): `edge: { class, confidence, model_id, model_hash8, class_map_version }` + `temperature_c`, `humidity_pct` opcionales.
-- **Entidad `alerts`** (hive_id, sample_id, kind, confidence, model_id, estado nueva/vista/falsa alarma/confirmada, handled_at) con RLS. *(Corrección: `audio_samples` ya guarda clase/confianza/versión; `alerts` añade el **ciclo de vida** y la retroalimentación, no reemplaza esos campos.)*
-- **Pantalla Alertas** (wireframe «Notificaciones de alertas»): tipo, confianza, escuchar, falsa alarma, confirmar, programar visita.
-- **LoRaWAN**: el mensaje de 5 bytes **no cabe con la procedencia** del §3.1 ni con UUID (usa 1 byte por colmena): requiere su propio códec binario, decodificador autenticado (webhook con secreto) y la banda de 915 MHz correspondiente (**confirmar US915/AU915 con el proveedor del gateway**). La lista de compras del tablero [409:2948, 296:918] **no incluye módulo LoRa ni gateway**.
-- **Límite que hay que decir en voz alta**: sin LoRa o celular, las alertas por BLE **solo llegan al teléfono cuando Damaris está en el apiario**. El valor de «saber qué colmena necesita atención antes de ir» [363:2029] **no se cumple hasta tener un enlace de salida**.
+**Lo que la app NO hace**: no corre el modelo ni lo decide; solo **recibe, muestra y registra**. (La parte de ONNX en el teléfono que ya existía queda como camino opcional para verificar con un clip cuando haya uno; no es necesaria para tu diseño.)
 
-### 3.4 Bucle de datos y entrenamiento
-- **Etiquetas** desde el registro rápido, con cuidado: «reina no vista» **no** significa huérfana; usar **huevos/larvas jóvenes y celdas reales**. Las etiquetas «falsa alarma/confirmada» solo existen para muestras que alertaron (**sesgo de selección**): no sirven solas para medir el modelo.
-- **Ventana de alineación** acotada (a definir; ±24 h arrastra ruido de manejo) y **excluir las muestras cercanas a la propia inspección**, porque abrir la colmena produce ruido que el tablero cuenta como «intrusión».
-- Exportar con la herramienta existente (`model:prepare`/`model:evaluate`): licencia/procedencia, separación **por grupos** (apiario/colmena), sin fuga, normalización solo con entrenamiento.
-- Entrenar fuera de la app; exportar **TFLite Micro int8** (nodo) y **ONNX** (teléfono) del **mismo** modelo, con manifiesto y vectores de referencia.
-- **Aceptación sin cifra arbitraria**: métricas por clase, abstención/cobertura, calibración, resultados por apiario/dispositivo y revisión de errores. Sin «% de exactitud» sin prueba independiente.
+### 3.2 Qué significa el número
+- El número es del **mapa de clases versionado** (el mensaje lleva la versión). **Versión 1: 0 = sonido habitual; 1 = sonido diferente al habitual.** El 1 **no dice por qué**: puede ser falta de reina, agitación, ruido, lluvia, calor o frío. La app lo muestra tal cual y pide revisar; **no afirma una causa**.
+- Los códigos 2 en adelante están reservados para una versión futura del mapa, cuando haya datos propios que permitan separar causas (la investigación solo sostiene metas modestas: tendencia de preenjambrazón, reina ausente con baja confianza, perturbación fuerte).
 
-### 3.5 Estación y ubicación
-El sonido cambia con la temporada. Registrar **fase del calendario y temperatura** junto a cada muestra para poder analizarlo; no inventar una fase. **`ESTRES_CALOR` del UML importa en Yucatán**: la taxonomía debe conservarlo (como clase o como contexto de temperatura), no descartarlo.
+### 3.3 Lo que sí es posible y lo que no (según la investigación)
+- **Hay muy poco audio público etiquetado** y casi todo es «con reina / sin reina». La afirmación de «miles de horas etiquetadas» **no se sostiene**.
+- **Sin evidencia acústica encontrada**: escarabajo de la colmena, pillaje, escasez. **Varroa**: evidencia débil. **Hostigamiento (ataque de avispón)**: existe en la literatura (siseo de banda ancha ~6 kHz) pero solo en otras especies/razas.
+- **Frío**: las abejas generan calor con vibración del tórax (medición **térmica**); que eso se oiga como **más sonido** está **contestado**. Por eso **la temperatura es una covariable obligatoria**: sin ella el modelo confundiría clima con estado de la colonia. Esto es general y **no depende de la ubicación**: el nodo mide su propia temperatura en cada lugar.
+- Las exactitudes altas publicadas casi siempre usan **las mismas colmenas en entrenamiento y prueba**; dejando una colmena fuera, un benchmark baja de 99 % a 34–84 %.
 
-### 3.6 Energía y campo
-LiFePO4 mejor que LiPo por el calor; **muchos módulos TP4056 vienen sin el corte por temperatura (NTC) activado** y seguirían cargando Li-ion por encima de 45 °C dentro de la caja: usar cargador con sensor de temperatura. Carcasa con malla anti-propóleo y protección de lluvia/viento. Una colmena piloto (~1130–1400 MXN según el tablero), **sin contar** LoRa ni gateway.
+### 3.4 Decisiones de diseño que se desprenden
+1. **Línea base por colmena**: semanas de datos propios y aviso por **desviación** respecto a esa colmena, no un clasificador global.
+2. **Covariables**: temperatura y **hora del día** en cada muestra; **ventanas de madrugada** para tendencias.
+3. **Muestreo 16 kHz / 16 bit** (el siseo de ataque exige > 12 kHz). Un clip de 3 s son ~96 kB: **no cabe completo en la RAM de un ESP32 clásico**; procesar por ventanas o usar **ESP32-S3 con PSRAM**.
+4. **Paridad firmware ↔ entrenamiento** con un WAV de referencia y vectores de características, versionados junto con el mapa de clases.
+5. **Validación por colmena y por fecha**, nunca por segmento, y **en otro apiario** antes de afirmar rendimiento.
+6. **Cuidados de hardware**: INMP441 (24 bits en 32; verificar con grabaciones; L/R nunca flotante; evitar pines de arranque), cargador de batería **con sensor de temperatura**, medir el consumo real.
 
-### 3.7 Riesgos y lo que NO se afirma
-Escarabajo por audio sin evidencia; falsas alarmas por lluvia, viento, aves, personas; dBFS ≠ SPL; cifrado BLE depende del firmware; datasets sin verificar; el mundo real difiere del banco (subespecie, caja, micrófono). Ninguna cifra de exactitud sin prueba independiente.
+### 3.5 Enlace de salida (LoRaWAN) y backend
+- **México = plan US915, subbanda 2** (confirmar; AU915 solo si se confirma) y **homologación del IFT** para el nodo. **Cobertura cerca de Mérida: desconocida** (existe la comunidad TTN Mérida; no hay gateways verificados): hará falta **gateway propio** o confirmar uno.
+- El nodo se identifica por **DevEUI**; el servidor lo asocia a una colmena (cambiar de colmena = cambiar una fila). Seguridad LoRaWAN: OTAA, AppKey única por nodo, contadores de trama conservados.
+- **Función `lora-uplink`**: exige un **secreto compartido**, decodifica y valida el mensaje (suma de verificación incluida), es **idempotente** por (DevEUI, contador) porque TTN reintenta, responde 200 a lo que un reintento no arregla y 5xx a lo que sí, y **guarda el mensaje crudo** para poder reprocesar si cambia el mapa de clases.
+- **Sin enlace de salida**, las alertas solo llegan cuando estás en el apiario; el valor de «saber qué colmena necesita atención antes de ir» exige LoRaWAN (o celular).
+
+### 3.6 Estado de la implementación (0.2.1)
+**Hecho en la app y el servidor (sin hardware):** decodificador del mensaje de 8 bytes con CRC y pruebas; tabla `edge_verdicts` (local v5 + migración remota **sin aplicar**) con RLS e idempotencia; `dev_eui` en los nodos; función `lora-uplink` con pruebas; pantalla **Alertas del nodo** (revisar: vista / falsa alarma / confirmada, con nota); tarjeta del nodo en cada colmena y alerta en el panel; vincular el DevEUI desde «Micrófonos IoT»; simulador para probar en el demo.
+**Falta (depende de hardware, datos o de ti):** firmware del nodo; modelo entrenado con datos propios; gateway y TTN; aplicar la migración y desplegar la función con `LORA_UPLINK_SECRET`; exportar etiquetas para entrenar; más códigos de clase.
 
 ## 4. Cuenta y perfil (Supabase Auth + Postgres)
 
@@ -159,16 +160,15 @@ Escarabajo por audio sin evidencia; falsas alarmas por lluvia, viento, aves, per
 
 Cada hito cierra con pruebas, empaquetado, build en CI, revisión en emulador, documentación y actualización de este plan.
 
-## 9. Preguntas para ti (nada de esto está decidido)
-1. ¿Apruebas el enfoque **híbrido** y la regla de desacuerdo («sin consenso»)?
-2. **Contrato de características**: ¿A (vector promedio actual, más simple) o B (secuencia de MFCC, más expresivo)? Y la **tasa de muestreo** única.
-3. **Taxonomía**: propuesta = normal · enjambrazón posible · reina ausente posible · estrés por calor (o temperatura como contexto) · intrusión/perturbación · no identificada; «plaga» solo si hay datos.
-4. **Placa**: ESP32-S3 (recomendada) o seguir con DevKit V1.
-5. **Enlace de salida** para alertas lejos del apiario: ¿LoRaWAN (módulo + gateway), celular, o solo BLE al visitar?
-6. ¿**Levantas la pausa de #15/#27** para planear firma, privacidad y publicación? ¿Aceptas la política de privacidad y el enlace de borrado de cuenta que exige Google Play (implican una página web mínima)?
-7. ¿Actualizamos el **tablero** (Supabase en vez de C#/.NET; quitar Flutter) y alineamos las dos numeraciones de CU?
-8. ¿MFA, roles y diseño en tablet entran o se difieren?
-9. Orden de hitos y qué entra en la próxima versión.
+## 9. Decisiones
+**Ya decididas por ti:** la IA corre en el ESP32 y por LoRa viaja solo un número (0 = habitual, 1 = diferente); el calendario y el clima se ajustan a la ubicación del usuario (Yucatán es un caso, no un valor fijo); el clima por ubicación va activo.
+**Siguen abiertas:**
+1. **Placa**: la investigación recomienda **ESP32-S3 con PSRAM** (un proyecto parecido abandonó el ESP32 clásico por RAM). ¿Cuál tienes o compras?
+2. **Gateway LoRaWAN**: ¿propio, o ya hay cobertura (TTN Mérida)? ¿Presupuesto para módulo LoRa y gateway?
+3. **Pausa de #15/#27**: ¿la levantas para planear firma, privacidad y publicación? (Google Play exige una URL pública de política de privacidad y un enlace web para eliminar la cuenta; chocan con «sin sitio web».)
+4. **Tablero**: ¿lo actualizamos (Supabase en vez de C#/.NET; quitar Flutter; alinear las dos numeraciones de casos de uso)?
+5. **Datos de entrenamiento**: la investigación indica que casi todo hay que **grabarlo uno mismo con inspecciones fechadas**. ¿Puedes dedicar tiempo de campo con Damaris?
+6. Orden de hitos y qué entra en la próxima versión.
 
 ## 10. Fuera de alcance por ahora
 iOS (en espera), sitio web (salvo lo que decidas en la pregunta 6), publicación en tienda sin tu aprobación, resúmenes con IA (indicaste hoy «de momento nada»), modelos entrenados con datos sin licencia clara.

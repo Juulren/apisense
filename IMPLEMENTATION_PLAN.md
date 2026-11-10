@@ -212,3 +212,14 @@ Plan, decisiones y revisiones del asesor en [docs/PLAN_0.2.0_APIARIO_REAL.md](do
 - [ ] **Pendiente del dueño:** aplicar la migración remota al Supabase de desarrollo antes de usar 0.2.0 con cuenta real.
 - [ ] APK 0.2.0 / código 6 por CI y revisión en emulador (el dueño no tiene teléfono Android por ahora); actualización 0.1.4→0.2.0 sin borrar datos.
 - [ ] Calendario de Yucatán: validar con un apicultor local; normales climáticas del SMN para Mérida.
+
+## 0.2.1 — Clima por ubicación, calendario adaptable y nodo LoRa (2026-11-10)
+
+Investigación: [docs/INVESTIGACION_AUDIO_ABEJAS.md](docs/INVESTIGACION_AUDIO_ABEJAS.md). Diseño y decisiones: [docs/PLAN_0.3.0_IA_BORDE_CUENTA_DESPLIEGUE.md](docs/PLAN_0.3.0_IA_BORDE_CUENTA_DESPLIEGUE.md).
+
+- [x] Clima activo por ubicación (apiarios nuevos y demo; no se cambia la elección de nadie) y contexto climático ERA5 de cualquier lugar.
+- [x] Calendarios regionales como datos; Yucatán es una entrada, no un valor fijo.
+- [x] Receptor del nodo (el modelo corre en el ESP32; viaja solo un código): decodificador de 8 bytes, tabla `edge_verdicts`, función `lora-uplink`, pantalla de Alertas, tarjeta del nodo, vínculo por DevEUI con código de vinculación.
+- [x] Seguridad revisada por el asesor: veredictos LoRa solo del servidor, reclamo de nodos con código, retención, consultas que no pierden alertas.
+- [ ] **Pendiente del dueño:** aplicar las migraciones, desplegar `lora-uplink` con su secreto, registrar nodos con su código y configurar el webhook de TTN.
+- [ ] Hardware y datos: firmware, gateway LoRaWAN (cobertura TTN Mérida sin verificar), grabaciones propias etiquetadas, modelo entrenado.

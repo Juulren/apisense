@@ -4,6 +4,7 @@ import {
   migrationV2,
   migrationV3,
   migrationV4,
+  migrationV5,
 } from "./schema";
 import {
   TABLES,
@@ -65,7 +66,7 @@ export class Repository {
     const version =
       (await this.sql.all<{ user_version: number }>("PRAGMA user_version"))[0]
         ?.user_version ?? 0;
-    if (version > 4)
+    if (version > 5)
       throw new Error(
         "La base local requiere una versión más reciente de Apisense",
       );
@@ -73,6 +74,7 @@ export class Repository {
     if (version < 2) await this.transaction(() => this.sql.exec(migrationV2));
     if (version < 3) await this.transaction(() => this.sql.exec(migrationV3));
     if (version < 4) await this.transaction(() => this.sql.exec(migrationV4));
+    if (version < 5) await this.transaction(() => this.sql.exec(migrationV5));
   }
   private async insert(table: Table, row: Dictionary) {
     const allowed = new Set<string>([...metadata, ...columns[table]]);
@@ -129,6 +131,8 @@ export class Repository {
     ).toISOString();
     const next = {
       ...row,
+      // A removed node must free its DevEUI so it can be linked to another hive.
+      ...(table === "iot_microphones" ? { dev_eui: null } : {}),
       updated_at: stamp,
       deleted_at: stamp,
       synced_at: null,
@@ -136,6 +140,40 @@ export class Repository {
     };
     await this.insert(table, next as unknown as Dictionary);
     await this.enqueue(table, row.id, next.local_revision);
+  }
+  /**
+   * Node verdicts the app needs, newest first. The table grows with every uplink,
+   * so it is never loaded whole: ALL unreviewed alerts (however old), the latest
+   * verdict of every hive, and alerts since a date. A row limit can therefore
+   * never hide a pending alert or a quiet hive's last message.
+   */
+  async recentVerdicts(since: string, limit = 500) {
+    return this.exclusive(() =>
+      this.sql.all<EntityMap["edge_verdicts"]>(
+        `SELECT * FROM edge_verdicts WHERE deleted_at IS NULL AND (
+            (class_code <> 0 AND review IS NULL)
+            OR (class_code <> 0 AND recorded_at >= ?)
+            OR id IN (SELECT id FROM (
+                 SELECT id, ROW_NUMBER() OVER (PARTITION BY hive_id ORDER BY recorded_at DESC, id DESC) AS rn
+                 FROM edge_verdicts WHERE deleted_at IS NULL) WHERE rn = 1)
+          ) ORDER BY recorded_at DESC, id DESC LIMIT ?`,
+        [since, limit],
+      ),
+    );
+  }
+  /**
+   * Local housekeeping: ordinary "usual sound" verdicts that are already synced and
+   * older than the cut-off are dropped (the server keeps them 30 days). Alerts,
+   * reviewed verdicts and anything not yet synced are never touched.
+   */
+  async pruneVerdicts(before: string) {
+    return this.exclusive(async () => {
+      const result = await this.sql.run(
+        "DELETE FROM edge_verdicts WHERE class_code = 0 AND review IS NULL AND synced_at IS NOT NULL AND recorded_at < ?",
+        [before],
+      );
+      return result.changes;
+    });
   }
   /**
    * Removes a hive and the records that only make sense with it (microphones,

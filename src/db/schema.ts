@@ -26,6 +26,7 @@ export const columns = {
     "is_online",
     "last_seen_at",
     "calibration_db",
+    "dev_eui",
   ],
   audio_samples: [
     "hive_id",
@@ -75,6 +76,25 @@ export const columns = {
     "observed_at",
     "ended_at",
   ],
+  edge_verdicts: [
+    "hive_id",
+    "device_id",
+    "recorded_at",
+    "source",
+    "format_version",
+    "class_map_version",
+    "class_code",
+    "confidence",
+    "temperature_c",
+    "battery_v",
+    "flags",
+    "uplink_counter",
+    "dedupe_key",
+    "raw_payload",
+    "review",
+    "reviewed_at",
+    "review_note",
+  ],
 } as const;
 const common = `id TEXT PRIMARY KEY NOT NULL, updated_at TEXT NOT NULL, synced_at TEXT, deleted_at TEXT, local_revision INTEGER NOT NULL DEFAULT 0`;
 export const migrationV1 = `
@@ -122,11 +142,38 @@ ALTER TABLE inspections ADD COLUMN population TEXT CHECK(population IS NULL OR p
 ALTER TABLE inspections ADD COLUMN stores TEXT CHECK(stores IS NULL OR stores IN ('low','medium','high'));
 PRAGMA user_version = 3;
 `;
-// 0.2.1: the weather is on by default wherever the apiary has a location. Rows
-// that were saved before (switch off by default) are turned on once and queued
-// to sync like any other edit.
+// 0.2.1: reserved version. An earlier draft switched the weather on for every
+// apiary that had a location, but the old default (off) cannot be told apart from
+// "the user turned it off", so nobody's choice is changed: the weather is on by
+// default only for apiaries created from now on and for the demo (see demo.ts).
 export const migrationV4 = `
-UPDATE apiaries SET weather_enabled = 1, synced_at = NULL, local_revision = local_revision + 1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE weather_enabled = 0 AND latitude IS NOT NULL AND longitude IS NOT NULL AND deleted_at IS NULL;
-INSERT INTO sync_queue(table_name,record_id,revision,next_retry_at) SELECT 'apiaries', id, local_revision, strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM apiaries WHERE synced_at IS NULL AND weather_enabled = 1 AND deleted_at IS NULL ON CONFLICT(table_name,record_id) DO UPDATE SET revision=excluded.revision, attempts=0, next_retry_at=excluded.next_retry_at, last_error=NULL;
 PRAGMA user_version = 4;
+`;
+// Verdicts sent by the hive node (the classifier runs on the ESP32; only a small
+// code travels). Rows arrive from the server (LoRaWAN uplink function) or from
+// the app itself (BLE/MQTT/demo). dev_eui links a node to its hive.
+export const migrationV5 = `
+CREATE TABLE IF NOT EXISTS edge_verdicts (
+  ${common}, hive_id TEXT NOT NULL REFERENCES hives(id), device_id TEXT,
+  recorded_at TEXT NOT NULL,
+  source TEXT NOT NULL CHECK(source IN ('lora','ble','mqtt','simulator')),
+  format_version INTEGER NOT NULL CHECK(format_version BETWEEN 0 AND 15),
+  class_map_version INTEGER NOT NULL CHECK(class_map_version BETWEEN 1 AND 15),
+  class_code INTEGER NOT NULL CHECK(class_code BETWEEN 0 AND 255),
+  confidence REAL NOT NULL CHECK(confidence BETWEEN 0 AND 1),
+  temperature_c REAL CHECK(temperature_c IS NULL OR temperature_c BETWEEN -40 AND 85),
+  battery_v REAL CHECK(battery_v IS NULL OR battery_v BETWEEN 0 AND 6),
+  flags INTEGER NOT NULL DEFAULT 0 CHECK(flags BETWEEN 0 AND 15),
+  uplink_counter INTEGER CHECK(uplink_counter IS NULL OR uplink_counter >= 0),
+  dedupe_key TEXT, raw_payload TEXT CHECK(raw_payload IS NULL OR length(raw_payload) <= 64),
+  review TEXT CHECK(review IS NULL OR review IN ('seen','false_alarm','confirmed')),
+  reviewed_at TEXT,
+  review_note TEXT CHECK(review_note IS NULL OR length(review_note) <= 500),
+  CHECK((review IS NULL AND reviewed_at IS NULL) OR (review IS NOT NULL AND reviewed_at IS NOT NULL))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS edge_dedupe ON edge_verdicts(dedupe_key);
+CREATE INDEX IF NOT EXISTS edge_hive_time ON edge_verdicts(hive_id,recorded_at);
+ALTER TABLE iot_microphones ADD COLUMN dev_eui TEXT CHECK(dev_eui IS NULL OR (length(dev_eui)=16 AND dev_eui NOT GLOB '*[^0-9a-f]*'));
+CREATE UNIQUE INDEX IF NOT EXISTS mic_dev_eui ON iot_microphones(dev_eui);
+PRAGMA user_version = 5;
 `;

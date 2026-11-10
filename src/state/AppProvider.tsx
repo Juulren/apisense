@@ -21,7 +21,9 @@ import type {
   AiSummary,
   Inspection,
   BroodCycle,
+  EdgeVerdict,
 } from "../db/types";
+import { verdictSince } from "../services/EdgeVerdicts";
 import { supabase } from "../services/supabase";
 import { AUTH_REDIRECT_URL } from "../services/authCallback";
 import { AcousticClassifier } from "../services/ai/Classifier";
@@ -30,7 +32,8 @@ import { AudioIngestionService } from "../services/iot/AudioIngestionService";
 import { clips } from "../services/iot/ClipStore";
 import { MqttTransport } from "../services/iot/MqttTransport";
 import { BleTransport } from "../services/iot/BleTransport";
-import { DEMO_USER, seedDemo } from "./demo";
+import { DEMO_USER, applyDemoWeatherDefault, seedDemo } from "./demo";
+import { onlyLiveHives } from "./selectors";
 import { useTheme, type ThemePreference } from "../components/ui/theme";
 
 type Data = {
@@ -41,6 +44,8 @@ type Data = {
   summaries: AiSummary[];
   inspections: Inspection[];
   cycles: BroodCycle[];
+  /** Node verdicts of the last two weeks, newest first. */
+  verdicts: EdgeVerdict[];
   pending: number;
   settings: Record<string, string>;
 };
@@ -52,6 +57,7 @@ const empty: Data = {
   summaries: [],
   inspections: [],
   cycles: [],
+  verdicts: [],
   pending: 0,
   settings: {},
 };
@@ -108,6 +114,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       summaries,
       inspections,
       cycles,
+      verdicts,
       pending,
     ] = await Promise.all([
       w.repo.list("apiaries"),
@@ -117,6 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       w.repo.list("ai_summaries"),
       w.repo.list("inspections"),
       w.repo.list("brood_cycles"),
+      w.repo.recentVerdicts(verdictSince()),
       w.repo.pendingCount(),
     ]);
     if (current.current !== w) return;
@@ -133,9 +141,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     // Records of a removed hive stay in the database (and in sync) but are not
     // shown: readings and summaries are not tombstoned with the hive.
-    const live = new Set(hives.map((h) => h.id));
     const ofLive = <T extends { hive_id: string }>(rows: T[]) =>
-      rows.filter((row) => live.has(row.hive_id));
+      onlyLiveHives(hives, rows);
     if (current.current === w)
       setData({
         apiaries,
@@ -145,6 +152,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         summaries: ofLive(summaries),
         inspections: ofLive(inspections),
         cycles: ofLive(cycles),
+        verdicts: ofLive(verdicts),
         pending,
         settings,
       });
@@ -174,7 +182,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
               classifier.classify,
             ),
             summaries = new HiveSummaryEngine(repo, demo);
-          if (demo) await seedDemo(repo, ingestion, summaries);
+          if (demo) {
+            await seedDemo(repo, ingestion, summaries);
+            await applyDemoWeatherDefault(repo);
+          }
+          // Housekeeping: old, already-synced "usual sound" verdicts (30 days).
+          await repo.pruneVerdicts(
+            new Date(Date.now() - 30 * 86_400_000).toISOString(),
+          );
           const savedTheme = await repo.setting("theme");
           setPreference(
             savedTheme === "light" || savedTheme === "dark"

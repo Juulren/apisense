@@ -36,6 +36,8 @@ export interface Microphone extends BaseRow {
   is_online: number;
   last_seen_at: string | null;
   calibration_db: number;
+  /** LoRaWAN DevEUI (16 lowercase hex): links the node to its hive on the server. */
+  dev_eui: string | null;
 }
 export type AcousticClass =
   "healthy" | "swarming" | "queenless" | "pest_disturbance" | "unknown";
@@ -95,6 +97,28 @@ export interface BroodCycle extends BaseRow {
   observed_at: string | null;
   ended_at: string | null;
 }
+export type VerdictSource = "lora" | "ble" | "mqtt" | "simulator";
+export type VerdictReview = "seen" | "false_alarm" | "confirmed";
+/** What the node's classifier said. It never states a cause: see edgePayload.ts. */
+export interface EdgeVerdict extends BaseRow {
+  hive_id: string;
+  device_id: string | null;
+  recorded_at: string;
+  source: VerdictSource;
+  format_version: number;
+  class_map_version: number;
+  class_code: number;
+  confidence: number;
+  temperature_c: number | null;
+  battery_v: number | null;
+  flags: number;
+  uplink_counter: number | null;
+  dedupe_key: string | null;
+  raw_payload: string | null;
+  review: VerdictReview | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+}
 export interface EntityMap {
   apiaries: Apiary;
   hives: Hive;
@@ -103,6 +127,7 @@ export interface EntityMap {
   ai_summaries: AiSummary;
   inspections: Inspection;
   brood_cycles: BroodCycle;
+  edge_verdicts: EdgeVerdict;
 }
 export const TABLES = [
   "apiaries",
@@ -112,6 +137,7 @@ export const TABLES = [
   "ai_summaries",
   "inspections",
   "brood_cycles",
+  "edge_verdicts",
 ] as const;
 export type Table = (typeof TABLES)[number];
 // Columns added after 1.0 may be omitted on write: the database default (or
@@ -129,6 +155,18 @@ type Defaulted = {
     | "activity"
     | "population"
     | "stores";
+  iot_microphones: "dev_eui";
+  edge_verdicts:
+    | "device_id"
+    | "temperature_c"
+    | "battery_v"
+    | "flags"
+    | "uplink_counter"
+    | "dedupe_key"
+    | "raw_payload"
+    | "review"
+    | "reviewed_at"
+    | "review_note";
 };
 type DefaultedKeys<K extends Table> = K extends keyof Defaulted
   ? Defaulted[K]

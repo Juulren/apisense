@@ -13,6 +13,9 @@ import {
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import type { DiscoveredMic } from "../services/iot/BleTransport";
+import { linkLoraNode } from "../services/EdgeVerdicts";
+import { claimNodeOnServer } from "../services/loraClaim";
+import { supabase } from "../services/supabase";
 export default function Pairing() {
   const { hiveId } = useLocalSearchParams<{ hiveId?: string }>(),
     app = useApp(),
@@ -24,7 +27,9 @@ export default function Pairing() {
     [broker, setBroker] = useState(process.env.EXPO_PUBLIC_MQTT_URL ?? ""),
     [username, setUsername] = useState(""),
     [password, setPassword] = useState(""),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [devEui, setDevEui] = useState(""),
+    [claimCode, setClaimCode] = useState("");
   const hive =
       app.data.hives.find((h) => h.id === selected) ?? app.data.hives[0],
     mic = app.data.microphones.find((m) => m.hive_id === hive?.id);
@@ -104,6 +109,58 @@ export default function Pairing() {
         <Empty>Crea una colmena antes de vincular un micrófono.</Empty>
       ) : (
         <>
+          <Card>
+            <Badge label="Nodo LoRaWAN" tone="blue" />
+            <Label bold>{hive.code}</Label>
+            <Label muted size={12}>
+              {mic?.dev_eui
+                ? `DevEUI vinculado: ${mic.dev_eui.toUpperCase()}`
+                : "Escribe el DevEUI del nodo (16 caracteres, está en su etiqueta o en la consola de TTN) para que sus mensajes lleguen a esta colmena."}
+            </Label>
+            <Field
+              label="DevEUI del nodo"
+              value={devEui}
+              onChangeText={setDevEui}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={32}
+              placeholder="70B3D57ED0000001"
+            />
+            {app.workspace?.demo ? null : (
+              <Field
+                label="Código de vinculación del nodo"
+                value={claimCode}
+                onChangeText={setClaimCode}
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry
+                maxLength={128}
+                placeholder="El que vino con el nodo"
+              />
+            )}
+            <Button
+              label="Vincular nodo LoRaWAN"
+              icon="link"
+              loading={task.busy}
+              onPress={() =>
+                task.run(async () => {
+                  if (!app.workspace || !hive) return;
+                  const demo = app.workspace.demo;
+                  await linkLoraNode(
+                    app.workspace.repo,
+                    hive.id,
+                    devEui,
+                    demo
+                      ? undefined
+                      : (eui) => claimNodeOnServer(supabase, eui, claimCode),
+                  );
+                  setDevEui("");
+                  setClaimCode("");
+                  await app.refresh();
+                }, "Nodo vinculado a esta colmena")
+              }
+            />
+          </Card>
           <Card>
             <Badge
               label={

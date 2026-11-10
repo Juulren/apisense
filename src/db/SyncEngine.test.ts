@@ -254,6 +254,55 @@ describe("SQLite transactions and synchronization", () => {
       TABLES,
     );
   });
+  it("downloads node verdicts and pushes the owner's review", async () => {
+    const f = await setup();
+    const base = {
+      hive_id: f.hive.id,
+      device_id: null,
+      recorded_at: "2026-11-10T10:00:00.000Z",
+      source: "lora" as const,
+      format_version: 1,
+      class_map_version: 1,
+      class_code: 1,
+      confidence: 0.8,
+      temperature_c: 27.3,
+      battery_v: 3.9,
+      flags: 0,
+      uplink_counter: 7,
+      dedupe_key: "70b3d57ed0000001:7:",
+      raw_payload: null,
+      review: null,
+      reviewed_at: null,
+      review_note: null,
+    };
+    const remote = await f.local.save("edge_verdicts", { ...base });
+    // Pretend the server inserted it first and the phone only learns it by pulling.
+    const fromServer = {
+      ...remote,
+      id: randomUUID(),
+      dedupe_key: "70b3d57ed0000001:8:",
+      class_code: 0,
+    };
+    vi.mocked(f.remote.page).mockImplementation(
+      async <K extends Table>(table: K): Promise<EntityMap[K][]> =>
+        (table === "edge_verdicts" ? [fromServer] : []) as EntityMap[K][],
+    );
+    f.connect();
+    await f.engine.sync();
+    const all = await f.local.list("edge_verdicts");
+    expect(all.map((v) => v.class_code).sort()).toEqual([0, 1]);
+    await f.local.save("edge_verdicts", {
+      ...remote,
+      review: "false_alarm",
+      reviewed_at: "2026-11-10T11:00:00.000Z",
+    });
+    await f.engine.sync();
+    expect(f.remote.upsert).toHaveBeenCalledWith(
+      "edge_verdicts",
+      expect.objectContaining({ id: remote.id, review: "false_alarm" }),
+    );
+    expect(await f.local.pendingCount()).toBe(0);
+  });
   it("pushes and downloads brood cycles through the account sync queue", async () => {
     const f = await setup();
     const cycle = await f.local.save("brood_cycles", {
