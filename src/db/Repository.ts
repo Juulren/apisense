@@ -87,6 +87,10 @@ export class Repository {
       const old = (
         await this.sql.all<BaseRow>(`SELECT * FROM ${table} WHERE id=?`, [id])
       )[0];
+      // A stale object (for example read before removeHive committed) must not
+      // bring a removed record back: only keeping it removed is allowed.
+      if (old?.deleted_at && !input.deleted_at)
+        throw new Error("El registro ya no está disponible");
       const updated_at = new Date(
         Math.max(
           this.now().getTime(),

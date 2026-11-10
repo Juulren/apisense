@@ -182,6 +182,22 @@ describe("hive management", () => {
     expect((await repo.get("hives", hive.id))?.deleted_at).not.toBeNull();
   });
 
+  it("rejects a stale save that would bring a removed record back, but allows keeping it removed", async () => {
+    const { repo } = setup();
+    await repo.initialize();
+    const { hive, mic } = await fullHive(repo);
+    // Objects read before removeHive committed, like an ingestion in flight.
+    await removeHive(repo, hive.id);
+    await expect(repo.save("hives", { ...hive })).rejects.toThrow("ya no está");
+    await expect(repo.save("iot_microphones", { ...mic })).rejects.toThrow(
+      "ya no está",
+    );
+    expect((await repo.get("hives", hive.id))?.deleted_at).not.toBeNull();
+    const stamp = "2026-12-01T00:00:00.000Z";
+    const kept = await repo.save("hives", { ...hive, deleted_at: stamp });
+    expect(kept.deleted_at).toBe(stamp);
+  });
+
   it("rolls everything back if one record cannot be removed", async () => {
     const { db, repo } = setup();
     await repo.initialize();

@@ -51,9 +51,8 @@ const uniform = (phase: Phase): Calendar =>
 describe("calendar parsing", () => {
   it("round-trips a valid calendar and drops nothing", () => {
     const text = serializeCalendar(yucatanCalendar);
-    expect(parseCalendar(text)?.map((m) => m?.phase)).toEqual(
-      yucatanCalendar.map((m) => m?.phase),
-    );
+    // Confidence and "fuente única" survive, so an edited calendar keeps its labels.
+    expect(parseCalendar(text)).toEqual(yucatanCalendar);
   });
   it("rejects anything that is not exactly the documented shape", () => {
     const months = (n: number) =>
@@ -93,7 +92,23 @@ describe("calendar parsing", () => {
         }),
       ),
     ).toBeNull();
-    expect(parseCalendar("x".repeat(5000))).toBeNull();
+    expect(parseCalendar("x".repeat(9000))).toBeNull();
+    expect(
+      parseCalendar(
+        wrap({
+          v: 1,
+          months: [{ phase: "flow", flora: "", note: "", confidence: "total" }, ...months(11)],
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      parseCalendar(
+        wrap({
+          v: 1,
+          months: [{ phase: "flow", flora: "", note: "", single: "si" }, ...months(11)],
+        }),
+      ),
+    ).toBeNull();
   });
   it("accepts empty months, and a calendar at the per-field maximum still fits the size limit", () => {
     const sparse: Calendar = Array.from({ length: 12 }, () => null);
@@ -102,10 +117,12 @@ describe("calendar parsing", () => {
       phase: "reactivation" as const,
       flora: "f".repeat(60),
       note: "n".repeat(200),
+      confidence: "media" as const,
+      single: true,
     }));
-    // Normal use can never hit the 4096-character guard.
+    // Normal use can never hit the 8192-character guard.
     const text = serializeCalendar(maximal);
-    expect(text.length).toBeLessThan(4096);
+    expect(text.length).toBeLessThan(8192);
     expect(parseCalendar(text)).toEqual(maximal);
   });
 });

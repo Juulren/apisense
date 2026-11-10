@@ -111,7 +111,7 @@ PRAGMA user_version = 2;
 // older versions stay valid. Values are mirrored by the remote migration.
 export const migrationV3 = `
 ALTER TABLE apiaries ADD COLUMN region_preset TEXT CHECK(region_preset IS NULL OR region_preset IN ('yucatan','custom'));
-ALTER TABLE apiaries ADD COLUMN seasons_json TEXT CHECK(seasons_json IS NULL OR length(seasons_json) <= 4096);
+ALTER TABLE apiaries ADD COLUMN seasons_json TEXT CHECK(seasons_json IS NULL OR length(seasons_json) <= 8192);
 ALTER TABLE apiaries ADD COLUMN weather_enabled INTEGER NOT NULL DEFAULT 0 CHECK(weather_enabled IN (0,1));
 ALTER TABLE inspections ADD COLUMN queen_state TEXT CHECK(queen_state IS NULL OR queen_state IN ('seen','not_seen','virgin_seen'));
 ALTER TABLE inspections ADD COLUMN eggs_state TEXT CHECK(eggs_state IS NULL OR eggs_state IN ('none','fresh','multiple'));

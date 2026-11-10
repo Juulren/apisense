@@ -46,7 +46,7 @@ export function SeasonTracker({
   );
   const hive = app.data.hives.find((h) => h.id === hiveId);
   const apiary = app.data.apiaries.find((a) => a.id === hive?.apiary_id);
-  const { calendar, source } = useMemo(() => calendarFor(apiary), [apiary]);
+  const { calendar } = useMemo(() => calendarFor(apiary), [apiary]);
   const position = phaseOn(calendar, today);
   const info = position.info;
   const checkins = useMemo(
@@ -70,7 +70,9 @@ export function SeasonTracker({
           <Label muted size={12}>
             {info.confidence ? `Confianza: ${info.confidence}` : "Tu calendario"}
             {info.single ? " · fuente única" : ""}
-            {source === "yucatan" ? ` · ${YUCATAN_REFERENCE}` : ""}
+            {info.confidence && apiary?.region_preset === "yucatan"
+              ? ` · ${YUCATAN_REFERENCE}`
+              : ""}
           </Label>
           {position.changesIn !== null && position.next ? (
             <Label muted size={12}>

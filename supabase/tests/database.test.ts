@@ -134,7 +134,7 @@ describe("Postgres RLS from migrations", () => {
     await expect(
       db.query("update public.apiaries set seasons_json=$2 where id=$1", [
         apiaryA,
-        "x".repeat(4097),
+        "x".repeat(8193),
       ]),
     ).rejects.toMatchObject({ code: "23514" });
   });

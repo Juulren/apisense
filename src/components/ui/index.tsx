@@ -45,8 +45,10 @@ export function Label({
   accessibilityRole,
   accessibilityLiveRegion,
   tone,
+  maxFontSizeMultiplier,
 }: {
   children: ReactNode;
+  maxFontSizeMultiplier?: number;
   muted?: boolean;
   size?: number;
   bold?: boolean;
@@ -62,6 +64,7 @@ export function Label({
   return (
     <Text
       accessibilityRole={accessibilityRole}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       accessibilityLiveRegion={
         accessibilityLiveRegion ?? (tone ? "polite" : undefined)
       }

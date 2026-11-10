@@ -52,7 +52,8 @@ export const monthLong = [
 const PHASES = new Set<string>(Object.keys(phaseLabels));
 export const MAX_NOTE = 200;
 export const MAX_FLORA = 60;
-export const MAX_CALENDAR_JSON = 4096;
+export const MAX_CALENDAR_JSON = 8192;
+const CONFIDENCES = new Set<string>(["alta", "media", "baja"]);
 
 export const YUCATAN_REFERENCE = "referencia: centro-norte de Yucatán";
 export const yucatanCalendar: Calendar = [
@@ -162,17 +163,29 @@ export function parseCalendar(json: string | null | undefined): Calendar | null 
         continue;
       }
       if (typeof entry !== "object") return null;
-      const { phase, flora, note } = entry as Record<string, unknown>;
+      const { phase, flora, note, confidence, single } = entry as Record<
+        string,
+        unknown
+      >;
       if (
         typeof phase !== "string" ||
         !PHASES.has(phase) ||
         typeof flora !== "string" ||
         flora.length > MAX_FLORA ||
         typeof note !== "string" ||
-        note.length > MAX_NOTE
+        note.length > MAX_NOTE ||
+        (confidence !== undefined &&
+          (typeof confidence !== "string" || !CONFIDENCES.has(confidence))) ||
+        (single !== undefined && typeof single !== "boolean")
       )
         return null;
-      result.push({ phase: phase as Phase, flora, note });
+      result.push({
+        phase: phase as Phase,
+        flora,
+        note,
+        ...(confidence ? { confidence: confidence as Confidence } : {}),
+        ...(single ? { single: true } : {}),
+      });
     }
     return result;
   } catch {
@@ -183,7 +196,15 @@ export function serializeCalendar(calendar: Calendar) {
   const json = JSON.stringify({
     v: 1,
     months: calendar.map((m) =>
-      m ? { phase: m.phase, flora: m.flora, note: m.note } : null,
+      m
+        ? {
+            phase: m.phase,
+            flora: m.flora,
+            note: m.note,
+            ...(m.confidence ? { confidence: m.confidence } : {}),
+            ...(m.single ? { single: true } : {}),
+          }
+        : null,
     ),
   });
   if (json.length > MAX_CALENDAR_JSON)

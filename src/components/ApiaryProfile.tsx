@@ -74,7 +74,10 @@ function Form({ apiary }: { apiary: Apiary }) {
         i !== index
           ? m
           : next
-            ? { phase: next, flora: m?.flora ?? "", note: m?.note ?? "" }
+            ? // The sourced text described the old phase: start the month clean.
+              m && m.phase === next
+              ? m
+              : { phase: next, flora: "", note: "" }
             : null,
       ),
     );
@@ -238,6 +241,7 @@ export function ApiaryProfile({ apiary }: { apiary: Apiary | undefined }) {
         <Label>Crea primero un apiario desde Inicio &gt; Gestionar apiario.</Label>
       </Card>
     );
-  // Remount when the apiary or its saved values change so the form never shows stale text.
-  return <Form key={`${apiary.id}-${apiary.local_revision}`} apiary={apiary} />;
+  // Keyed by apiary only: saving something else on the same screen (for example the
+  // analysis interval) must not wipe what the user is typing here.
+  return <Form key={apiary.id} apiary={apiary} />;
 }

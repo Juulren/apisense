@@ -3,7 +3,7 @@
 -- account: the app upserts these columns and fails with "unknown column" otherwise.
 alter table public.apiaries
   add column if not exists region_preset text check(region_preset is null or region_preset in ('yucatan','custom')),
-  add column if not exists seasons_json text check(seasons_json is null or octet_length(seasons_json) <= 4096),
+  add column if not exists seasons_json text check(seasons_json is null or octet_length(seasons_json) <= 8192),
   add column if not exists weather_enabled integer not null default 0 check(weather_enabled in (0,1)),
   add column if not exists checkin_frequency text not null default 'weekly' check(checkin_frequency in ('daily','weekly','off'));
 alter table public.inspections

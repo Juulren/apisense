@@ -100,22 +100,22 @@ export function SeasonRing({
       >
         {info ? (
           <>
-            <Label muted size={11} style={{ textAlign: "center" }}>
+            <Label muted size={11} maxFontSizeMultiplier={1.2} style={{ textAlign: "center" }}>
               Fase típica
             </Label>
-            <Label bold size={15} style={{ textAlign: "center" }}>
+            <Label bold size={15} maxFontSizeMultiplier={1.2} style={{ textAlign: "center" }}>
               {phaseLabels[info.phase]}
             </Label>
-            <Label muted size={12} style={{ textAlign: "center" }}>
+            <Label muted size={12} maxFontSizeMultiplier={1.2} style={{ textAlign: "center" }}>
               {monthLong[month]}
             </Label>
           </>
         ) : (
           <>
-            <Label bold size={15} style={{ textAlign: "center" }}>
+            <Label bold size={15} maxFontSizeMultiplier={1.2} style={{ textAlign: "center" }}>
               Sin calendario
             </Label>
-            <Label muted size={12} style={{ textAlign: "center" }}>
+            <Label muted size={12} maxFontSizeMultiplier={1.2} style={{ textAlign: "center" }}>
               {monthLong[month]}
             </Label>
           </>

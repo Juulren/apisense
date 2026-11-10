@@ -34,8 +34,8 @@ export default function Inspection() {
         setForm(emptyCheckin);
       },
       app.workspace?.demo
-        ? "Registro de demo guardado localmente."
-        : "Registro guardado en este dispositivo. Se sincronizará al recuperar red.",
+        ? "Inspección de demo guardada localmente."
+        : "Inspección guardada en este dispositivo. Se sincronizará al recuperar red.",
     );
   return (
     <AppScreen
@@ -46,7 +46,7 @@ export default function Inspection() {
       <Badge label="Guardado local · Disponible sin señal" tone="blue" />
       <Label bold>
         {hive
-          ? `Registro de ${hive.code}`
+          ? `Observaciones de ${hive.code}`
           : "Selecciona una colmena válida"}
       </Label>
       <Segmented
