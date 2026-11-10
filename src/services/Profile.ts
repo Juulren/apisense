@@ -26,7 +26,7 @@ export function newPasswordProblem(password: string, email = "") {
 }
 
 export const isEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value.trim());
-export const isRecoveryCode = (value: string) => /^\d{6}$/.test(value.trim());
+export const isRecoveryCode = (value: string) => /^\d{6,8}$/.test(value.trim());
 
 /** What the app needs from the account's profile row; the server enforces ownership. */
 export type ProfileRemote = {

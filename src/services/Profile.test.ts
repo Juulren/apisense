@@ -53,6 +53,8 @@ describe("password and input rules", () => {
     expect(isEmail("a@b")).toBe(false);
     expect(isRecoveryCode(" 123456 ")).toBe(true);
     expect(isRecoveryCode("12345")).toBe(false);
+    expect(isRecoveryCode("17398571")).toBe(true);
+    expect(isRecoveryCode("123456789")).toBe(false);
     expect(isRecoveryCode("12345a")).toBe(false);
   });
 });

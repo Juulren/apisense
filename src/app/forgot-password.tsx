@@ -40,12 +40,12 @@ export default function ForgotPassword() {
       await app.requestPasswordReset(email);
       setStep("code");
       task.setMessage(
-        "Si ese correo tiene una cuenta, te enviamos un código de 6 dígitos. Puede tardar un minuto.",
+        "Si ese correo tiene una cuenta, te enviamos un código. Puede tardar un minuto.",
       );
     });
   const check = () =>
     task.run(async () => {
-      if (!isRecoveryCode(code)) throw new Error("El código tiene 6 dígitos");
+      if (!isRecoveryCode(code)) throw new Error("Escribe el código del correo (solo números)");
       await app.verifyRecoveryCode(email, code);
       verified.current = true;
       setStep("password");
@@ -90,10 +90,10 @@ export default function ForgotPassword() {
           <View style={{ gap: 20 }}>
             <Field
               testID="reset-code"
-              label="Código de 6 dígitos"
+              label="Código del correo"
               keyboardType="number-pad"
               autoComplete="one-time-code"
-              maxLength={6}
+              maxLength={8}
               value={code}
               onChangeText={setCode}
             />

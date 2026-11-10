@@ -45,8 +45,9 @@ export default function HiveList() {
                 tone={warning ? "amber" : undefined}
                 style={{ padding: 16, gap: 6 }}
               >
-                <Row>
-                  <View style={{ flex: 1, gap: 2 }}>
+                {/* Wraps instead of breaking the code mid-word at large text sizes. */}
+                <Row style={{ flexWrap: "wrap", rowGap: 6 }}>
+                  <View style={{ flexGrow: 1, flexShrink: 0, gap: 2 }}>
                     <Label bold size={16}>
                       {hive.code}
                     </Label>
