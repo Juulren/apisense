@@ -49,7 +49,9 @@ name: Pantallas Android con datos sintéticos y tema explícito
       text: "${THEME_LABEL}"
 - tapOn: "${THEME_LABEL}"
 - openLink: apisense:///dashboard
-- assertVisible: "Estado por Colmena"
+- scrollUntilVisible:
+    element:
+      text: "Estado por Colmena"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/03-dashboard
 - openLink: apisense:///hives
 - assertVisible: "Mis colmenas"

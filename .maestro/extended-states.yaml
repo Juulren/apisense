@@ -2,7 +2,9 @@ appId: com.apisense.app
 name: Mapa errores y colmena sin lecturas
 ---
 - openLink: apisense:///hives
-- assertVisible: "Mis colmenas"
+- extendedWaitUntil:
+    visible: "Mis colmenas"
+    timeout: 30000
 - tapOn: { text: "^Mapa$" }
 - scrollUntilVisible:
     centerElement: true

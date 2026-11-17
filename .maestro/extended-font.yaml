@@ -9,8 +9,10 @@ name: Formulario con texto al 200 por ciento
 - extendedWaitUntil:
     visible: "Datos de demostración · Sin envío a nube"
     timeout: 60000
-- openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
+- extendedWaitUntil:
+    visible: "Observaciones de Colmena 02"
+    timeout: 30000
 - scrollUntilVisible:
     direction: UP
     element: { text: "Observaciones de Colmena 02" }
