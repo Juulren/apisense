@@ -32,7 +32,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - tapOn: "Entrar al Apiario"
 - scrollUntilVisible:
     element:
-      text: "La contraseña debe tener al menos 8 caracteres"
+      text: "Escribe tu contraseña"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/02-login-validation
 - openLink: apisense:///
 - scrollUntilVisible:

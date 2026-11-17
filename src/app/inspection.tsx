@@ -77,22 +77,26 @@ export default function Inspection() {
           onChangeText={(notes) => setForm({ ...form, notes })}
           maxLength={5000}
         />
-        <CheckinFields value={form} onChange={setForm} />
-        <Field
-          label="Etiquetas (separadas por comas)"
-          placeholder="Alimentación, ventilación, revisión de cría"
-          value={form.tags}
-          onChangeText={(tags) => setForm({ ...form, tags })}
-          maxLength={300}
-        />
-        <Button
-          label="Guardar observación"
-          icon="save-alt"
-          disabled={!hive}
-          loading={task.busy}
-          onPress={save}
-        />
       </Card>
+      <Fold title="Más datos (opcional)" testID="fold-more-data">
+        <Card>
+          <CheckinFields value={form} onChange={setForm} />
+          <Field
+            label="Etiquetas (separadas por comas)"
+            placeholder="Alimentación, ventilación, revisión de cría"
+            value={form.tags}
+            onChangeText={(tags) => setForm({ ...form, tags })}
+            maxLength={300}
+          />
+        </Card>
+      </Fold>
+      <Button
+        label="Guardar observación"
+        icon="save-alt"
+        disabled={!hive}
+        loading={task.busy}
+        onPress={save}
+      />
       {task.message ? (
         <Label accessibilityLiveRegion="polite">{task.message}</Label>
       ) : null}
