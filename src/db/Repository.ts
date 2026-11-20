@@ -162,6 +162,24 @@ export class Repository {
     );
   }
   /**
+   * Node messages per hive and local day (the timeline), counted in SQL so the
+   * thousands of "usual sound" rows never have to be loaded. `tzMinutes` is the
+   * offset from UTC used to cut the days.
+   */
+  async verdictDayStats(since: string, tzMinutes: number) {
+    const modifier = `${tzMinutes < 0 ? "-" : "+"}${Math.abs(Math.trunc(tzMinutes))} minutes`;
+    return this.exclusive(() =>
+      this.sql.all<{ hive_id: string; day: string; total: number; different: number }>(
+        `SELECT hive_id, date(recorded_at, ?) AS day, COUNT(*) AS total,
+                SUM(CASE WHEN class_code <> 0 THEN 1 ELSE 0 END) AS different
+           FROM edge_verdicts
+          WHERE deleted_at IS NULL AND source = 'lora' AND recorded_at >= ?
+          GROUP BY hive_id, day`,
+        [modifier, since],
+      ),
+    );
+  }
+  /**
    * Local housekeeping: ordinary "usual sound" verdicts that are already synced and
    * older than the cut-off are dropped (the server keeps them 30 days). Alerts,
    * reviewed verdicts and anything not yet synced are never touched.

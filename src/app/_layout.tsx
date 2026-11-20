@@ -6,12 +6,14 @@ import { ActivityIndicator, View } from "react-native";
 import { BottomNav } from "../components/ui/BottomNav";
 import { ThemeProvider, useTheme } from "../components/ui/theme";
 import { AppProvider } from "../state/AppProvider";
+import { usePushRegistration } from "../state/usePush";
 
 // Peer destinations (the bottom bar) cross-fade, like Material "fade through".
 // Drill-in screens slide in. The bar lives here, outside the Stack, so it stays
 // put while only the content animates.
 function Shell() {
   const { colors } = useTheme();
+  usePushRegistration();
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={{ flex: 1 }}>

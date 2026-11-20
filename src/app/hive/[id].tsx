@@ -15,6 +15,7 @@ import { Fold } from "../../components/ui/Fold";
 import { SummaryCard } from "../../components/SummaryCard";
 import { SeasonTracker } from "../../components/SeasonTracker";
 import { NodeCard } from "../../components/NodeCard";
+import { VerdictTimeline } from "../../components/VerdictTimeline";
 import { HiveReadings } from "../../components/HiveReadings";
 import { checkinSummary } from "../../services/Checkin";
 import { removeHive, renameHive } from "../../services/Hives";
@@ -75,6 +76,7 @@ export default function HiveDetail() {
             }
           />
           <NodeCard key={`node-${id}`} hiveId={id} />
+          <VerdictTimeline key={`timeline-${id}`} hiveId={id} />
           {summary ? (
             <SummaryCard summary={summary} compact />
           ) : (

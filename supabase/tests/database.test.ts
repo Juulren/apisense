@@ -47,6 +47,7 @@ beforeAll(async () => {
     "202611100001_edge_verdicts.sql",
     "202611110001_profiles.sql",
     "202611110002_delete_account_data.sql",
+    "202611200001_alert_events_push.sql",
   ]) {
     await db.exec(
       await readFile(
@@ -564,6 +565,125 @@ describe("Postgres RLS from migrations", () => {
     expect(node.rows).toEqual([{ owner: null }]);
     // With the data gone the auth user can be removed (no foreign key blocks it).
     await db.query("delete from auth.users where id=$1", [ownerA]);
+  });
+  it("creates one neutral alert per hive when the node reports something different", async () => {
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)", [hiveA]);
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)", [hiveA]);
+    const rows = await db.query("select user_id, kind, title, body from public.alert_events where hive_id=$1", [hiveA]);
+    expect(rows.rows).toHaveLength(1);
+    expect(rows.rows[0]).toMatchObject({ user_id: ownerA, kind: "verdict", title: "Sonido diferente al habitual" });
+    expect(String((rows.rows[0] as { body: string }).body)).not.toMatch(/reina|plaga|enjambr|ataque/i);
+  });
+  it("raises no alert for usual sounds or for messages that did not come from a node", async () => {
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,0,0.8)", [hiveA]);
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'ble',1,1,1,0.8)", [hiveA]);
+    const rows = await db.query("select 1 from public.alert_events where hive_id=$1", [hiveA]);
+    expect(rows.rows).toEqual([]);
+  });
+  async function linkNode(hive: string, eui = "70b3d57ed0000077") {
+    await db.query(
+      "insert into public.iot_microphones(id,hive_id,mac_address,firmware_version,battery_level,sampling_rate_hz,is_online,dev_eui) values (gen_random_uuid(),$1,'LORA-1','lorawan',0,16000,0,$2)",
+      [hive, eui],
+    );
+  }
+  it("flags a node that stopped reporting, once a day, and not one that just reported", async () => {
+    await linkNode(hiveA);
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now() - interval '5 hours','lora',1,1,0,0.8)", [hiveA]);
+    const first = await db.query("select public.detect_silent_nodes() as made");
+    expect(first.rows).toEqual([{ made: 1 }]);
+    const again = await db.query("select public.detect_silent_nodes() as made");
+    expect(again.rows).toEqual([{ made: 0 }]);
+    const row = await db.query("select user_id, kind, body from public.alert_events where hive_id=$1 and kind='node_silent'", [hiveA]);
+    expect(row.rows[0]).toMatchObject({ user_id: ownerA, kind: "node_silent" });
+    expect(String((row.rows[0] as { body: string }).body)).toMatch(/hace 5 h/);
+  });
+  it("does not flag a node that reported recently or one linked moments ago", async () => {
+    await linkNode(hiveA);
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now() - interval '20 minutes','lora',1,1,0,0.8)", [hiveA]);
+    await linkNode(hiveB, "70b3d57ed0000078");
+    const made = await db.query("select public.detect_silent_nodes() as made");
+    expect(made.rows).toEqual([{ made: 0 }]);
+  });
+  it("lets users read only their own alert events and never write them", async () => {
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)", [hiveA]);
+    await db.query("insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)", [hiveB]);
+    await asUser(ownerA);
+    const mine = await db.query("select hive_id from public.alert_events");
+    expect(mine.rows).toEqual([{ hive_id: hiveA }]);
+    await expect(
+      db.query("insert into public.alert_events(user_id,hive_id,kind,title,body) values ($1,$2,'verdict','x','y')", [ownerA, hiveA]),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("keeps the alert detection functions out of reach of users", async () => {
+    await asUser(ownerA);
+    await expect(db.query("select public.detect_silent_nodes()")).rejects.toMatchObject({ code: "42501" });
+  });
+  it("gives a phone token to whoever signed in last and hides it from others", async () => {
+    const token = "ExponentPushToken-aaaaaaaaaaaaaaaaaaaa";
+    await asUser(ownerA);
+    await db.query("select public.claim_push_token($1,'android')", [token]);
+    expect((await db.query("select user_id from public.push_tokens")).rows).toEqual([{ user_id: ownerA }]);
+    await asUser(ownerB);
+    expect((await db.query("select 1 from public.push_tokens")).rows).toEqual([]);
+    await db.query("select public.claim_push_token($1,'android')", [token]);
+    expect((await db.query("select user_id from public.push_tokens")).rows).toEqual([{ user_id: ownerB }]);
+    await asUser(ownerA);
+    expect((await db.query("select 1 from public.push_tokens")).rows).toEqual([]);
+  });
+  it("refuses to register a push token without a session", async () => {
+    await db.query("select set_config('request.jwt.claim.sub','',false)");
+    await db.exec("set role authenticated");
+    await expect(
+      db.query("select public.claim_push_token('ExponentPushToken-bbbbbbbbbbbbbbbbbbbb','android')"),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("leases pending alerts once, expires old ones and is service-role only", async () => {
+    await db.query(
+      `insert into public.alert_events(user_id,hive_id,kind,title,body,created_at) values
+         ($1,$2,'verdict','Nuevo','n',now()),
+         ($1,$2,'verdict','Viejo','v',now() - interval '3 hours')`,
+      [ownerA, hiveA],
+    );
+    const first = await db.query("select title from public.claim_pending_alerts(10)");
+    expect(first.rows).toEqual([{ title: "Nuevo" }]);
+    const second = await db.query("select title from public.claim_pending_alerts(10)");
+    expect(second.rows).toEqual([]);
+    const old = await db.query("select sent_at is not null as expired from public.alert_events where title='Viejo'");
+    expect(old.rows).toEqual([{ expired: true }]);
+    await db.query("update public.alert_events set claimed_at = now() - interval '5 minutes' where title='Nuevo'");
+    const retry = await db.query("select title from public.claim_pending_alerts(10)");
+    expect(retry.rows).toEqual([{ title: "Nuevo" }]);
+    await asUser(ownerA);
+    await expect(db.query("select * from public.claim_pending_alerts(10)")).rejects.toMatchObject({ code: "42501" });
+  });
+  it("keeps at most five phones per account and gives no direct write on tokens", async () => {
+    await asUser(ownerA);
+    for (let i = 0; i < 7; i++)
+      await db.query("select public.claim_push_token($1,'android')", ["ExponentPushToken-cap" + String(i).padStart(18, "0")]);
+    const kept = await db.query("select count(*)::int as n from public.push_tokens");
+    expect(kept.rows).toEqual([{ n: 5 }]);
+  });
+  it("does not let a user insert push tokens directly", async () => {
+    await asUser(ownerA);
+    await expect(
+      db.query("insert into public.push_tokens(user_id,token,platform) values ($1,'ExponentPushToken-directdirectdirect','android')", [ownerA]),
+    ).rejects.toMatchObject({ code: "42501" });
+  });
+  it("raises no node alerts for an apiary that was removed", async () => {
+    await db.query("update public.apiaries set deleted_at = now() where id=$1", [apiaryA]);
+    await db.query(
+      "insert into public.edge_verdicts(id,hive_id,recorded_at,source,format_version,class_map_version,class_code,confidence) values (gen_random_uuid(),$1,now(),'lora',1,1,1,0.8)",
+      [hiveA],
+    );
+    await linkNode(hiveA, "70b3d57ed0000090");
+    await db.query(
+      "update public.edge_verdicts set recorded_at = now() - interval '9 hours' where hive_id=$1",
+      [hiveA],
+    );
+    const made = await db.query("select public.detect_silent_nodes() as made");
+    expect(made.rows).toEqual([{ made: 0 }]);
+    const events = await db.query("select 1 from public.alert_events where hive_id=$1", [hiveA]);
+    expect(events.rows).toEqual([]);
   });
   it("isolates apiaries and hives between users", async () => {
     await asUser(ownerB);

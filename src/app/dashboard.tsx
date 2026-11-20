@@ -15,6 +15,7 @@ import { HiveTile } from "../components/HiveTile";
 import { WeatherCard } from "../components/WeatherCard";
 import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
 import { pendingAlerts } from "../services/EdgeVerdicts";
+import { useNodeState } from "../state/useNodeState";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { latestSummary } from "../state/selectors";
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const summary = alert ? latestSummary(data.summaries, alert.id) : undefined;
   const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
   const nodeAlerts = pendingAlerts(data.verdicts);
+  const quiet = useNodeState().silent;
   const percentage = data.hives.length
     ? Math.round((normal / data.hives.length) * 100)
     : 0;
@@ -82,6 +84,29 @@ export default function Dashboard() {
             label="Ver alertas"
             variant="secondary"
             onPress={() => router.push("/alerts")}
+          />
+        </Card>
+      ) : null}
+      {quiet.length ? (
+        <Card tone="amber">
+          <Row>
+            <Icon name="sensors-off" color="#D97706" size={28} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Label bold>
+                {quiet.length === 1
+                  ? "1 nodo sin reportar"
+                  : `${quiet.length} nodos sin reportar`}
+              </Label>
+              <Label muted size={12}>
+                {quiet.map((h) => h.code).join(", ")}. Sin mensajes en más de 3
+                horas.
+              </Label>
+            </View>
+          </Row>
+          <Button
+            label="Ver colmenas"
+            variant="secondary"
+            onPress={() => router.push("/hive")}
           />
         </Card>
       ) : null}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Pressable, View } from "react-native";
+import { Alert, Image, Pressable, View } from "react-native";
 import { Redirect, router } from "expo-router";
 import {
   Badge,
@@ -186,6 +186,39 @@ export default function Login() {
             })
           }
         />
+        {app.restorable ? (
+          <Card tone="amber">
+            <Label bold>No se puede abrir la base de este teléfono</Label>
+            <Label size={13}>
+              Falta la llave que la protege (por ejemplo, tras reinstalar o
+              cambiar de teléfono). Tus datos sincronizados siguen en tu cuenta.
+            </Label>
+            <Button
+              label="Restaurar desde la nube"
+              icon="cloud-download"
+              variant="secondary"
+              loading={task.busy || app.busy}
+              onPress={() =>
+                Alert.alert(
+                  "Restaurar desde la nube",
+                  "Se borrará la copia local de este teléfono y se volverá a descargar de tu cuenta. Lo que no se hubiera sincronizado antes se perderá. No se puede deshacer.",
+                  [
+                    { text: "Cancelar", style: "cancel" },
+                    {
+                      text: "Borrar y restaurar",
+                      style: "destructive",
+                      onPress: () =>
+                        task.run(async () => {
+                          await app.restoreFromCloud();
+                          router.replace("/dashboard");
+                        }),
+                    },
+                  ],
+                )
+              }
+            />
+          </Card>
+        ) : null}
         {task.message || app.error ? (
           <Label tone="warning">{task.message ?? app.error}</Label>
         ) : null}

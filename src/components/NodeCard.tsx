@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { Badge, Button, Card, Label, Row } from "./ui";
 import { useApp } from "../state/AppProvider";
+import { silentText, staleText } from "../services/NodeStatus";
+import { useNodeState } from "../state/useNodeState";
 import {
   isAlert,
   latestVerdict,
@@ -14,15 +16,20 @@ export function NodeCard({ hiveId }: { hiveId: string }) {
   const mic = app.data.microphones.find((m) => m.hive_id === hiveId);
   const verdict = latestVerdict(app.data.verdicts, hiveId);
   if (!verdict && !mic?.dev_eui) return null;
+  const nodes = useNodeState();
+  const state = nodes.stateOf(hiveId);
+  const silent = state.kind === "silent" ? state : null;
   const warnings = verdict ? nodeWarnings(verdict) : [];
   const attention = verdict && isAlert(verdict) && verdict.review === null;
   return (
-    <Card tone={attention ? "amber" : undefined}>
+    <Card tone={attention || silent ? "amber" : undefined}>
       <Row>
         <Label bold style={{ flex: 1 }}>
           Nodo de la colmena
         </Label>
-        {verdict ? (
+        {silent ? (
+          <Badge label="Sin reportar" tone="amber" />
+        ) : verdict ? (
           <Badge
             label={attention ? "Por revisar" : isAlert(verdict) ? "Revisada" : "Sonido habitual"}
             tone={attention ? "amber" : "green"}
@@ -34,6 +41,16 @@ export function NodeCard({ hiveId }: { hiveId: string }) {
       ) : (
         <Label muted>Nodo vinculado: esperando su primer mensaje.</Label>
       )}
+      {silent ? (
+        <Label tone="warning" size={12}>
+          {silentText(silent)}. Si pasa mucho tiempo, revisa el nodo en campo.
+        </Label>
+      ) : null}
+      {state.kind === "stale" ? (
+        <Label muted size={12}>
+          {staleText}
+        </Label>
+      ) : null}
       {warnings.length ? (
         <Label tone="warning" size={12}>
           Aviso del nodo: {warnings.join(", ")}.

@@ -44,3 +44,7 @@ verify_jwt = false
 # for the password again before deleting anything.
 [functions.delete-account]
 verify_jwt = false
+
+# Called every minute by pg_cron with the shared cron secret (x-cron-secret).
+[functions.send-push]
+verify_jwt = false

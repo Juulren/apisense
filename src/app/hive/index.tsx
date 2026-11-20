@@ -6,10 +6,13 @@ import { useTheme } from "../../components/ui/theme";
 import { useApp } from "../../state/AppProvider";
 import { latestSummary, statusLabel } from "../../state/selectors";
 import { latestVerdict, verdictSummary } from "../../services/EdgeVerdicts";
+import { silentText } from "../../services/NodeStatus";
+import { useNodeState } from "../../state/useNodeState";
 
 // "Diagnóstico": every hive one tap away. Opens a hive's detail directly.
 export default function HiveList() {
   const { data } = useApp();
+  const nodes = useNodeState();
   const { colors } = useTheme();
   const several = data.apiaries.length > 1;
   return (
@@ -22,7 +25,11 @@ export default function HiveList() {
           const summary = latestSummary(data.summaries, hive.id),
             verdict = latestVerdict(data.verdicts, hive.id),
             warning = summary && summary.overall_status !== "optimal";
-          const detail = verdict
+          const node = nodes.stateOf(hive.id);
+          const quiet = node.kind === "silent";
+          const detail = node.kind === "silent"
+            ? silentText(node)
+            : verdict
             ? verdictSummary(verdict)
             : summary
               ? "Resumen acústico disponible"
@@ -42,7 +49,7 @@ export default function HiveList() {
               style={{ minHeight: 64 }}
             >
               <Card
-                tone={warning ? "amber" : undefined}
+                tone={warning || quiet ? "amber" : undefined}
                 style={{ padding: 16, gap: 6 }}
               >
                 {/* Wraps instead of breaking the code mid-word at large text sizes. */}

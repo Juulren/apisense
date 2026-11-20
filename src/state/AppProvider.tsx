@@ -9,11 +9,18 @@ import {
 } from "react";
 import { AppState } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { eraseLocalData, openRepository } from "../db/openRepository";
+import {
+  eraseLocalData,
+  openRepository,
+  quarantineLocalData,
+} from "../db/openRepository";
+import { isLocalKeyMissing } from "../db/localKey";
+import { releasePushToken } from "../services/pushToken";
 import type { Repository } from "../db/Repository";
 import { SyncEngine, type SyncState } from "../db/SyncEngine";
 import { SupabaseRemote } from "../db/SupabaseRemote";
 import { NetworkGate } from "../db/network";
+import type { DayStat } from "../services/NodeStatus";
 import type {
   Apiary,
   Hive,
@@ -54,6 +61,8 @@ type Data = {
   cycles: BroodCycle[];
   /** Node verdicts of the last two weeks, newest first. */
   verdicts: EdgeVerdict[];
+  /** Node messages per hive and local day (the timeline's counts). */
+  verdictStats: DayStat[];
   pending: number;
   settings: Record<string, string>;
 };
@@ -66,6 +75,7 @@ const empty: Data = {
   inspections: [],
   cycles: [],
   verdicts: [],
+  verdictStats: [],
   pending: 0,
   settings: {},
 };
@@ -110,6 +120,10 @@ type State = {
   logout: () => Promise<void>;
   saveSetting: (key: string, value: string) => Promise<void>;
   refresh: () => Promise<void>;
+  /** Set when the local database cannot be opened because its key is gone. */
+  restorable: boolean;
+  /** Erases the unreadable local copy and downloads the account's data again. */
+  restoreFromCloud: () => Promise<void>;
 };
 const Context = createContext<State | null>(null);
 // Set while a password recovery is under way. A recovery session must never
@@ -157,6 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [data, setData] = useState<Data>(empty),
     [busy, setBusy] = useState(true),
     [error, setError] = useState<string | null>(null),
+    [restorableUser, setRestorableUser] = useState<string | null>(null),
     [syncState, setSyncState] = useState<SyncState>({
       status: "offline",
       error: null,
@@ -180,6 +195,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       inspections,
       cycles,
       verdicts,
+      verdictStats,
       pending,
     ] = await Promise.all([
       w.repo.list("apiaries"),
@@ -190,6 +206,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       w.repo.list("inspections"),
       w.repo.list("brood_cycles"),
       w.repo.recentVerdicts(verdictSince()),
+      w.repo.verdictDayStats(verdictSince(), -new Date().getTimezoneOffset()),
       w.repo.pendingCount(),
     ]);
     if (current.current !== w) return;
@@ -218,6 +235,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         inspections: ofLive(inspections),
         cycles: ofLive(cycles),
         verdicts: ofLive(verdicts),
+        verdictStats: ofLive(verdictStats),
         pending,
         settings,
       });
@@ -232,6 +250,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const task = (async () => {
         setBusy(true);
         setError(null);
+        setRestorableUser(null);
         const old = current.current;
         current.current = null;
         setWorkspace(null);
@@ -344,6 +363,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (sequence === epoch.current) {
             desired.current = null;
             setError(e instanceof Error ? e.message : String(e));
+            // Only a real account can be restored; the demo has nothing in the cloud.
+            setRestorableUser(isLocalKeyMissing(e) && !demo ? userId : null);
           }
           if (repo && current.current?.repo !== repo) await repo.close();
           throw e;
@@ -385,6 +406,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } = supabase.auth.onAuthStateChange((event, session) => {
         if (!mounted) return;
         if (event === "SIGNED_OUT") {
+          setRestorableUser(null);
           const sequence = ++epoch.current;
           desired.current = null;
           const old = current.current;
@@ -486,12 +508,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     desired.current = null;
     setBusy(true);
     setError(null);
+    setRestorableUser(null);
     const w = current.current;
     current.current = null;
     setWorkspace(null);
     setData(empty);
     setSyncState({ status: "offline", error: null, lastSyncedAt: null });
     try {
+      // This phone stops receiving the account's alerts (best effort, needs the session).
+      await releasePushToken().catch(() => {});
       try {
         await w?.dispose();
       } finally {
@@ -623,6 +648,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await eraseLocalData(w.userId);
     }
   };
+  const restoreFromCloud = async () => {
+    const userId = restorableUser;
+    if (!userId || !supabase) throw new Error("No hay nada que restaurar");
+    // Only the account that is signed in right now can be restored.
+    const session = (await supabase.auth.getSession()).data.session;
+    if (session?.user.id !== userId)
+      throw new Error("Inicia sesión con esa cuenta para restaurarla");
+    await quarantineLocalData(userId);
+    setRestorableUser(null);
+    setError(null);
+    desired.current = null;
+    await activate(userId, false);
+  };
   const saveSetting = async (key: string, value: string) => {
     const w = current.current;
     if (!w) throw new Error("Abre una sesión local");
@@ -640,6 +678,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error,
         syncState,
         refresh,
+        restorable: restorableUser !== null,
+        restoreFromCloud,
         enterDemo: () => activate(DEMO_USER, true),
         login,
         register,

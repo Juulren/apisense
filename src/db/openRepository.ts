@@ -3,6 +3,7 @@ import { File } from "expo-file-system";
 import { getRandomBytesAsync, randomUUID } from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { Repository } from "./Repository";
+import { LocalKeyMissingError } from "./localKey";
 export function repositoryStorage(userId: string) {
   if (!/^[a-zA-Z0-9-]+$/.test(userId))
     throw new Error("Identidad local inválida");
@@ -27,10 +28,7 @@ export async function openRepository(userId: string) {
   if (!key) {
     // A restore/reinstall can leave ciphertext without its device-bound key.
     // Preserve it for recovery; never replace the key or reset the database.
-    if (file.exists)
-      throw new Error(
-        "No se encuentra la clave de esta base local. No se modificaron tus datos. Conserva la instalación y solicita recuperación antes de borrar o reinstalar.",
-      );
+    if (file.exists) throw new LocalKeyMissingError();
     key = Array.from(await getRandomBytesAsync(32), (x) =>
       x.toString(16).padStart(2, "0"),
     ).join("");
@@ -79,4 +77,22 @@ export async function eraseLocalData(userId: string) {
     if (file.exists) file.delete();
   }
   await SecureStore.deleteItemAsync(keyName);
+}
+/**
+ * Restoring from the cloud sets the unreadable local copy aside instead of
+ * deleting it (the key might still come back after a Keystore hiccup or a
+ * restore), and drops only the key. Returns "key_found" without touching
+ * anything if the key turns out to be there after all.
+ */
+export async function quarantineLocalData(userId: string) {
+  const { directoryUri, databaseName, keyName } = repositoryStorage(userId);
+  if (await SecureStore.getItemAsync(keyName)) return "key_found" as const;
+  const stamp = Date.now();
+  for (const suffix of ["", "-wal", "-shm", "-journal"]) {
+    const file = new File(directoryUri, databaseName + suffix);
+    if (file.exists)
+      file.move(new File(directoryUri, `${databaseName}${suffix}.orphaned-${stamp}`));
+  }
+  await SecureStore.deleteItemAsync(keyName);
+  return "moved" as const;
 }

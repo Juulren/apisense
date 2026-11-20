@@ -3,7 +3,7 @@
     "name": "Apisense",
     "slug": "apisense",
     "scheme": "apisense",
-    "version": "0.2.6",
+    "version": "0.3.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["android", "ios"],
@@ -20,7 +20,7 @@
     },
     "android": {
       "package": "com.apisense.app",
-      "versionCode": 12,
+      "versionCode": 13,
       "allowBackup": false,
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",

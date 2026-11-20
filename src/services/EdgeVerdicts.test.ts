@@ -122,6 +122,32 @@ describe("what the app says about a verdict", () => {
   });
 });
 
+describe("verdict counts per day", () => {
+  it("counts every LoRa message per hive and local day without loading the rows", async () => {
+    const { repo, hive, other, verdict } = await setup();
+    const at = (iso: string) => ({ recorded_at: iso });
+    await verdict(hive.id, { ...at("2026-11-20T01:00:00.000Z"), source: "lora", class_code: 0 });
+    await verdict(hive.id, { ...at("2026-11-20T05:00:00.000Z"), source: "lora", class_code: 1 });
+    await verdict(hive.id, { ...at("2026-11-20T09:00:00.000Z"), source: "lora", class_code: 0 });
+    await verdict(hive.id, { ...at("2026-11-20T09:30:00.000Z"), source: "simulator", class_code: 1 });
+    await verdict(other.id, { ...at("2026-11-19T20:00:00.000Z"), source: "lora", class_code: 0 });
+    await verdict(hive.id, { ...at("2026-10-01T10:00:00.000Z"), source: "lora", class_code: 0 });
+    const utc = await repo.verdictDayStats("2026-11-01T00:00:00.000Z", 0);
+    const key = (r: { hive_id: string; day: string }) => `${r.hive_id === hive.id ? "A" : "B"} ${r.day}`;
+    expect(Object.fromEntries(utc.map((r) => [key(r), [Number(r.total), Number(r.different)]]))).toEqual({
+      "A 2026-11-20": [3, 1],
+      "B 2026-11-19": [1, 0],
+    });
+    // In Mérida (UTC-6) the 01:00Z and 05:00Z messages belong to the 19th.
+    const merida = await repo.verdictDayStats("2026-11-01T00:00:00.000Z", -360);
+    expect(Object.fromEntries(merida.map((r) => [key(r), Number(r.total)]))).toEqual({
+      "A 2026-11-19": 2,
+      "A 2026-11-20": 1,
+      "B 2026-11-19": 1,
+    });
+  });
+});
+
 describe("reviewing an alert", () => {
   it("records the decision with its time and a trimmed note, and allows changing it", async () => {
     const { repo, verdict, hive } = await setup();
