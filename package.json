@@ -21,6 +21,7 @@
     "test": "vitest run",
     "backend:check": "node --env-file=.env scripts/check-supabase.mjs",
     "test:backend": "vitest run supabase/tests",
+    "test:edge-ai": "python -m unittest discover -s tools/edge-ai/tests",
     "test:backend:live": "node --env-file=.env --env-file-if-exists=.env.backend node_modules/vitest/vitest.mjs run --config supabase/vitest.live.config.mts",
     "check": "npm run typecheck && npm test",
     "format": "prettier --write src supabase/functions *.json *.js",

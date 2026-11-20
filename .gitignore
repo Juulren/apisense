@@ -27,3 +27,8 @@ mockups/
 
 expo-env.d.ts
 # @end expo-cli
+
+# Edge AI phase 0: recordings stay local
+tools/edge-ai/data/
+__pycache__/
+*.pyc
