@@ -5,12 +5,14 @@ decides, and can forward its messages to `lora-uplink` as The Things Stack would
     python -m apisense_audio.bridge --port COM3 --url https://<ref>.supabase.co/functions/v1/lora-uplink \
         --dev-eui 70b3d57ed0000001 --yes-store-real-rows             # secret in the UPLINK_SECRET variable
 
-Flash firmware/apisense_node first. Needs pyserial. Opening the port restarts the board; it then asks for
+With --port auto it waits for the board and finds it again after unplugging. conectar_nodo.cmd does all of
+this with a double click. Flash firmware/apisense_node first. Needs pyserial. Opening the port restarts the board; it then asks for
 the time and the bridge answers. Stop with Ctrl+C.
 """
 from __future__ import annotations
 
 import argparse
+import getpass
 import os
 import sys
 import time
@@ -23,6 +25,15 @@ from .uplink_sim import FLAG_MIC_FAULT, FLAG_NOT_JUDGING, crc8, now_iso, post_up
 TIME_EVERY_S = 3600  # the board's clock drifts a little; a small correction does not drop an alarm
 QUEUE_MAX = 1500  # messages kept while there is no internet (about 10 days at one every 10 minutes)
 RETRY_EVERY_S = 60
+
+
+# USB-serial chips found on ESP32 boards: Silicon Labs CP210x, WCH CH340/CH9102, Espressif's own USB.
+BOARD_USB_IDS = {0x10C4, 0x1A86, 0x303A}
+
+
+def board_ports(ports) -> list[str]:
+    """The serial ports that look like an ESP32 board (`ports` as list_ports.comports() gives them)."""
+    return sorted(p.device for p in ports if getattr(p, "vid", None) in BOARD_USB_IDS)
 
 
 def worth_retrying(answer: str) -> bool:
@@ -102,7 +113,7 @@ def parse_uplink(line: str) -> bytes | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", required=True)
+    ap.add_argument("--port", required=True, help="COM port, or 'auto' to find the board and wait for it")
     ap.add_argument("--url", help="lora-uplink address; without it nothing leaves this PC")
     ap.add_argument("--dev-eui")
     ap.add_argument("--secret-env", default="UPLINK_SECRET")
@@ -122,6 +133,8 @@ def main() -> int:
             print("Con --url cada mensaje se GUARDA en tu proyecto y puede mandar avisos. Añade --yes-store-real-rows.")
             return 2
         secret = os.environ.get(a.secret_env)
+        if not secret and sys.stdin.isatty():
+            secret = getpass.getpass("Secreto del puente (no se muestra ni se guarda): ").strip()
         if not secret:
             print(f"falta la variable de entorno {a.secret_env}")
             return 2
@@ -178,22 +191,50 @@ def main() -> int:
                 outbox.add(message, f_cnt, now_iso())
                 f_cnt += 1
 
+    said_waiting = False
+
+    def find_port() -> str | None:
+        """The port to open now, or None while there is no single board plugged in (auto mode)."""
+        nonlocal said_waiting
+        if a.port != "auto":
+            return a.port
+        from serial.tools import list_ports
+
+        found = board_ports(list_ports.comports())
+        if len(found) == 1:
+            said_waiting = False
+            return found[0]
+        if not said_waiting:
+            show("esperando la placa: conéctala por USB" if not found else
+                 f"hay varias placas ({', '.join(found)}): deja una sola o usa --port")
+            said_waiting = True
+        return None
+
     try:
         while running():
+            port = find_port()
+            if port is None:
+                if a.url:
+                    outbox.flush(time.time(), show)
+                time.sleep(2)
+                continue
             try:
                 ser = serial.Serial()
-                ser.port, ser.baudrate, ser.timeout = a.port, 921600, 1
+                ser.port, ser.baudrate, ser.timeout = port, 921600, 1
                 if opened_once:
                     ser.dtr = ser.rts = False  # reconnecting must not restart the board
                 ser.open()
                 opened_once = True
+                show(f"conectado en {port}")
                 with ser:
                     watch(ser)
             except serial.SerialException as e:
-                if not opened_once:
-                    print(f"no se pudo abrir {a.port}: {e}")
+                if not opened_once and a.port != "auto":
+                    print(f"no se pudo abrir {port}: {e}")
                     return 1
-                show(f"puerto perdido ({e}); reintento en 5 s")
+                show(f"puerto perdido u ocupado ({e}); reintento en 5 s")
+                if a.url:
+                    outbox.flush(time.time(), show)  # what was already heard still goes out
                 time.sleep(5)
     except KeyboardInterrupt:
         pass

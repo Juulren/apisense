@@ -22,6 +22,7 @@ Protocolo de grabación y criterios: `docs/EDGE_AI_FASE0.md`.
 - `apisense_audio/replay.py` — pasa colmenas reales (características de Kaggle) por la lógica del nodo en la placa (`learn_test`) y resume las alarmas por estado de reina. Resultados y límites en `docs/EDGE_AI_FASE_A_RESULTADOS.md`. No escribe en la flash.
 - `apisense_audio/pretrain.py` — entrena en la placa un modelo inicial con las ventanas normales de los datasets y lo guarda en la flash (cargar antes `learn_test`; después `apisense_node` con `-DAPISENSE_QUICK`). **No sirve para vigilar una colmena** (ver los resultados); solo demuestra la cadena.
 - `apisense_node` tiene además el modo rápido `-DAPISENSE_QUICK`: ventanas de 60 s seguidas, listo tras 30 (unos 31 min).
+- `conectar_nodo.cmd` — **doble clic para usar el ESP32 por USB como si ya hubiera radio**: encuentra la placa sola (espera si no está y vuelve a conectar al enchufarla) y sube sus veredictos a `lora-uplink`; no guarda ni sube audio. Lee `data/nodo.cmd` (fuera de git) con `UPLINK_URL` y `DEV_EUI`, y pide el secreto sin mostrarlo ni guardarlo (o usa la variable `UPLINK_SECRET` si existe). La ventana y la PC tienen que seguir abiertas. Es lo mismo que `bridge --port auto`.
 - `apisense_audio/synthetic.py` — audio sintético **solo para pruebas**. Que pase con audio sintético no dice nada sobre colmenas reales.
 
 ## Uso

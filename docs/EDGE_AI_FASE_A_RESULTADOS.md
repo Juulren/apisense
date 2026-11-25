@@ -125,3 +125,47 @@ En vivo en la placa, 5 ventanas con el micrófono del usuario dieron 1,40–4,36
 **Este modelo no sirve para vigilar una colmena:** considera habitual el casi silencio y el ruido blanco, y en la grabación propia cruza el umbral varias veces sin que se conozca ningún problema. Causas probables (revisión de Opus): los datasets difieren unos 30 dB de nivel, así que el nivel absoluto casi no cuenta, y el puntaje lo deciden las variaciones dentro de la ventana, que con el micrófono del usuario son mayores que en los datasets. La deriva lenta tampoco lo adapta a la colmena propia: solo aprende ventanas bajo el umbral y con un tope pequeño. Sirve para demostrar que la cadena funciona dentro del ESP32. Una posible mejora, no probada: características que no dependan de la ganancia del micrófono. Lo recomendado sigue siendo que cada nodo aprenda su colmena (comando `RESET`, unos 31 min en modo rápido para una primera línea base).
 
 Ojo: el firmware borra lo aprendido si la compilación anterior en esa placa era otra (de campo o de banco) o si la placa es nueva; en ese caso hay que cargar una vez el modo rápido antes de `pretrain`.
+
+## Dataset de defensa ante hormigas (Zenodo 20422561), revisado el 25 nov
+
+Pedido: saber si las abejas se sienten atacadas o solo zumban para generar calor. Se descargó `audio-classes.zip` (150 MB, CC BY 4.0, md5 verificado; queda fuera de git).
+
+**Contenido real: 6 grabaciones de unos 3 a 4 minutos (44,1 kHz).** Una de «ataque» (SARACA1A, 260 s), **una** de «alerta» (ATTA1A, 201 s) y cuatro de «control», que según la ficha son un **tubo de ensayo vacío**. No hay abejas en calma ni nada sobre generar calor o ventilar.
+
+| Grabación | Nivel (dBFS) |
+|---|---|
+| Alerta | −43,1 |
+| Ataque | −39,2 |
+| Controles (tubo vacío) | −47,3 a −33,0 (uno saturado) |
+
+Las dos grabaciones con abejas suenan más fuerte que los tres controles sin saturar (−47,3 a −44,7 dBFS); solo el control saturado las supera. El 68 % de abajo es una cifra aproximada: unas 10 ventanas de prueba por clase, de una sola grabación cada una.
+
+**Control de validez** (clasificador sencillo sobre nuestras 24 características, ventanas de 10 s; entrena con la primera mitad de dos grabaciones y prueba con la segunda):
+
+| Qué separa | Acierto equilibrado |
+|---|---|
+| Ataque contra alerta | 68 % |
+| Tubo vacío contra tubo vacío (5 de los 6 pares) | 100 % |
+| Tubo vacío contra tubo vacío (1A contra 2A) | 50 % |
+
+**Conclusión:** con una sola grabación por clase no se puede separar el comportamiento de la propia grabación, y las diferencias entre grabaciones sin abejas bastan para que el clasificador «acierte» el 100 %. **No se entrenó ningún modelo para el ESP32 con este dataset.** No dice nada sobre la utilidad de la señal de vibración (otro archivo, no descargado) ni sobre si el comportamiento defensivo se puede reconocer con más y mejores grabaciones.
+
+**Para tener esas categorías** harían falta, con el mismo micrófono montado en la colmena: muchas grabaciones de días y colmenas distintos, de ratos de calma y de episodios observados (anotados en el momento), sin provocar daño a las abejas; y para el calor o la ventilación, temperatura dentro y fuera de la colmena y observación de la piquera.
+
+## Búsqueda de más datasets sobre ataque, enjambrazón y calor (25 nov)
+
+En lo revisado **no se encontró un audio abierto que permita separar abejas en calma de abejas atacadas, ni zumbido de calor o ventilación.** No es una búsqueda exhaustiva.
+
+| Fuente | Cómo se comprobó | Resultado |
+|---|---|---|
+| Defensa ante hormigas, Zenodo 20422561 | descargado y analizado | 1 ataque, 1 alerta, 4 tubos vacíos: no sirve para entrenar (arriba) |
+| Enjambrazón en To bee or not to bee, Zenodo 1321278 (ya descargado) | ficha, lista de archivos y anotaciones | De los dos clips de colmena enjambrando solo están las anotaciones abeja / no abeja; **el audio no está en el registro** |
+| «Piping» de reinas, IEEE DataPort 10.21227/53mq-g936 | ficha | 205 s en total (36 «tooting», 8 «quacking») sacados de YouTube; por derechos solo publican transformadas y descriptores en `.mat`; pide iniciar sesión |
+| Defensa en abejorros, Dryad 10.5061/dryad.jh9w0vtq8 | ficha | Otra especie (*Bombus*); la lista tiene video y tablas de características, no archivos de audio |
+| Zenodo 10359686 y Mendeley ggdyfh78d7 | fichas | Abejas contra zánganos; vuelo contra vibración floral. No tratan el tema |
+| Kaggle beehive-sounds (nuestra copia) | columnas del CSV | Reina (presencia y aceptación), temperatura, humedad y clima. **No** tiene «healthy / distressed / empty», aunque un resumen web lo decía |
+| MSPB 2.0, Zenodo 21499431 | ficha | Audio con temperatura; la ficha no menciona etiquetas de comportamiento |
+| UrBAN y MSPB (artículos) | solo resumen de búsqueda | Audio con temperatura e inspecciones; sin etiquetas de ventilación descritas |
+| We4Bee (Würzburg) | solo resumen de búsqueda | Habla de clases de pre-enjambrazón y enjambrazón; **no se encontró descarga ni licencia**. Habría que escribir a los autores |
+| Avispones, Mattila et al., Royal Society Open Science | solo resumen de búsqueda (la página respondió 403) | Otra especie (*Apis cerana*); no se comprobó el audio |
+
