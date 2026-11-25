@@ -3,6 +3,7 @@ import type { EdgeVerdict, Hive, Microphone } from "../db/types";
 import {
   SILENT_AFTER_MS,
   dayLabel,
+  nodeHiveStatus,
   nodeState,
   silentHives,
   silentText,
@@ -137,5 +138,47 @@ describe("verdict timeline", () => {
       "0 días con sonido diferente · 3 sin datos",
     );
     expect(dayLabel("2026-11-09")).toBe("9/11");
+  });
+});
+
+describe("what a hive's tile says because of its node", () => {
+  const ok = { kind: "ok", lastAt: ago(H) } as const;
+  const silent = { kind: "silent", lastAt: ago(5 * H), hours: 5 } as const;
+  const status = (v: EdgeVerdict[], node: Parameters<typeof nodeHiveStatus>[2], phone: "none" | "ok" | "warning" = "none") =>
+    nodeHiveStatus(v, "h1", node, phone, NOW);
+
+  it("shows the node's usual sound and counts it as stable", () => {
+    expect(status([verdict()], ok)).toMatchObject({ label: "Sonido habitual", tone: "green", stable: true });
+  });
+  it("puts an unreviewed alert first, even with a newer usual message or a silent node", () => {
+    const old = verdict({ class_code: 1, recorded_at: ago(9 * H) });
+    for (const node of [ok, silent]) {
+      expect(status([verdict(), old], node, "warning")).toMatchObject({ label: "Por revisar", tone: "amber", stable: false });
+    }
+  });
+  it("does not call a reviewed alert stable, nor paint it green", () => {
+    expect(status([verdict({ class_code: 1, review: "seen" })], ok)).toMatchObject({ label: "Revisada", tone: "neutral", stable: false });
+  });
+  it("never reads a learning node as a usual sound", () => {
+    expect(status([verdict({ flags: 8 })], ok)).toMatchObject({ label: "Aún no juzga", tone: "neutral", stable: false });
+  });
+  it("says when the node went quiet or this phone cannot tell, instead of the last usual sound", () => {
+    expect(status([verdict()], silent)).toMatchObject({ label: "Sin reportar", tone: "amber", stable: false });
+    expect(status([verdict()], silent, "ok")).toMatchObject({ label: "Sin reportar" });
+    expect(status([verdict()], { kind: "stale" })).toMatchObject({ label: "Sin sincronizar", tone: "neutral", stable: false });
+  });
+  it("does not let an old message speak for a hive without a linked node", () => {
+    expect(status([verdict({ recorded_at: ago(30 * 24 * H) })], { kind: "none" })).toBeNull();
+    expect(status([verdict()], { kind: "none" })).toMatchObject({ label: "Sonido habitual" });
+  });
+  it("waits for a linked node's first message", () => {
+    expect(status([], { kind: "waiting" })).toMatchObject({ label: "Nodo vinculado", stable: false });
+  });
+  it("leaves the phone's readings alone when the node adds nothing", () => {
+    expect(status([], { kind: "none" })).toBeNull();
+    expect(status([verdict()], ok, "ok")).toBeNull();
+    expect(status([verdict()], ok, "warning")).toBeNull();
+    // Another hive's alert is not this hive's.
+    expect(status([verdict({ hive_id: "h2", class_code: 1 })], { kind: "none" })).toBeNull();
   });
 });

@@ -1,12 +1,11 @@
 import { router } from "expo-router";
 import { Badge, Button, Card, Label, Row } from "./ui";
 import { useApp } from "../state/AppProvider";
-import { silentText, staleText } from "../services/NodeStatus";
+import { nodeHiveStatus, silentText, staleText } from "../services/NodeStatus";
 import { useNodeState } from "../state/useNodeState";
 import {
-  isAlert,
-  isLearning,
   latestVerdict,
+  pendingAlerts,
   nodeWarnings,
   verdictSummary,
 } from "../services/EdgeVerdicts";
@@ -21,23 +20,16 @@ export function NodeCard({ hiveId }: { hiveId: string }) {
   const state = nodes.stateOf(hiveId);
   const silent = state.kind === "silent" ? state : null;
   const warnings = verdict ? nodeWarnings(verdict) : [];
-  const attention = verdict && isAlert(verdict) && verdict.review === null;
+  // The same rule as the hive's tile, so the two never disagree.
+  const status = nodeHiveStatus(app.data.verdicts, hiveId, state, "none");
+  const attention = pendingAlerts(app.data.verdicts).some((v) => v.hive_id === hiveId);
   return (
     <Card tone={attention || silent ? "amber" : undefined}>
       <Row>
         <Label bold style={{ flex: 1 }}>
           Nodo de la colmena
         </Label>
-        {silent ? (
-          <Badge label="Sin reportar" tone="amber" />
-        ) : verdict && isLearning(verdict) ? (
-          <Badge label="Aún no juzga" tone="neutral" />
-        ) : verdict ? (
-          <Badge
-            label={attention ? "Por revisar" : isAlert(verdict) ? "Revisada" : "Sonido habitual"}
-            tone={attention ? "amber" : "green"}
-          />
-        ) : null}
+        {status ? <Badge label={status.label} tone={status.tone} /> : null}
       </Row>
       {verdict ? (
         <Label>{verdictSummary(verdict)}</Label>

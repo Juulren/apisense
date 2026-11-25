@@ -18,6 +18,7 @@ import { VerdictTimeline } from "../../components/VerdictTimeline";
 import { SeasonTracker } from "../../components/SeasonTracker";
 import { HiveReadings } from "../../components/HiveReadings";
 import { checkinSummary } from "../../services/Checkin";
+import { latestVerdict } from "../../services/EdgeVerdicts";
 import { removeHive, renameHive } from "../../services/Hives";
 import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
@@ -79,7 +80,7 @@ export default function HiveDetail() {
           <VerdictTimeline key={`timeline-${id}`} hiveId={id} />
           {summary ? (
             <SummaryCard summary={summary} compact />
-          ) : (
+          ) : latestVerdict(app.data.verdicts, id) ? null : (
             <Empty>El diagnóstico aparece solo cuando llegan lecturas.</Empty>
           )}
           <SeasonTracker key={`checkins-${id}`} hiveId={id} cta={false} brief />

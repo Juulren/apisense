@@ -6,7 +6,7 @@ import { useTheme } from "../../components/ui/theme";
 import { useApp } from "../../state/AppProvider";
 import { latestSummary, statusLabel } from "../../state/selectors";
 import { latestVerdict, verdictSummary } from "../../services/EdgeVerdicts";
-import { silentText } from "../../services/NodeStatus";
+import { nodeHiveStatus, silentText } from "../../services/NodeStatus";
 import { useNodeState } from "../../state/useNodeState";
 import { SeasonBrief } from "../../components/SeasonBrief";
 
@@ -28,7 +28,13 @@ export default function HiveList() {
             verdict = latestVerdict(data.verdicts, hive.id),
             warning = summary && summary.overall_status !== "optimal";
           const node = nodes.stateOf(hive.id);
-          const quiet = node.kind === "silent";
+          // The same rule as the hive's tile on the home screen.
+          const status = nodeHiveStatus(
+            data.verdicts,
+            hive.id,
+            node,
+            !summary ? "none" : warning ? "warning" : "ok",
+          );
           const detail = node.kind === "silent"
             ? silentText(node)
             : verdict
@@ -51,7 +57,7 @@ export default function HiveList() {
               style={{ minHeight: 64 }}
             >
               <Card
-                tone={warning || quiet ? "amber" : undefined}
+                tone={(status ? status.tone === "amber" : warning) ? "amber" : undefined}
                 style={{ padding: 16, gap: 6 }}
               >
                 {/* Wraps instead of breaking the code mid-word at large text sizes. */}
@@ -67,8 +73,8 @@ export default function HiveList() {
                     ) : null}
                   </View>
                   <Badge
-                    label={statusLabel(summary?.overall_status)}
-                    tone={warning ? "amber" : summary ? "green" : "neutral"}
+                    label={status?.label ?? statusLabel(summary?.overall_status)}
+                    tone={status?.tone ?? (warning ? "amber" : summary ? "green" : "neutral")}
                   />
                   <Icon name="chevron-right" size={22} color={colors.muted} />
                 </Row>

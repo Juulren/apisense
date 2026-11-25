@@ -15,6 +15,7 @@ import { WeatherCard } from "../components/WeatherCard";
 import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
 import { pendingAlerts } from "../services/EdgeVerdicts";
 import { useNodeState } from "../state/useNodeState";
+import { nodeHiveStatus } from "../services/NodeStatus";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { latestSummary } from "../state/selectors";
@@ -22,8 +23,18 @@ export default function Dashboard() {
   const app = useApp(),
     task = useTask();
   const { data } = app;
-  const statuses = data.hives.map((h) => latestSummary(data.summaries, h.id));
-  const normal = statuses.filter((s) => s?.overall_status === "optimal").length;
+  const nodes = useNodeState();
+  // The same rule as each hive's tile: the node's messages count as well as the phone's readings.
+  const normal = data.hives.filter((h) => {
+    const s = latestSummary(data.summaries, h.id);
+    const node = nodeHiveStatus(
+      data.verdicts,
+      h.id,
+      nodes.stateOf(h.id),
+      !s ? "none" : s.overall_status === "optimal" ? "ok" : "warning",
+    );
+    return node ? node.stable : s?.overall_status === "optimal";
+  }).length;
   const alert = data.hives.find((h) => {
     const s = latestSummary(data.summaries, h.id);
     return (
@@ -35,7 +46,7 @@ export default function Dashboard() {
   const summary = alert ? latestSummary(data.summaries, alert.id) : undefined;
   const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
   const nodeAlerts = pendingAlerts(data.verdicts);
-  const quiet = useNodeState().silent;
+  const quiet = nodes.silent;
   return (
     <AppScreen>
       <View style={{ gap: 5 }}>

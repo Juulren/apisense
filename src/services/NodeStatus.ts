@@ -1,5 +1,11 @@
 import type { EdgeVerdict, Hive, Microphone } from "../db/types";
-import { isAlert, verdictSummary } from "./EdgeVerdicts";
+import {
+  isAlert,
+  isLearning,
+  latestVerdict,
+  pendingAlerts,
+  verdictSummary,
+} from "./EdgeVerdicts";
 
 // The node reports every 10-15 minutes. Three hours of silence is long enough
 // to be a real gap and short enough to act on during the same day.
@@ -65,6 +71,47 @@ export function silentText(state: Extract<NodeState, { kind: "silent" }>) {
 }
 export const staleText =
   "Este teléfono no ha sincronizado en las últimas horas: no se puede saber si el nodo reporta.";
+
+export interface NodeHiveStatus {
+  /** Same words as the hive's node card. */
+  label: string;
+  tone: "green" | "amber" | "neutral";
+  detail: string;
+  /** Counts as "con patrón estable" on the home screen. */
+  stable: boolean;
+}
+
+/**
+ * What a hive's tile should say because of its node, or null to keep what the phone's own readings say.
+ * A pending node alert always wins; a phone warning wins over everything else the node says; phone
+ * readings that are fine are only replaced when the node has gone quiet.
+ */
+export function nodeHiveStatus(
+  verdicts: EdgeVerdict[],
+  hiveId: string,
+  node: NodeState,
+  phone: "none" | "ok" | "warning",
+  now = new Date(),
+): NodeHiveStatus | null {
+  const neutral = (label: string, detail: string): NodeHiveStatus => ({ label, tone: "neutral", detail, stable: false });
+  if (pendingAlerts(verdicts).some((v) => v.hive_id === hiveId))
+    return { label: "Por revisar", tone: "amber", detail: "El nodo reportó un sonido diferente", stable: false };
+  if (phone === "warning") return null;
+  if (node.kind === "silent")
+    return { label: "Sin reportar", tone: "amber", detail: silentText(node), stable: false };
+  if (phone === "ok") return null;
+  if (node.kind === "stale")
+    return neutral("Sin sincronizar", "No se sabe cómo está el nodo ahora");
+  const last = latestVerdict(verdicts, hiveId);
+  if (!last)
+    return node.kind === "waiting" ? neutral("Nodo vinculado", "Esperando su primer mensaje") : null;
+  // Without a linked node nothing watches for silence, so an old message must not speak for the hive.
+  if (node.kind === "none" && now.getTime() - Date.parse(last.recorded_at) > SILENT_AFTER_MS)
+    return null;
+  if (isLearning(last)) return neutral("Aún no juzga", "El nodo aprende o no tiene hora");
+  if (isAlert(last)) return neutral("Revisada", "Alerta del nodo ya revisada");
+  return { label: "Sonido habitual", tone: "green", detail: "Según el último mensaje del nodo", stable: true };
+}
 
 /** Hives whose node has stopped reporting. */
 export function silentHives(
