@@ -37,7 +37,10 @@ struct NodeResult {
 
 class EdgeNode {
  public:
-  explicit EdgeNode(int learnDays = 7, float tzHours = -6.0f) : learnDays_(learnDays), clock_(tzHours) {}
+  // learnStride: while learning, keep every learnStride-th window of each slot. A slot keeps kPerBucket
+  // windows, so a node that hears 18 per slot and day must use 2 for the ring to span all 7 days.
+  explicit EdgeNode(int learnDays = 7, float tzHours = -6.0f, int learnStride = 1)
+      : learnDays_(learnDays), learnStride_(learnStride < 1 ? 1 : learnStride), clock_(tzHours) {}
   EdgeNode(const EdgeNode&) = delete;
   EdgeNode& operator=(const EdgeNode&) = delete;
 
@@ -54,6 +57,7 @@ class EdgeNode {
     learner_.reset();
     meta_ = Meta();
     dayWindows_ = 0;
+    for (int b = 0; b < kHourBuckets; b++) offered_[b] = 0;
     detector_.reset();
   }
 
@@ -69,8 +73,12 @@ class EdgeNode {
         dayWindows_ = 0;
         r.changed = true;
       }
-      learner_.add(window, hour);
-      r.learned = true;
+      if (offered_[bucketOf(hour)]++ % learnStride_ == 0) {
+        learner_.add(window, hour);
+        r.learned = true;
+      }
+      // A counted day ahead of today came from a wrong clock: without this no later day would count.
+      if (day + 1 < meta_.lastCountedDay) meta_.lastCountedDay = day - 1;
       if (++dayWindows_ >= kMinDayWindows && (meta_.daysSeen == 0 || day > meta_.lastCountedDay)) {
         meta_.daysSeen++;
         meta_.lastCountedDay = day;
@@ -114,6 +122,8 @@ class EdgeNode {
 
  private:
   int learnDays_;
+  int learnStride_;
+  uint32_t offered_[kHourBuckets] = {0};
   NodeClock clock_;
   Meta meta_;
   int dayWindows_ = 0;

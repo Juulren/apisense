@@ -57,6 +57,17 @@ Puerta B: características dentro de tolerancia en todas las ventanas de prueba;
 
 4. Puerta C = **puerta de la fase 0 con grabaciones propias:** al menos 7 días, 2 colmenas, ≥ 10 eventos controlados detectados en ≥ 80 %, ≤ 1 falsa alarma por colmena y día, datos perdidos < 1 %. Con un fin de semana de grabaciones no se llega a 10 eventos; hacen falta más días o eventos provocados.
 
+## Firmware del nodo (sin radio)
+
+`firmware/apisense_node` junta todo lo anterior en un solo programa; `apisense_audio/bridge.py` le da la hora por USB, muestra lo que oye y decide, y puede reenviar sus mensajes a `lora-uplink`. Revisado por Opus; correcciones aplicadas:
+- En campo, cada franja de 3 h recibe 18 ventanas al día y guarda 64: durante el aprendizaje se conserva **una de cada dos**, para que la línea base cubra los 7 días y no solo los últimos 3,5.
+- Una hora equivocada (en el futuro) ya no deja el aprendizaje sin terminar; solo se aceptan horas entre 2023 y 2100.
+- Una ventana con más de 1 % de audio perdido (mínimo 500 ms) no se aprende ni se juzga. El umbral de micrófono muerto es −85 dBFS.
+- Cambiar la forma de calcular las características (`FEATURE_VERSION`) borra lo aprendido.
+- El puente se reconecta si se pierde el USB (sin reiniciar la placa) y guarda en memoria los mensajes que no pudo enviar para reintentarlos con su hora original. Si se cierra el puente, esos pendientes se pierden (quedan en el registro).
+- Corrección de un dato anterior: calcular cuesta unos **3,7 ms** por trama de 32 ms (no 16,7 ms, que incluía la espera del puerto USB).
+- **Falta:** reposo profundo y presupuesto de energía, sensores de temperatura y batería, el radio, y una corrida continua larga (al menos 1 h). La reconexión del puente no se ha probado desconectando el cable.
+
 ## Fase D · Enviar a la app y a Supabase
 
 La app y `lora-uplink` ya existen; faltan el radio y la red.

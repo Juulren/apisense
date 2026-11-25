@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import http.client
 import json
 import math
 import os
@@ -69,10 +70,15 @@ def for_status(status: int, alarm: int, score: float, threshold: float, counter:
     return encode(1 if alarm else 0, 0.5 + 0.5 * margin, None, None, counter, flags)
 
 
-def ttn_body(payload: bytes, dev_eui: str, f_cnt: int, session: str = "AXsimulator0001") -> dict:
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def ttn_body(payload: bytes, dev_eui: str, f_cnt: int, session: str = "AXsimulator0001",
+             received_at: str | None = None) -> dict:
     return {
         "end_device_ids": {"dev_eui": dev_eui.upper()},
-        "received_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "received_at": received_at or now_iso(),
         "uplink_message": {
             "f_port": 1,
             "f_cnt": f_cnt,
@@ -173,28 +179,38 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def secure_opener() -> urllib.request.OpenerDirector:
+    return urllib.request.build_opener(_NoRedirect)
+
+
+def post_uplink(opener, url: str, secret: str, payload: bytes, dev_eui: str, f_cnt: int, session: str,
+                received_at: str | None = None) -> tuple[bool, str]:
+    """Post one message as The Things Stack would. Returns (accepted by the server, one-line answer)."""
+    data = json.dumps(ttn_body(payload, dev_eui, f_cnt, session, received_at)).encode()
+    request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", "x-uplink-secret": secret})
+    try:
+        with opener.open(request, timeout=20) as r:
+            return True, f"{r.status} {r.read().decode('utf-8', 'replace')[:200]}"  # "duplicate" = already sent
+    except urllib.error.HTTPError as e:
+        return False, f"{e.code} {e.read().decode('utf-8', 'replace')[:200]}"
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException) as e:
+        return False, f"sin conexión: {getattr(e, 'reason', e)}"
+
+
 def send(url: str, secret: str, dev_eui: str, kind: str, count: int, start: int, session: str) -> int:
     if not url.startswith("https://"):
         print("la dirección debe ser https")
         return 2
-    opener = urllib.request.build_opener(_NoRedirect)
+    opener = secure_opener()
     code = {"usual": 0, "different": 1, "learning": 0}[kind]
     flags = FLAG_NOT_JUDGING if kind == "learning" else 0
     status = 0
     for i in range(count):
         n = start + i
         payload = encode(code, 0.93 if kind != "learning" else 0.0, 27.4, 3.86, n, flags)
-        data = json.dumps(ttn_body(payload, dev_eui, n, session)).encode()
-        request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", "x-uplink-secret": secret})
-        try:
-            with opener.open(request, timeout=20) as r:
-                print(n, r.status, r.read().decode()[:200])  # "duplicate" = that counter was already sent
-        except urllib.error.HTTPError as e:
-            print(n, e.code, e.read().decode()[:200])
-            status = 1
-        except urllib.error.URLError as e:
-            print(n, "sin conexión:", e.reason)
-            status = 1
+        ok, answer = post_uplink(opener, url, secret, payload, dev_eui, n, session)
+        print(n, answer)
+        status = status or (0 if ok else 1)
     return status
 
 
