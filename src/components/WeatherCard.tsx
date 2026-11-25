@@ -15,7 +15,6 @@ import type { Apiary } from "../db/types";
  */
 export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
   const state = useWeather(apiary);
-  const demo = Boolean(useApp().workspace?.demo);
   const app = useApp();
   const task = useTask();
   const [choosing, setChoosing] = useState(false);
@@ -68,14 +67,12 @@ export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
         <View style={{ flex: 1 }}>
           <Label bold>Clima del apiario</Label>
         </View>
-        {demo ? null : (
-          <Button
-            label={choosing ? "Cerrar" : "Cambiar lugar"}
-            variant="ghost"
-            compact
-            onPress={() => setChoosing(!choosing)}
-          />
-        )}
+        <Button
+          label={choosing ? "Cerrar" : "Cambiar lugar"}
+          variant="ghost"
+          compact
+          onPress={() => setChoosing(!choosing)}
+        />
         <Icon name="cloud-queue" />
       </Row>
       {reading ? (
@@ -93,7 +90,6 @@ export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
               ? " · dato guardado, sin actualizar"
               : ""}{" "}
             · {WEATHER_LABEL}
-            {demo ? " · Ubicación ficticia del demo" : ""}
           </Label>
         </>
       ) : (

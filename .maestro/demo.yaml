@@ -11,7 +11,7 @@ name: Demo nativa offline, audio y persistencia
 - assertVisible: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 - takeScreenshot: .artifacts/demo-dashboard
 - tapOn:
@@ -88,7 +88,7 @@ name: Demo nativa offline, audio y persistencia
       text: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 - scrollUntilVisible:
     centerElement: true

@@ -101,11 +101,7 @@ export default function Monitor() {
           <Card>
             <Badge
               label={
-                sample?.source === "simulator"
-                  ? "Simulación"
-                  : sample
-                    ? "Lectura recibida"
-                    : "Esperando lectura"
+                sample ? "Lectura recibida" : "Esperando lectura"
               }
               tone="blue"
             />

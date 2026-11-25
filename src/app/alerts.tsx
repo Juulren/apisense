@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { View } from "react-native";
 import { router } from "expo-router";
 import { AppScreen, Empty } from "../components/AppScreen";
 import {
@@ -10,7 +9,6 @@ import {
   Label,
   Row,
   Section,
-  Segmented,
 } from "../components/ui";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
@@ -20,7 +18,6 @@ import {
   pendingAlerts,
   reviewLabels,
   reviewVerdict,
-  simulateVerdict,
   verdictSummary,
 } from "../services/EdgeVerdicts";
 import type { EdgeVerdict, VerdictReview } from "../db/types";
@@ -36,8 +33,6 @@ export default function Alerts() {
   const app = useApp(),
     task = useTask();
   const [notes, setNotes] = useState<Record<string, string>>({});
-  const [target, setTarget] = useState("");
-  const demo = Boolean(app.workspace?.demo);
   const hiveCode = (id: string) =>
     app.data.hives.find((h) => h.id === id)?.code ?? "Colmena";
   const pending = pendingAlerts(app.data.verdicts);
@@ -45,8 +40,6 @@ export default function Alerts() {
     .filter((v) => isAlert(v) && v.review !== null)
     .sort((a, b) => (b.reviewed_at ?? "").localeCompare(a.reviewed_at ?? ""))
     .slice(0, 10);
-  const hive =
-    app.data.hives.find((h) => h.id === target) ?? app.data.hives[0];
   const review = (v: EdgeVerdict, decision: VerdictReview) =>
     task.run(async () => {
       if (!app.workspace) return;
@@ -54,12 +47,6 @@ export default function Alerts() {
       setNotes((n) => ({ ...n, [v.id]: "" }));
       await app.refresh();
     }, `Marcada: ${reviewLabels[decision].toLowerCase()}`);
-  const simulate = (kind: "usual" | "different") =>
-    task.run(async () => {
-      if (!app.workspace || !hive) throw new Error("Crea primero una colmena");
-      await simulateVerdict(app.workspace.repo, hive.id, kind);
-      await app.refresh();
-    }, "Veredicto simulado guardado");
   return (
     <AppScreen
       title="Alertas del nodo"
@@ -147,34 +134,6 @@ export default function Alerts() {
               {v.review_note ? <Label>{v.review_note}</Label> : null}
             </Card>
           ))}
-        </Section>
-      ) : null}
-      {demo ? (
-        <Section
-          title="Probar sin hardware (demo)"
-          caption="Genera veredictos simulados con el mismo formato que envía el nodo"
-        >
-          <Card>
-            <Segmented
-              value={hive?.id ?? ""}
-              onChange={setTarget}
-              options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
-            />
-            <View style={{ gap: 8 }}>
-              <Button
-                label="Simular sonido diferente"
-                icon="notifications-active"
-                loading={task.busy}
-                onPress={() => simulate("different")}
-              />
-              <Button
-                label="Simular sonido habitual"
-                variant="secondary"
-                disabled={task.busy}
-                onPress={() => simulate("usual")}
-              />
-            </View>
-          </Card>
         </Section>
       ) : null}
       {task.message ? (

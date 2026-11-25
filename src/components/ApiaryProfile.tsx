@@ -42,13 +42,12 @@ function Form({ apiary }: { apiary: Apiary }) {
     [editing, setEditing] = useState(false),
     [query, setQuery] = useState(""),
     [places, setPlaces] = useState<Place[]>([]);
-  const demo = Boolean(app.workspace?.demo),
-    offline = app.data.settings.offline === "1";
+  const offline = app.data.settings.offline === "1";
   const climate = useClimate(apiary);
   const contexts = climate?.reading
     ? monthContexts(climate.reading.months)
     : null;
-  const canSearch = !demo && !offline;
+  const canSearch = !offline;
   useEffect(() => {
     setPlaces([]);
     if (!canSearch || query.trim().length < MIN_PLACE_QUERY) return;
@@ -119,9 +118,7 @@ function Form({ apiary }: { apiary: Apiary }) {
       />
       {!canSearch ? (
         <Label muted size={12}>
-          {demo
-            ? "La búsqueda de lugares no está disponible en el demo."
-            : "La búsqueda necesita conexión: desactiva el modo sin conexión."}
+          La búsqueda necesita conexión: desactiva el modo sin conexión.
         </Label>
       ) : (
         <Label muted size={12}>
@@ -238,11 +235,7 @@ function Form({ apiary }: { apiary: Apiary }) {
       </Label>
       <Toggle
         label="Mostrar el clima del apiario"
-        caption={
-          demo
-            ? "En el demo solo consulta la ubicación ficticia del demo."
-            : "Envía a Open-Meteo la ubicación redondeada (~1 km) para pedir el clima."
-        }
+        caption="Envía a Open-Meteo la ubicación redondeada (~1 km) para pedir el clima."
         value={weather}
         onChange={(value) => setWeather(value)}
       />

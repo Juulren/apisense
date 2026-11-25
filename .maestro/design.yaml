@@ -40,7 +40,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
       text: "Explorar demo local"
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 # The workspace restores its own preference. Set it explicitly after loading.
 - openLink: apisense:///ui-catalog

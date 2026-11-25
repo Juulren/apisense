@@ -7,7 +7,7 @@ name: Notas largas, observaciones anteriores y lectura guardada
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:

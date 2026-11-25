@@ -15,7 +15,7 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
     );
   if (!workspace) return <Redirect href="/login" />;
   const status = workspace.demo
-    ? "Demo · local"
+    ? "Local"
     : syncState.status === "syncing"
       ? "Sincronizando"
       : syncState.status === "error"

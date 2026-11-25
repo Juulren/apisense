@@ -57,9 +57,6 @@ export default function Dashboard() {
           onPress={() => router.push("/inspection")}
         />
       ) : null}
-      {app.workspace?.demo ? (
-        <Badge label="Datos de demostración · Sin envío a nube" tone="blue" />
-      ) : null}
       {nodeAlerts.length ? (
         <Card tone="amber">
           <Row>

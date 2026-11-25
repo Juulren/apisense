@@ -6,7 +6,7 @@ name: Observaciones y lecturas por colmena
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:
@@ -56,7 +56,7 @@ name: Observaciones y lecturas por colmena
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Datos de demostración · Sin envío a nube"
+    visible: "Anotar observación"
     timeout: 60000
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
 - scrollUntilVisible:

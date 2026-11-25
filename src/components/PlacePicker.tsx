@@ -25,9 +25,7 @@ export function PlacePicker({
     task = useTask();
   const [query, setQuery] = useState(""),
     [places, setPlaces] = useState<Place[] | null>(null);
-  const demo = Boolean(app.workspace?.demo),
-    offline = app.data.settings.offline === "1";
-  const canSearch = !demo && !offline;
+  const canSearch = app.data.settings.offline !== "1";
   useEffect(() => {
     setPlaces(null);
     if (!canSearch || query.trim().length < MIN_PLACE_QUERY) return;
@@ -42,12 +40,6 @@ export function PlacePicker({
       clearTimeout(timer);
     };
   }, [query, canSearch]);
-  if (demo)
-    return (
-      <Label muted size={12}>
-        En la demo el clima usa una ubicación ficticia.
-      </Label>
-    );
   const pick = (place: Place) =>
     task.run(async () => {
       if (!app.workspace) return;
