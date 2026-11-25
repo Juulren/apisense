@@ -20,13 +20,41 @@ export const EDGE_PAYLOAD_BYTES = 8;
 export const TEMPERATURE_UNKNOWN = 0x8000;
 export const BATTERY_UNKNOWN = 0xff;
 
-/** Never says why a sound is different: that needs an inspection. */
-export const edgeClassMaps: Record<number, Record<number, string>> = {
+export interface EdgeClass {
+  label: string;
+  /** Asks the beekeeper to look: shown as an alert until someone reviews it. */
+  alert: boolean;
+}
+
+/**
+ * The categories a node can report, by class-map version. Never says why a sound is different: that needs
+ * an inspection. To add one, follow docs/AMPLIAR_CATEGORIAS.md (a table entry is not enough). Code 0
+ * means "usual sound" in every version.
+ */
+export const edgeClassMaps: Record<number, Record<number, EdgeClass>> = {
   1: {
-    0: "Sonido habitual",
-    1: "Sonido diferente al habitual",
+    0: { label: "Sonido habitual", alert: false },
+    1: { label: "Sonido diferente al habitual", alert: true },
   },
 };
+
+/** A code this build does not know raises an alert: better to look than to hide something new. */
+export function edgeClassAlerts(mapVersion: number, code: number) {
+  return code !== 0 && (edgeClassMaps[mapVersion]?.[code]?.alert ?? true);
+}
+
+/**
+ * SQL condition for "this row does not raise an alert", built from the table above (only numbers go in).
+ * It does not look at the "not judging" flag.
+ */
+export function quietClassSql() {
+  const quiet = Object.entries(edgeClassMaps).flatMap(([version, codes]) =>
+    Object.entries(codes)
+      .filter(([code, c]) => Number(code) !== 0 && !c.alert)
+      .map(([code]) => ` OR (class_map_version = ${Number(version)} AND class_code = ${Number(code)})`),
+  );
+  return `(class_code = 0${quiet.join("")})`;
+}
 
 export type EdgePayloadErrorCode =
   | "length"
@@ -176,7 +204,7 @@ export function base64FromBytes(bytes: Uint8Array) {
 
 export function edgeClassLabel(mapVersion: number, code: number) {
   return (
-    edgeClassMaps[mapVersion]?.[code] ??
+    edgeClassMaps[mapVersion]?.[code]?.label ??
     `Código ${code} (mapa v${mapVersion}, sin descripción en esta versión)`
   );
 }

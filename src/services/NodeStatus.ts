@@ -4,6 +4,7 @@ import {
   isLearning,
   latestVerdict,
   pendingAlerts,
+  verdictLabel,
   verdictSummary,
 } from "./EdgeVerdicts";
 
@@ -106,6 +107,8 @@ export function nodeHiveStatus(
     return null;
   if (isLearning(last)) return neutral("Aún no juzga", "El nodo aprende o no tiene hora");
   if (isAlert(last)) return neutral("Revisada", "Alerta del nodo ya revisada");
+  // A category that asks for nothing is still not the usual sound: say its own name, without calling it stable.
+  if (last.class_code !== 0) return neutral(verdictLabel(last), "Según el último mensaje del nodo");
   return { label: "Sonido habitual", tone: "green", detail: "Según el último mensaje del nodo", stable: true };
 }
 

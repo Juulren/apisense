@@ -17,6 +17,7 @@ import {
   type SqlValue,
   type Table,
 } from "./types";
+import { quietClassSql } from "../../supabase/functions/_shared/edgePayload";
 const metadata = [
   "id",
   "updated_at",
@@ -148,11 +149,12 @@ export class Repository {
    * never hide a pending alert or a quiet hive's last message.
    */
   async recentVerdicts(since: string, limit = 500) {
+    const alerts = `NOT ${quietClassSql()}`;
     return this.exclusive(() =>
       this.sql.all<EntityMap["edge_verdicts"]>(
         `SELECT * FROM edge_verdicts WHERE deleted_at IS NULL AND (
-            (class_code <> 0 AND review IS NULL)
-            OR (class_code <> 0 AND recorded_at >= ?)
+            (${alerts} AND review IS NULL)
+            OR (${alerts} AND recorded_at >= ?)
             OR id IN (SELECT id FROM (
                  SELECT id, ROW_NUMBER() OVER (PARTITION BY hive_id ORDER BY recorded_at DESC, id DESC) AS rn
                  FROM edge_verdicts WHERE deleted_at IS NULL) WHERE rn = 1)
@@ -173,7 +175,7 @@ export class Repository {
         // total and different count only messages where the node judged; flag 8 = still learning.
         `SELECT hive_id, date(recorded_at, ?) AS day,
                 SUM(CASE WHEN (flags & 8) = 0 THEN 1 ELSE 0 END) AS total,
-                SUM(CASE WHEN (flags & 8) = 0 AND class_code <> 0 THEN 1 ELSE 0 END) AS different,
+                SUM(CASE WHEN (flags & 8) = 0 AND NOT ${quietClassSql()} THEN 1 ELSE 0 END) AS different,
                 SUM(CASE WHEN (flags & 8) <> 0 THEN 1 ELSE 0 END) AS learning
            FROM edge_verdicts
           WHERE deleted_at IS NULL AND source = 'lora' AND recorded_at >= ?

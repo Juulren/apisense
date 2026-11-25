@@ -99,11 +99,13 @@ describe("what the app says about a verdict", () => {
       "falla del micrófono",
       "batería baja",
     ]);
-    expect(isAlert({ class_code: 0, flags: 0 })).toBe(false);
-    expect(isAlert({ class_code: 1, flags: 0 })).toBe(true);
-    expect(isAlert({ class_code: 9, flags: 4 })).toBe(true);
+    expect(isAlert({ class_map_version: 1, class_code: 0, flags: 0 })).toBe(false);
+    expect(isAlert({ class_map_version: 1, class_code: 1, flags: 0 })).toBe(true);
+    // A category this build does not know raises an alert; "usual" stays quiet in any map version.
+    expect(isAlert({ class_map_version: 1, class_code: 9, flags: 4 })).toBe(true);
+    expect(isAlert({ class_map_version: 7, class_code: 0, flags: 0 })).toBe(false);
     // A node that is still learning never raises an alert and does not claim a "usual sound".
-    expect(isAlert({ class_code: 1, flags: 8 })).toBe(false);
+    expect(isAlert({ class_map_version: 1, class_code: 1, flags: 8 })).toBe(false);
   });
   it("keeps only unreviewed alerts, newest first, and finds the latest per hive", async () => {
     const { repo, verdict, hive, other } = await setup();

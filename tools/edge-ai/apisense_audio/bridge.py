@@ -89,10 +89,11 @@ def decode(message: bytes) -> dict:
 
 
 def describe(info: dict) -> str:
+    names = {0: "sonido habitual", 1: "sonido DIFERENTE"}  # class map 1; see docs/AMPLIAR_CATEGORIAS.md
     if info["not_judging"]:
         text = "aún no juzga"
     else:
-        text = "sonido DIFERENTE" if info["class_code"] else "sonido habitual"
+        text = names.get(info["class_code"], f"categoría {info['class_code']}")
     if info["mic_fault"]:
         text += " · falla del micrófono"
     return text

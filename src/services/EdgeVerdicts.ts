@@ -2,6 +2,7 @@ import type { Repository } from "../db/Repository";
 import type { EdgeVerdict, VerdictReview } from "../db/types";
 import {
   decodeEdgePayload,
+  edgeClassAlerts,
   edgeClassLabel,
   encodeEdgePayload,
 } from "../../supabase/functions/_shared/edgePayload";
@@ -21,8 +22,8 @@ const DAY = 86_400_000;
 /** Flag 8: the node is still learning the hive's usual sound, or has no time yet. */
 export const isLearning = (v: Pick<EdgeVerdict, "flags">) => (v.flags & 8) !== 0;
 /** A node that is not judging yet never raises an alert, whatever its class code says. */
-export const isAlert = (v: Pick<EdgeVerdict, "class_code" | "flags">) =>
-  !isLearning(v) && v.class_code !== 0;
+export const isAlert = (v: Pick<EdgeVerdict, "class_map_version" | "class_code" | "flags">) =>
+  !isLearning(v) && edgeClassAlerts(v.class_map_version, v.class_code);
 export const verdictLabel = (v: EdgeVerdict) =>
   isLearning(v)
     ? "Aún no juzga (aprendiendo el sonido habitual o sin hora)"

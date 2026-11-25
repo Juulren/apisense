@@ -18,6 +18,8 @@
 namespace apisense {
 
 constexpr size_t kPayloadBytes = 8;
+// Categories of class map 1. New ones go here and in edgeClassMaps (see docs/AMPLIAR_CATEGORIAS.md).
+constexpr uint8_t kClassUsual = 0, kClassDifferent = 1;
 constexpr uint8_t kFlagSdFull = 1, kFlagMicFault = 2, kFlagLowBattery = 4, kFlagNotJudging = 8;
 
 inline uint8_t crc8(const uint8_t* p, size_t n) {
@@ -72,7 +74,7 @@ inline UplinkInput uplinkFor(const NodeResult& r, float threshold, uint8_t count
     in.flags |= kFlagNotJudging;
     return in;
   }
-  in.classCode = r.alarm ? 1 : 0;
+  in.classCode = r.alarm ? kClassDifferent : kClassUsual;
   float margin = threshold > 0.0f ? fabsf(r.score - threshold) / threshold : 0.0f;
   if (margin > 1.0f) margin = 1.0f;
   in.confidence = 0.5f + 0.5f * margin;

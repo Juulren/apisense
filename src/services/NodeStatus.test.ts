@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EdgeVerdict, Hive, Microphone } from "../db/types";
+import { edgeClassMaps, quietClassSql } from "../../supabase/functions/_shared/edgePayload";
+import { isAlert } from "./EdgeVerdicts";
 import {
   SILENT_AFTER_MS,
   dayLabel,
@@ -22,6 +24,7 @@ const verdict = (extra: Partial<EdgeVerdict> = {}): EdgeVerdict =>
     hive_id: "h1",
     recorded_at: ago(H),
     source: "lora",
+    class_map_version: 1,
     class_code: 0,
     confidence: 0.9,
     flags: 0,
@@ -158,6 +161,19 @@ describe("what a hive's tile says because of its node", () => {
   });
   it("does not call a reviewed alert stable, nor paint it green", () => {
     expect(status([verdict({ class_code: 1, review: "seen" })], ok)).toMatchObject({ label: "Revisada", tone: "neutral", stable: false });
+  });
+  it("has room for a new category that asks for nothing: no alert, its own name, not stable", () => {
+    // What adding an entry to the table does, without shipping any category yet.
+    edgeClassMaps[15] = { 0: { label: "Sonido habitual", alert: false }, 2: { label: "Categoría de prueba", alert: false } };
+    try {
+      const quiet = verdict({ class_map_version: 15, class_code: 2 });
+      expect(isAlert(quiet)).toBe(false);
+      expect(status([quiet], ok)).toMatchObject({ label: "Categoría de prueba", tone: "neutral", stable: false });
+      expect(quietClassSql()).toBe("(class_code = 0 OR (class_map_version = 15 AND class_code = 2))");
+    } finally {
+      delete edgeClassMaps[15];
+    }
+    expect(quietClassSql()).toBe("(class_code = 0)");
   });
   it("never reads a learning node as a usual sound", () => {
     expect(status([verdict({ flags: 8 })], ok)).toMatchObject({ label: "Aún no juzga", tone: "neutral", stable: false });
