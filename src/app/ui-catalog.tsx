@@ -38,12 +38,6 @@ export default function Catalog() {
             onPress={() => setNotice("Acción de campo seleccionada")}
           />
           <Button
-            label="Escuchar zumbido"
-            variant="audio"
-            icon="volume-up"
-            onPress={() => setNotice("Ejemplo de botón de audio")}
-          />
-          <Button
             label="Sincronizar"
             variant="sync"
             icon="cloud-upload"

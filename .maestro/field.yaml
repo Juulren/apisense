@@ -1,5 +1,5 @@
 appId: com.apisense.app
-name: App de campo Android con cuentas Supabase, audio privado y sincronización
+name: App de campo Android con cuentas Supabase y sincronización
 ---
 - launchApp
 - scrollUntilVisible:
@@ -34,19 +34,6 @@ name: App de campo Android con cuentas Supabase, audio privado y sincronización
       text: "Abrir QA-CAMPO-15"
     timeout: 60000
 - takeScreenshot: .artifacts/field-account-a
-- tapOn:
-    id: "nav-Acústica"
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "Escuchar zumbido"
-- tapOn: "Escuchar zumbido"
-- extendedWaitUntil:
-    visible: "Audio en reproducción"
-    timeout: 15000
-- tapOn: "Detener audio"
-- assertVisible: "Audio detenido"
-- takeScreenshot: .artifacts/field-private-audio
 - tapOn:
     id: "nav-Ajustes"
 - scrollUntilVisible:

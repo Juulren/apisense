@@ -82,24 +82,20 @@ export interface NodeHiveStatus {
 }
 
 /**
- * What a hive's tile should say because of its node, or null to keep what the phone's own readings say.
- * A pending node alert always wins; a phone warning wins over everything else the node says; phone
- * readings that are fine are only replaced when the node has gone quiet.
+ * What a hive's tile says about its node, or null when there is nothing to say (no linked node and no
+ * recent message). A pending node alert always wins.
  */
 export function nodeHiveStatus(
   verdicts: EdgeVerdict[],
   hiveId: string,
   node: NodeState,
-  phone: "none" | "ok" | "warning",
   now = new Date(),
 ): NodeHiveStatus | null {
   const neutral = (label: string, detail: string): NodeHiveStatus => ({ label, tone: "neutral", detail, stable: false });
   if (pendingAlerts(verdicts).some((v) => v.hive_id === hiveId))
     return { label: "Por revisar", tone: "amber", detail: "El nodo reportó un sonido diferente", stable: false };
-  if (phone === "warning") return null;
   if (node.kind === "silent")
     return { label: "Sin reportar", tone: "amber", detail: silentText(node), stable: false };
-  if (phone === "ok") return null;
   if (node.kind === "stale")
     return neutral("Sin sincronizar", "No se sabe cómo está el nodo ahora");
   const last = latestVerdict(verdicts, hiveId);

@@ -144,8 +144,8 @@ describe("verdict timeline", () => {
 describe("what a hive's tile says because of its node", () => {
   const ok = { kind: "ok", lastAt: ago(H) } as const;
   const silent = { kind: "silent", lastAt: ago(5 * H), hours: 5 } as const;
-  const status = (v: EdgeVerdict[], node: Parameters<typeof nodeHiveStatus>[2], phone: "none" | "ok" | "warning" = "none") =>
-    nodeHiveStatus(v, "h1", node, phone, NOW);
+  const status = (v: EdgeVerdict[], node: Parameters<typeof nodeHiveStatus>[2]) =>
+    nodeHiveStatus(v, "h1", node, NOW);
 
   it("shows the node's usual sound and counts it as stable", () => {
     expect(status([verdict()], ok)).toMatchObject({ label: "Sonido habitual", tone: "green", stable: true });
@@ -153,7 +153,7 @@ describe("what a hive's tile says because of its node", () => {
   it("puts an unreviewed alert first, even with a newer usual message or a silent node", () => {
     const old = verdict({ class_code: 1, recorded_at: ago(9 * H) });
     for (const node of [ok, silent]) {
-      expect(status([verdict(), old], node, "warning")).toMatchObject({ label: "Por revisar", tone: "amber", stable: false });
+      expect(status([verdict(), old], node)).toMatchObject({ label: "Por revisar", tone: "amber", stable: false });
     }
   });
   it("does not call a reviewed alert stable, nor paint it green", () => {
@@ -164,7 +164,6 @@ describe("what a hive's tile says because of its node", () => {
   });
   it("says when the node went quiet or this phone cannot tell, instead of the last usual sound", () => {
     expect(status([verdict()], silent)).toMatchObject({ label: "Sin reportar", tone: "amber", stable: false });
-    expect(status([verdict()], silent, "ok")).toMatchObject({ label: "Sin reportar" });
     expect(status([verdict()], { kind: "stale" })).toMatchObject({ label: "Sin sincronizar", tone: "neutral", stable: false });
   });
   it("does not let an old message speak for a hive without a linked node", () => {
@@ -174,10 +173,8 @@ describe("what a hive's tile says because of its node", () => {
   it("waits for a linked node's first message", () => {
     expect(status([], { kind: "waiting" })).toMatchObject({ label: "Nodo vinculado", stable: false });
   });
-  it("leaves the phone's readings alone when the node adds nothing", () => {
+  it("says nothing for a hive without a node or messages", () => {
     expect(status([], { kind: "none" })).toBeNull();
-    expect(status([verdict()], ok, "ok")).toBeNull();
-    expect(status([verdict()], ok, "warning")).toBeNull();
     // Another hive's alert is not this hive's.
     expect(status([verdict({ hive_id: "h2", class_code: 1 })], { kind: "none" })).toBeNull();
   });

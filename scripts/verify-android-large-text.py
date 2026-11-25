@@ -33,7 +33,7 @@ for label in ["Apisense", "Apiario"]:
 
 controls = []
 selected = 0
-for label in ["Inicio", "Acústica", "Diagnóstico", "Ajustes"]:
+for label in ["Inicio", "Diagnóstico", "Ajustes"]:
     node = unique("resource-id", f"nav-{label}")
     if node.get("content-desc") != label or node.get("clickable") != "true" or node.get("enabled") != "true" or node.get("focusable") != "true":
         raise SystemExit(f"Native navigation label/action missing: {label}")

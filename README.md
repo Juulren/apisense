@@ -12,7 +12,7 @@ La implementación está consolidada en **`main`**: incluye la base del [PR #21]
 
 El trabajo se organiza en el [tablero de Apisense](https://github.com/users/Juulren/projects/2): **Pendiente → En curso → En revisión → Terminado**. Cada tarea parte de `main`, usa una rama temporal y se integra tras revisión y checks. Consulta [cómo colaborar](CONTRIBUTING.md) y el [plan de implementación](IMPLEMENTATION_PLAN.md) para ver los avances y pendientes.
 
-La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, monitor acústico, historial, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
+La app incluye onboarding y acceso, dashboard, lista y mapa de colmenas, detalle y bitácora, estado del nodo de la colmena y sus alertas, vinculación de dispositivos, inspecciones manuales y ajustes. El modo demo contiene ocho colmenas y datos sintéticos para recorrer estos flujos sin servicios externos.
 
 Los 11 IDs originales de Stitch están identificados en el [mapa de diseño](DESIGN_MAP.md), con [contexto del producto](docs/DESIGN_CONTEXT.md) y [procedencia reproducible](docs/STITCH_PROVENANCE.md). Corresponden a cinco familias claro/oscuro y una spec; varias etiquetas del brief inicial eran incorrectas. La aceptación visual de las vistas adaptadas sigue en el [Issue #25](https://github.com/Juulren/apisense/issues/25). Con Python 3 puedes verificar las referencias mediante `python scripts/verify_stitch_references.py`; Python no se necesita para ejecutar la app.
 

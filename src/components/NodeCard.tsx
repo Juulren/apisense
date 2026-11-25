@@ -21,7 +21,7 @@ export function NodeCard({ hiveId }: { hiveId: string }) {
   const silent = state.kind === "silent" ? state : null;
   const warnings = verdict ? nodeWarnings(verdict) : [];
   // The same rule as the hive's tile, so the two never disagree.
-  const status = nodeHiveStatus(app.data.verdicts, hiveId, state, "none");
+  const status = nodeHiveStatus(app.data.verdicts, hiveId, state);
   const attention = pendingAlerts(app.data.verdicts).some((v) => v.hive_id === hiveId);
   return (
     <Card tone={attention || silent ? "amber" : undefined}>

@@ -4,7 +4,6 @@ import { AppScreen, Empty } from "../../components/AppScreen";
 import { Badge, Button, Card, Icon, Label, Row } from "../../components/ui";
 import { useTheme } from "../../components/ui/theme";
 import { useApp } from "../../state/AppProvider";
-import { latestSummary, statusLabel } from "../../state/selectors";
 import { latestVerdict, verdictSummary } from "../../services/EdgeVerdicts";
 import { nodeHiveStatus, silentText } from "../../services/NodeStatus";
 import { useNodeState } from "../../state/useNodeState";
@@ -24,24 +23,17 @@ export default function HiveList() {
       <SeasonBrief />
       {data.hives.length ? (
         data.hives.map((hive) => {
-          const summary = latestSummary(data.summaries, hive.id),
-            verdict = latestVerdict(data.verdicts, hive.id),
-            warning = summary && summary.overall_status !== "optimal";
+          const verdict = latestVerdict(data.verdicts, hive.id);
           const node = nodes.stateOf(hive.id);
           // The same rule as the hive's tile on the home screen.
-          const status = nodeHiveStatus(
-            data.verdicts,
-            hive.id,
-            node,
-            !summary ? "none" : warning ? "warning" : "ok",
-          );
-          const detail = node.kind === "silent"
-            ? silentText(node)
-            : verdict
-            ? verdictSummary(verdict)
-            : summary
-              ? "Resumen acústico disponible"
-              : "Aún sin lecturas";
+          const status = nodeHiveStatus(data.verdicts, hive.id, node);
+          // The line under the badge must not contradict it: a message is shown only when the badge speaks for it.
+          const detail =
+            node.kind === "silent"
+              ? silentText(node)
+              : status && verdict
+                ? verdictSummary(verdict)
+                : (status?.detail ?? "Sin nodo vinculado");
           const apiary = several
             ? data.apiaries.find((a) => a.id === hive.apiary_id)?.name
             : undefined;
@@ -57,7 +49,7 @@ export default function HiveList() {
               style={{ minHeight: 64 }}
             >
               <Card
-                tone={(status ? status.tone === "amber" : warning) ? "amber" : undefined}
+                tone={status?.tone === "amber" ? "amber" : undefined}
                 style={{ padding: 16, gap: 6 }}
               >
                 {/* Wraps instead of breaking the code mid-word at large text sizes. */}
@@ -73,8 +65,8 @@ export default function HiveList() {
                     ) : null}
                   </View>
                   <Badge
-                    label={status?.label ?? statusLabel(summary?.overall_status)}
-                    tone={status?.tone ?? (warning ? "amber" : summary ? "green" : "neutral")}
+                    label={status?.label ?? "Sin nodo"}
+                    tone={status?.tone ?? "neutral"}
                   />
                   <Icon name="chevron-right" size={22} color={colors.muted} />
                 </Row>
@@ -93,12 +85,6 @@ export default function HiveList() {
         variant="secondary"
         icon="add"
         onPress={() => router.push("/hives")}
-      />
-      <Button
-        label="Historial de resúmenes"
-        variant="ghost"
-        icon="history"
-        onPress={() => router.push("/history")}
       />
     </AppScreen>
   );

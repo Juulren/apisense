@@ -54,23 +54,3 @@ name: Notas largas, observaciones anteriores y lectura guardada
     timeout: 60000
     element: { text: ".*FINAL NOTA LARGA QA.*" }
 - takeScreenshot: .artifacts/design/extended/05-older-long-note
-# The field simulator was removed from Acústica; the demo seeds one reading for this hive.
-- openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
-- scrollUntilVisible:
-    centerElement: true
-    element: { text: "Ver lecturas guardadas.*" }
-- tapOn: "Ver lecturas guardadas.*"
-- scrollUntilVisible:
-    centerElement: true
-    element: { text: "Abrir lectura 1" }
-- takeScreenshot: .artifacts/design/extended/06-reading-list
-- tapOn: "Abrir lectura 1"
-- assertVisible: "Lectura seleccionada del historial"
-- scrollUntilVisible:
-    centerElement: true
-    element: { text: "Escuchar zumbido" }
-- tapOn: "Escuchar zumbido"
-- assertVisible: "Audio en reproducción"
-- takeScreenshot: .artifacts/design/extended/07-oldest-reading-playing
-- tapOn: "Detener audio"
-- assertVisible: "Audio detenido"

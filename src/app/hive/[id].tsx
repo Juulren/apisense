@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
@@ -12,27 +12,19 @@ import {
   Section,
 } from "../../components/ui";
 import { Fold } from "../../components/ui/Fold";
-import { SummaryCard } from "../../components/SummaryCard";
 import { NodeCard } from "../../components/NodeCard";
 import { VerdictTimeline } from "../../components/VerdictTimeline";
 import { SeasonTracker } from "../../components/SeasonTracker";
-import { HiveReadings } from "../../components/HiveReadings";
 import { checkinSummary } from "../../services/Checkin";
-import { latestVerdict } from "../../services/EdgeVerdicts";
 import { removeHive, renameHive } from "../../services/Hives";
 import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
-import {
-  dateLabel,
-  latestSummary,
-  parseTags,
-} from "../../state/selectors";
+import { dateLabel, parseTags } from "../../state/selectors";
 export default function HiveDetail() {
   const { id } = useLocalSearchParams<{ id: string }>(),
     app = useApp(),
     task = useTask();
-  const hive = app.data.hives.find((h) => h.id === id),
-    summary = latestSummary(app.data.summaries, id);
+  const hive = app.data.hives.find((h) => h.id === id);
   const [inspectionLimit, setInspectionLimit] = useState(3);
   const [draft, setDraft] = useState<string | null>(null);
   const confirmRemove = () => {
@@ -78,11 +70,6 @@ export default function HiveDetail() {
           />
           <NodeCard key={`node-${id}`} hiveId={id} />
           <VerdictTimeline key={`timeline-${id}`} hiveId={id} />
-          {summary ? (
-            <SummaryCard summary={summary} compact />
-          ) : latestVerdict(app.data.verdicts, id) ? null : (
-            <Empty>El diagnóstico aparece solo cuando llegan lecturas.</Empty>
-          )}
           <SeasonTracker key={`checkins-${id}`} hiveId={id} cta={false} brief />
           <Section
             title="Bitácora de campo"
@@ -127,27 +114,14 @@ export default function HiveDetail() {
               />
             ) : null}
           </Section>
-          <HiveReadings key={`readings-${id}`} hiveId={id} />
-          <Row>
-            <View style={{ flex: 1 }}>
-              <Button
-                label="Monitor acústico"
-                variant="audio"
-                onPress={() =>
-                  router.push({ pathname: "/monitor", params: { hiveId: id } })
-                }
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Button
-                label="Ver historial"
-                variant="secondary"
-                onPress={() =>
-                  router.push({ pathname: "/history", params: { hiveId: id } })
-                }
-              />
-            </View>
-          </Row>
+          <Button
+            label="Vincular nodo de la colmena"
+            icon="link"
+            variant="secondary"
+            onPress={() =>
+              router.push({ pathname: "/pairing", params: { hiveId: id } })
+            }
+          />
           <Fold title="Administrar colmena" testID="fold-admin">
             <Card>
               <Field

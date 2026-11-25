@@ -1,5 +1,5 @@
 appId: com.apisense.demo
-name: Demo nativa offline, audio y persistencia
+name: Demo nativa offline y persistencia
 ---
 # The platform scripts install/reset the demo before this flow. On iOS,
 # Maestro clearState reinstalls a copy and loses the simulator signature.
@@ -14,20 +14,6 @@ name: Demo nativa offline, audio y persistencia
     visible: "Anotar observación"
     timeout: 60000
 - takeScreenshot: .artifacts/demo-dashboard
-- tapOn:
-    id: "nav-Acústica"
-- assertVisible: "Monitoreo acústico"
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "Audio detenido"
-- tapOn: "Escuchar zumbido"
-- extendedWaitUntil:
-    visible: "Audio en reproducción"
-    timeout: 15000
-- tapOn: "Detener audio"
-- assertVisible: "Audio detenido"
-- takeScreenshot: .artifacts/demo-audio
 - tapOn:
     id: "nav-Inicio"
 - scrollUntilVisible:

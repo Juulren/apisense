@@ -4,13 +4,11 @@ import { AppScreen } from "../components/AppScreen";
 import {
   Button,
   Card,
-  Field,
   Label,
   Segmented,
   Section,
   Toggle,
 } from "../components/ui";
-import { Fold } from "../components/ui/Fold";
 import { ApiaryProfile } from "../components/ApiaryProfile";
 import { ProfileSection } from "../components/ProfileSection";
 import { useTheme } from "../components/ui/theme";
@@ -21,22 +19,9 @@ export default function Settings() {
   const app = useApp(),
     task = useTask(),
     theme = useTheme();
-  const [minutes, setMinutes] = useState(""),
-    [apiaryId, setApiaryId] = useState("");
+  const [apiaryId, setApiaryId] = useState("");
   const apiary =
     app.data.apiaries.find((a) => a.id === apiaryId) ?? app.data.apiaries[0];
-  const interval = () =>
-    task.run(async () => {
-      if (!apiary || !app.workspace) throw new Error("Crea primero un apiario");
-      const value = Number(minutes);
-      if (!Number.isInteger(value) || value < 1 || value > 10080)
-        throw new Error("Usa un número entero de 1 a 10080 minutos");
-      await app.workspace.repo.save("apiaries", {
-        ...apiary,
-        check_interval_minutes: value,
-      });
-      await app.refresh();
-    }, "Intervalo guardado localmente");
   return (
     <AppScreen
       title="Ajustes y configuración"
@@ -77,48 +62,6 @@ export default function Settings() {
         ) : null}
         <ApiaryProfile apiary={apiary} />
       </Section>
-      <Fold title="Resúmenes y avisos" testID="fold-summaries">
-        <Card>
-          {app.data.apiaries.length > 1 ? (
-            <Segmented
-              value={apiary?.id ?? ""}
-              onChange={setApiaryId}
-              options={app.data.apiaries.map((a) => ({
-                value: a.id,
-                label: a.name,
-              }))}
-            />
-          ) : null}
-          <Label muted>
-            Intervalo actual: {apiary?.check_interval_minutes ?? "—"} minutos
-          </Label>
-          <Field
-            label="Nuevo intervalo de análisis (minutos)"
-            value={minutes}
-            onChangeText={setMinutes}
-            placeholder="15"
-            keyboardType="number-pad"
-          />
-          <Button
-            label="Guardar intervalo"
-            variant="secondary"
-            disabled={!apiary}
-            loading={task.busy}
-            onPress={interval}
-          />
-          <Toggle
-            label="Avisos dentro de la app"
-            caption="Mostrar cambios acústicos en el inicio"
-            value={app.data.settings.alerts !== "0"}
-            onChange={(v) => {
-              void task.run(() => app.saveSetting("alerts", v ? "1" : "0"));
-            }}
-          />
-          <Label muted size={12}>
-            El análisis se genera solo con ese intervalo mientras la app está abierta.
-          </Label>
-        </Card>
-      </Fold>
       <Section title="Guardado local y sincronización">
         <Card>
           <Toggle
@@ -154,8 +97,8 @@ export default function Settings() {
             }
           />
           <Label muted size={12}>
-            Las lecturas y notas se guardan primero en SQLite. Los clips remotos
-            se almacenan en un bucket privado.
+            Tus observaciones se guardan primero en este teléfono y se
+            sincronizan cuando hay internet.
           </Label>
         </Card>
       </Section>

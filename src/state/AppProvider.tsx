@@ -305,9 +305,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const syncSubscription = sync?.subscribe(() => {
             if (current.current?.repo === repo) setSyncState(sync.snapshot());
           });
-          const timer = setInterval(() => {
-            void summaries.runDue().catch((e) => setError(String(e)));
-          }, 60_000);
           const w: Workspace = {
             userId,
             demo,
@@ -319,7 +316,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             mqtt,
             ble,
             dispose: async () => {
-              clearInterval(timer);
               clearTimeout(scheduled);
               repoSubscription();
               syncSubscription?.();
@@ -358,7 +354,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 if (current.current === w) await refresh();
               })
               .catch(() => {});
-          void summaries.runDue().catch((e) => setError(String(e)));
         } catch (e) {
           if (sequence === epoch.current) {
             desired.current = null;
@@ -450,9 +445,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (state === "active") {
         supabase?.auth.startAutoRefresh();
         void current.current?.sync?.sync().catch(() => {});
-        void current.current?.summaries
-          .runDue()
-          .catch((e) => setError(String(e)));
       } else {
         supabase?.auth.stopAutoRefresh();
       }

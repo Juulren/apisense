@@ -17,33 +17,14 @@ import { pendingAlerts } from "../services/EdgeVerdicts";
 import { useNodeState } from "../state/useNodeState";
 import { nodeHiveStatus } from "../services/NodeStatus";
 import { useApp } from "../state/AppProvider";
-import { useTask } from "../state/useTask";
-import { latestSummary } from "../state/selectors";
 export default function Dashboard() {
-  const app = useApp(),
-    task = useTask();
+  const app = useApp();
   const { data } = app;
   const nodes = useNodeState();
-  // The same rule as each hive's tile: the node's messages count as well as the phone's readings.
-  const normal = data.hives.filter((h) => {
-    const s = latestSummary(data.summaries, h.id);
-    const node = nodeHiveStatus(
-      data.verdicts,
-      h.id,
-      nodes.stateOf(h.id),
-      !s ? "none" : s.overall_status === "optimal" ? "ok" : "warning",
-    );
-    return node ? node.stable : s?.overall_status === "optimal";
-  }).length;
-  const alert = data.hives.find((h) => {
-    const s = latestSummary(data.summaries, h.id);
-    return (
-      s &&
-      s.overall_status !== "optimal" &&
-      s.id !== data.settings.dismissed_alert
-    );
-  });
-  const summary = alert ? latestSummary(data.summaries, alert.id) : undefined;
+  // The same rule as each hive's tile.
+  const usual = data.hives.filter(
+    (h) => nodeHiveStatus(data.verdicts, h.id, nodes.stateOf(h.id))?.stable,
+  ).length;
   const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
   const nodeAlerts = pendingAlerts(data.verdicts);
   const quiet = nodes.silent;
@@ -114,43 +95,11 @@ export default function Dashboard() {
           />
         </Card>
       ) : null}
-      {alert && summary && data.settings.alerts !== "0" ? (
-        <Card tone="amber">
-          <Row>
-            <Icon name="notifications-active" color="#D97706" size={28} />
-            <Label bold style={{ flex: 1 }}>
-              Atención en {alert.code}
-            </Label>
-            <Badge label="Por verificar" tone="amber" />
-          </Row>
-          <Label size={13}>
-            {summary.overall_status === "critical"
-              ? "Variación repetida detectada por el modelo. Prioriza una inspección de campo para verificar el estado."
-              : "Se detectó una variación acústica. Revisa el entorno y la ventilación; confirma el estado en campo si el patrón persiste."}
-          </Label>
-          <Button
-            label="Ver cómo actuar"
-            variant="secondary"
-            icon="lightbulb-outline"
-            onPress={() =>
-              router.push({ pathname: "/hive/[id]", params: { id: alert.id } })
-            }
-          />
-          <Button
-            label="Descartar este aviso"
-            variant="secondary"
-            compact
-            onPress={() =>
-              task.run(() => app.saveSetting("dismissed_alert", summary.id))
-            }
-          />
-        </Card>
-      ) : null}
       <Section
         title="Estado por Colmena"
         caption={
           data.hives.length
-            ? `${normal} de ${data.hives.length} con patrón estable`
+            ? `${usual} de ${data.hives.length} con sonido habitual`
             : undefined
         }
       >
@@ -181,9 +130,8 @@ export default function Dashboard() {
           <Empty>Crea tu apiario y añade la primera colmena.</Empty>
         )}
       </Section>
-      {task.message ? <Label>{task.message}</Label> : null}
       <Label muted size={12}>
-        Los patrones acústicos son orientativos. Confirma el estado de reina y
+        Los avisos del nodo son orientativos. Confirma el estado de reina y
         cría durante la inspección.
       </Label>
     </AppScreen>

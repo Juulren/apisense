@@ -33,16 +33,10 @@ const items: {
     prefix: ["/dashboard", "/alerts"],
   },
   {
-    route: "/monitor",
-    label: "Acústica",
-    icon: "graphic-eq",
-    prefix: ["/monitor", "/pairing"],
-  },
-  {
     route: "/hive",
     label: "Diagnóstico",
     icon: "health-and-safety",
-    prefix: ["/history", "/hive", "/hives", "/inspection"],
+    prefix: ["/hive", "/hives", "/inspection", "/pairing"],
   },
   {
     route: "/settings",
