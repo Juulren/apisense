@@ -169,3 +169,15 @@ En lo revisado **no se encontró un audio abierto que permita separar abejas en 
 | We4Bee (Würzburg) | solo resumen de búsqueda | Habla de clases de pre-enjambrazón y enjambrazón; **no se encontró descarga ni licencia**. Habría que escribir a los autores |
 | Avispones, Mattila et al., Royal Society Open Science | solo resumen de búsqueda (la página respondió 403) | Otra especie (*Apis cerana*); no se comprobó el audio |
 
+### Segunda ronda: consulta directa a los catálogos de Zenodo y Hugging Face (25 nov)
+
+Revisadas las fichas y listas de archivos por la API de cada catálogo; **no se descargó ningún archivo de estos**.
+
+| Registro | Contenido | Utilidad |
+|---|---|---|
+| Zenodo 20771223, tratamiento contra varroa (Formic Pro), CC BY 4.0, 343 MB | 12 grabaciones WAV con espectrogramas de la respuesta de **una colmena**: 1 de calma antes de abrir, 1 de perturbación al volver a poner la tapa y el resto en distintos momentos tras el tratamiento (algunas descritas por el autor como ventilación). Del mismo autor hay más registros (hasta 3,75 GB) | Es lo único visto con una «calma» y una perturbación de abejas. Pero según los nombres hay **una grabación por momento**, de una sola colmena y sin colmena de control: cada estado queda confundido con su grabación y la hora. Las etiquetas son interpretaciones del autor. No sirve para entrenar categorías; como mucho, para escuchar y explorar |
+| Zenodo 5106361, «piping» de reinas, CC BY 4.0, 7 MB | Audio WAV de 44–48 kHz: 36 «tooting» y 8 «quacking» (205 s) sacados de videos de YouTube. Es la versión con audio y sin registro de lo visto en IEEE DataPort | Señal de reinas relacionada con la enjambrazón, no de ataque. Sin ejemplos negativos grabados en las mismas condiciones: un modelo podría aprender «audio de YouTube» |
+| Zenodo 19739013, «Bee Acoustic Dataset with Environmental Parameters», 9 MB | Según su descripción, 680 lecturas de temperatura y humedad, sin etiquetas | Pese al nombre, no describe audio |
+| Zenodo 20399470, apiario UFC (Brasil), 4 MB | CSV de temperatura, humedad, peso y lluvia | Sin audio. Es del grupo del dataset de hormigas |
+| Zenodo 7052981 (10 000 audios), 10359686 (abeja/zángano), 17459379 (abeja sin aguijón) | Sin etiquetas de comportamiento descritas, u otra tarea o especie | No |
+| Hugging Face (búsqueda «beehive») y Kaggle (búsqueda web) | Los que se vieron reempaquetan NU-Hive / To bee or not to bee (con reina, sin reina, no abeja) | No añaden situaciones nuevas |
