@@ -5,6 +5,7 @@ import { silentText, staleText } from "../services/NodeStatus";
 import { useNodeState } from "../state/useNodeState";
 import {
   isAlert,
+  isLearning,
   latestVerdict,
   nodeWarnings,
   verdictSummary,
@@ -29,6 +30,8 @@ export function NodeCard({ hiveId }: { hiveId: string }) {
         </Label>
         {silent ? (
           <Badge label="Sin reportar" tone="amber" />
+        ) : verdict && isLearning(verdict) ? (
+          <Badge label="Aún no juzga" tone="neutral" />
         ) : verdict ? (
           <Badge
             label={attention ? "Por revisar" : isAlert(verdict) ? "Revisada" : "Sonido habitual"}

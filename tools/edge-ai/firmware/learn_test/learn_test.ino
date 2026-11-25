@@ -14,7 +14,10 @@
 //   A5 68 | unix u32 | n u32 | n x (ms u32, 24 f32)  'k' per record, then A5 69 | n | n x (status, alarm, learned, changed) | n x score
 //        (unix 0 = the clock is never set)
 //   A5 6A                                            'k'                    (reset command: forget and wipe flash)
+//   A5 6C | class u8 | conf f32 | hasTemp u8 | temp f32 | hasBat u8 | bat f32 | counter u8 | flags u8   -> A5 6D | 8 bytes   (encoder)
+//   A5 6E | status u8 | alarm u8 | score f32 | threshold f32 | counter u8 | extraFlags u8                -> A5 6D | 8 bytes   (verdict -> message)
 //   STATE = A5 61 | status u8 | phase u8 | pad 2 | days u32 | total u32 | covered u32 | threshold f32 | 192 f32 centre | 192 f32 scale
+#include "../apisense_edge/edge_payload.h"
 #include "../apisense_edge/edge_storage.h"
 
 static apisense::EdgeNode node(7, -6.0f);
@@ -148,6 +151,39 @@ void loop() {
       put(n);
       Serial.write(out, 4 * n);
       Serial.write(reinterpret_cast<const uint8_t *>(scores), 4 * n);
+      break;
+    }
+    case 0x6C: {
+      uint8_t b[1 + 4 + 1 + 4 + 1 + 4 + 1 + 1];
+      if (!readExact(b, sizeof(b))) return;
+      apisense::UplinkInput in;
+      in.classCode = b[0];
+      memcpy(&in.confidence, b + 1, 4);
+      in.hasTemperature = b[5];
+      memcpy(&in.temperatureC, b + 6, 4);
+      in.hasBattery = b[10];
+      memcpy(&in.batteryV, b + 11, 4);
+      in.counter = b[15];
+      in.flags = b[16];
+      uint8_t out[apisense::kPayloadBytes];
+      apisense::encodePayload(in, out);
+      const uint8_t head[2] = {0xA5, 0x6D};
+      Serial.write(head, 2);
+      Serial.write(out, sizeof(out));
+      break;
+    }
+    case 0x6E: {
+      uint8_t b[1 + 1 + 4 + 4 + 1 + 1];
+      if (!readExact(b, sizeof(b))) return;
+      apisense::NodeResult r = {static_cast<apisense::Status>(b[0]), b[1], 0.0f, false, false};
+      float threshold;
+      memcpy(&r.score, b + 2, 4);
+      memcpy(&threshold, b + 6, 4);
+      uint8_t out[apisense::kPayloadBytes];
+      apisense::encodePayload(apisense::uplinkFor(r, threshold, b[10], b[11]), out);
+      const uint8_t head[2] = {0xA5, 0x6D};
+      Serial.write(head, 2);
+      Serial.write(out, sizeof(out));
       break;
     }
     case 0x6A:

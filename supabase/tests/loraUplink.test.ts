@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import {
   base64FromBytes,
@@ -175,5 +176,26 @@ describe("lora-uplink: storing the verdict", () => {
     expect(await response.text()).not.toContain("postgres");
     const lookup = setup({ findNode: boom });
     expect((await lookup.handler(post(ttn()))).status).toBe(500);
+  });
+  it("stores the messages the board's C++ encoder produced, with the not-judging flag", async () => {
+    const fixture = JSON.parse(
+      readFileSync(new URL("./fixtures/node_uplinks.json", import.meta.url), "utf8"),
+    ) as { messages: { name: string; hex: string }[] };
+    const { handler, inserted } = setup();
+    let counter = 100;
+    for (const m of fixture.messages) {
+      const frm = Buffer.from(m.hex, "hex").toString("base64");
+      const response = await handler(post(ttn({}, { f_cnt: counter++, frm_payload: frm })));
+      expect(await read(response), m.name).toEqual({ status: "stored" });
+    }
+    expect(inserted).toHaveLength(fixture.messages.length);
+    const row = (name: string) => {
+      const at = fixture.messages.findIndex((m) => m.name === name);
+      return { class: inserted[at]!.class_code, flags: inserted[at]!.flags };
+    };
+    // Learning: class 0 but flagged as not judging.
+    expect(row("aprendiendo")).toEqual({ class: 0, flags: 8 });
+    // Ready and different, with the SD-full warning.
+    expect(row("listo diferente")).toEqual({ class: 1, flags: 1 });
   });
 });

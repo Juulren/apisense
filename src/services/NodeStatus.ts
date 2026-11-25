@@ -90,10 +90,13 @@ export function silentHives(
 export interface DayStat {
   hive_id: string;
   day: string; // YYYY-MM-DD in the beekeeper's local time
+  /** Messages where the node judged the sound. */
   total: number;
   different: number;
+  /** Messages sent while the node was still learning (it did not judge). */
+  learning?: number;
 }
-export type DayStatus = "none" | "usual" | "different";
+export type DayStatus = "none" | "learning" | "usual" | "different";
 export interface VerdictDay {
   key: string;
   status: DayStatus;
@@ -129,14 +132,16 @@ export function verdictDays(
       tzMinutes,
     );
     const stat = stats.find((s) => s.hive_id === hiveId && s.day === key);
-    const count = stat?.total ?? 0;
-    const different = stat?.different ?? 0;
+    const judged = Number(stat?.total ?? 0);
+    const learning = Number(stat?.learning ?? 0);
+    const count = judged + learning;
+    const different = Number(stat?.different ?? 0);
     out.push({
       key,
       count,
       different,
       verdicts: own.filter((v) => dayKey(v.recorded_at, tzMinutes) === key),
-      status: !count ? "none" : different ? "different" : "usual",
+      status: !count ? "none" : !judged ? "learning" : different ? "different" : "usual",
     });
   }
   return out;

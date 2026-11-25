@@ -6,7 +6,9 @@
 //   byte 2  confidence 0..255  -> 0..1
 //   byte 3-4 temperature, int16 big-endian, hundredths of °C (0x8000 = no sensor)
 //   byte 5  battery: 2.00 V + 10 mV * value (0xFF = unknown)
-//   byte 6  counter (low nibble) | flags (high nibble: SD full, mic fault, low battery)
+//   byte 6  counter (low nibble) | flags (high nibble: 1 SD full, 2 mic fault, 4 low battery,
+//           8 not judging: the node is still learning the hive's usual sound, or has no time yet;
+//           the class code is then 0 and must not be read as "usual sound")
 //   byte 7  CRC-8 (polynomial 0x07, initial 0x00) of bytes 0..6
 //
 // The hive is NOT in the payload: the DevEUI identifies the node and the server
@@ -57,6 +59,8 @@ export interface EdgeUplink {
   sdFull: boolean;
   micFault: boolean;
   lowBattery: boolean;
+  /** The node is learning or has no time yet: the verdict says nothing about the sound. */
+  notJudging: boolean;
 }
 
 export function crc8(bytes: ArrayLike<number>) {
@@ -116,6 +120,7 @@ export function decodeEdgePayload(bytes: Uint8Array): EdgeUplink {
     sdFull: (flags & 1) !== 0,
     micFault: (flags & 2) !== 0,
     lowBattery: (flags & 4) !== 0,
+    notJudging: (flags & 8) !== 0,
   };
 }
 

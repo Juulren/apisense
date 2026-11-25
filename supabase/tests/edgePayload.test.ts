@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   base64FromBytes,
@@ -41,6 +42,7 @@ describe("edge payload (8 bytes, format 1)", () => {
       sdFull: false,
       micFault: false,
       lowBattery: true,
+      notJudging: false,
     });
   });
 
@@ -75,6 +77,35 @@ describe("edge payload (8 bytes, format 1)", () => {
     expect(f(1)).toMatchObject({ sdFull: true, micFault: false, lowBattery: false });
     expect(f(2)).toMatchObject({ sdFull: false, micFault: true, lowBattery: false });
     expect(f(4)).toMatchObject({ sdFull: false, micFault: false, lowBattery: true });
+    expect(f(8)).toMatchObject({ sdFull: false, micFault: false, lowBattery: false, notJudging: true });
+    expect(f(0).notJudging).toBe(false);
+  });
+
+  it("decodes the messages the board's C++ encoder produced (firmware contract)", () => {
+    const fixture = JSON.parse(
+      readFileSync(new URL("./fixtures/node_uplinks.json", import.meta.url), "utf8"),
+    ) as { messages: { name: string; hex: string }[] };
+    const decoded = Object.fromEntries(
+      fixture.messages.map((m) => [
+        m.name,
+        decodeEdgePayload(Uint8Array.from(Buffer.from(m.hex, "hex"))),
+      ]),
+    );
+    expect(decoded["habitual"]).toMatchObject({ classCode: 0, confidence: 1, temperatureC: 25, batteryV: 3.9, counter: 3 });
+    expect(decoded["diferente"]).toMatchObject({ classCode: 1, confidence: 0.8, temperatureC: 27.35, lowBattery: true, counter: 5 });
+    expect(decoded["temperatura negativa"]).toMatchObject({ temperatureC: -3.5, batteryV: 3.3, counter: 15 });
+    expect(decoded["sin sensores"]).toMatchObject({ temperatureC: null, batteryV: null, sdFull: true, micFault: true });
+    expect(decoded["no juzga"]).toMatchObject({ notJudging: true, classCode: 0, confidence: 0 });
+    // Impossible or non-numeric readings travel as "no sensor" instead of losing the verdict.
+    expect(decoded["sonda suelta -127"]).toMatchObject({ temperatureC: null, batteryV: 3.7 });
+    expect(decoded["temperatura sobre 85"]).toMatchObject({ temperatureC: null, classCode: 1 });
+    expect(decoded["valores no numericos"]).toMatchObject({ temperatureC: null, batteryV: null, confidence: 0 });
+    expect(decoded["bateria al tope"]).toMatchObject({ confidence: 1, temperatureC: 85, counter: 1, flags: 15 });
+    expect(decoded["aprendiendo"]).toMatchObject({ notJudging: true, classCode: 0 });
+    expect(decoded["sin reloj"]).toMatchObject({ notJudging: true, lowBattery: true });
+    expect(decoded["listo habitual"]).toMatchObject({ notJudging: false, classCode: 0 });
+    expect(decoded["listo diferente"]).toMatchObject({ notJudging: false, classCode: 1, sdFull: true });
+    expect(decoded["listo en el umbral"].confidence).toBeCloseTo(0.5, 2);
   });
 
   const code = (fn: () => unknown) => {

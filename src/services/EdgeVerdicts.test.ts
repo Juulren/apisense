@@ -99,9 +99,11 @@ describe("what the app says about a verdict", () => {
       "falla del micrófono",
       "batería baja",
     ]);
-    expect(isAlert({ class_code: 0 })).toBe(false);
-    expect(isAlert({ class_code: 1 })).toBe(true);
-    expect(isAlert({ class_code: 9 })).toBe(true);
+    expect(isAlert({ class_code: 0, flags: 0 })).toBe(false);
+    expect(isAlert({ class_code: 1, flags: 0 })).toBe(true);
+    expect(isAlert({ class_code: 9, flags: 4 })).toBe(true);
+    // A node that is still learning never raises an alert and does not claim a "usual sound".
+    expect(isAlert({ class_code: 1, flags: 8 })).toBe(false);
   });
   it("keeps only unreviewed alerts, newest first, and finds the latest per hive", async () => {
     const { repo, verdict, hive, other } = await setup();
@@ -145,6 +147,11 @@ describe("verdict counts per day", () => {
       "A 2026-11-20": 1,
       "B 2026-11-19": 1,
     });
+    // Messages from a node that is still learning (flag 8) are not counted as days of "usual sound".
+    await verdict(other.id, { ...at("2026-11-18T10:00:00.000Z"), source: "lora", class_code: 0, flags: 8 });
+    const withLearning = await repo.verdictDayStats("2026-11-01T00:00:00.000Z", 0);
+    const learningDay = withLearning.find((r) => r.day === "2026-11-18");
+    expect([Number(learningDay?.total), Number(learningDay?.different), Number(learningDay?.learning)]).toEqual([0, 0, 1]);
   });
 });
 

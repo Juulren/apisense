@@ -1,0 +1,61 @@
+{
+  "source": "mensajes calculados por el codificador C++ en la placa",
+  "messages": [
+    {
+      "name": "habitual",
+      "hex": "1100ff09c4be0325"
+    },
+    {
+      "name": "diferente",
+      "hex": "1101cc0aafbe453a"
+    },
+    {
+      "name": "temperatura negativa",
+      "hex": "110080fea2820f73"
+    },
+    {
+      "name": "sin sensores",
+      "hex": "1100ed8000ff30b5"
+    },
+    {
+      "name": "no juzga",
+      "hex": "1100008000dc89cd"
+    },
+    {
+      "name": "sonda suelta -127",
+      "hex": "1100e68000aa02d9"
+    },
+    {
+      "name": "temperatura sobre 85",
+      "hex": "1101e68000aa03f7"
+    },
+    {
+      "name": "valores no numericos",
+      "hex": "1100008000ff04f6"
+    },
+    {
+      "name": "bateria al tope",
+      "hex": "1101ff2134fef195"
+    },
+    {
+      "name": "aprendiendo",
+      "hex": "1100008000ff8164"
+    },
+    {
+      "name": "sin reloj",
+      "hex": "1100008000ffc2aa"
+    },
+    {
+      "name": "listo habitual",
+      "hex": "1100d98000ff03f5"
+    },
+    {
+      "name": "listo diferente",
+      "hex": "1101cc8000ff1466"
+    },
+    {
+      "name": "listo en el umbral",
+      "hex": "1101808000ff054f"
+    }
+  ]
+}

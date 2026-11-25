@@ -18,10 +18,15 @@ export const MAX_REVIEW_NOTE = 500;
 export const VERDICT_WINDOW_DAYS = 14;
 const DAY = 86_400_000;
 
-export const isAlert = (v: Pick<EdgeVerdict, "class_code">) =>
-  v.class_code !== 0;
+/** Flag 8: the node is still learning the hive's usual sound, or has no time yet. */
+export const isLearning = (v: Pick<EdgeVerdict, "flags">) => (v.flags & 8) !== 0;
+/** A node that is not judging yet never raises an alert, whatever its class code says. */
+export const isAlert = (v: Pick<EdgeVerdict, "class_code" | "flags">) =>
+  !isLearning(v) && v.class_code !== 0;
 export const verdictLabel = (v: EdgeVerdict) =>
-  edgeClassLabel(v.class_map_version, v.class_code);
+  isLearning(v)
+    ? "Aún no juzga (aprendiendo el sonido habitual o sin hora)"
+    : edgeClassLabel(v.class_map_version, v.class_code);
 export const verdictSince = (now = new Date()) =>
   new Date(now.getTime() - VERDICT_WINDOW_DAYS * DAY).toISOString();
 
@@ -45,11 +50,9 @@ export function ageText(iso: string, now = new Date()) {
 }
 /** One line for a hive or an alert; only facts the node reported. */
 export function verdictSummary(v: EdgeVerdict, now = new Date()) {
-  const parts = [
-    verdictLabel(v),
-    // Non-breaking spaces keep a number and its unit on the same line.
-    `confianza ${Math.round(v.confidence * 100)} %`,
-  ];
+  const parts = [verdictLabel(v)];
+  // Non-breaking spaces keep a number and its unit on the same line.
+  if (!isLearning(v)) parts.push(`confianza ${Math.round(v.confidence * 100)} %`);
   if (v.temperature_c !== null)
     parts.push(`${v.temperature_c.toFixed(1).replace(".", ",")} °C`);
   if (v.battery_v !== null)

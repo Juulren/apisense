@@ -68,6 +68,15 @@ La app y `lora-uplink` ya existen; faltan el radio y la red.
 5. **Alcance:** los 13 km con un gateway de interior no son creíbles; se mide en campo y, si no alcanza, se sube el gateway de altura o se mueve.
 6. Prueba punta a punta: nodo, TTN, `lora-uplink`, app (veredicto, aviso de nodo sin reportar, línea de tiempo). Esta parte puede probarse antes con un emisor simulado en la PC.
 
+**Estado (25 nov): hecha la parte que no necesita hardware de radio.**
+- `edge_payload.h`: el mensaje de 8 bytes en C++, byte a byte igual al de `edgePayload.ts`. Se comprobó en la placa contra un codificador independiente en Python (11 mensajes, incluidos temperatura negativa, sin sensores y valores al tope) y contra la secuencia fija del contrato. Los mensajes que calculó la placa quedaron en `supabase/tests/fixtures/node_uplinks.json`; los tests de la app los decodifican y los pasan por el manejador real de `lora-uplink`.
+- **Bandera nueva, bit 8 = «aún no juzga»** (el nodo está aprendiendo o no tiene hora). El código de clase va en 0 y la confianza en 0, pero la app ya no lo cuenta como «sonido habitual» ni como alerta: etiqueta «Aprendiendo», sin confianza, y esos mensajes no cuentan como día de sonido habitual en la línea de tiempo. No se distingue «aprendiendo» de «sin hora»; si hace falta, se separa después con otra bandera.
+- Revisión de Opus aplicada: una temperatura imposible (sonda suelta, −127 °C) o no numérica se manda como «sin sensor» en lugar de perder el veredicto; el disparador de avisos del servidor ignora la bandera (migración nueva `202611250001_alert_ignores_learning.sql`, **todavía sin aplicar** en Supabase); los días de aprendizaje se ven como «aprendiendo» en la línea de tiempo y no como «sin datos»; `send` no sigue redirecciones (no filtra el secreto), exige `--yes-store-real-rows` y acepta `--start`/`--session`.
+- **Orden de despliegue:** publicar primero la versión nueva de la app y la migración, y después cargar el firmware que usa la bandera; las apps ya instaladas (0.3.1) mostrarían esos mensajes como «Sonido habitual».
+- La «confianza» del nodo es el margen del puntaje respecto al umbral (0,5 en el umbral, 1 muy lejos), **no una probabilidad**.
+- `apisense_audio/uplink_sim.py`: `check` (contra la placa) y `send` (hace de gateway simulado: manda un uplink con formato de The Things Stack a `lora-uplink`, con el secreto leído de una variable de entorno). **`send` no se ha ejecutado contra ningún proyecto real**: hace falta la dirección de la función, el secreto y un DevEUI vinculado a una colmena.
+- **Falta (necesita hardware o cuentas):** módulo LoRa y su controlador LoRaWAN (OTAA, hora con DeviceTimeReq al arrancar), gateway en el módem, registro en The Things Stack y reenvío a `lora-uplink`, y la prueba de 48 h con la pérdida medida.
+
 Puerta D: veredictos recibidos en la app durante 48 h seguidas, con la pérdida medida y registrada.
 
 ## Orden y dependencias

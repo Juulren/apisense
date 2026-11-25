@@ -169,9 +169,12 @@ export class Repository {
   async verdictDayStats(since: string, tzMinutes: number) {
     const modifier = `${tzMinutes < 0 ? "-" : "+"}${Math.abs(Math.trunc(tzMinutes))} minutes`;
     return this.exclusive(() =>
-      this.sql.all<{ hive_id: string; day: string; total: number; different: number }>(
-        `SELECT hive_id, date(recorded_at, ?) AS day, COUNT(*) AS total,
-                SUM(CASE WHEN class_code <> 0 THEN 1 ELSE 0 END) AS different
+      this.sql.all<{ hive_id: string; day: string; total: number; different: number; learning: number }>(
+        // total and different count only messages where the node judged; flag 8 = still learning.
+        `SELECT hive_id, date(recorded_at, ?) AS day,
+                SUM(CASE WHEN (flags & 8) = 0 THEN 1 ELSE 0 END) AS total,
+                SUM(CASE WHEN (flags & 8) = 0 AND class_code <> 0 THEN 1 ELSE 0 END) AS different,
+                SUM(CASE WHEN (flags & 8) <> 0 THEN 1 ELSE 0 END) AS learning
            FROM edge_verdicts
           WHERE deleted_at IS NULL AND source = 'lora' AND recorded_at >= ?
           GROUP BY hive_id, day`,

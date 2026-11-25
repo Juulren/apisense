@@ -14,6 +14,7 @@ import {
 
 const statusText: Record<DayStatus, string> = {
   none: "sin datos",
+  learning: "aprendiendo (aún no juzga)",
   usual: "sonido habitual",
   different: "sonido diferente",
 };
@@ -31,6 +32,7 @@ export function VerdictTimeline({ hiveId }: { hiveId: string }) {
   if (total === 0) return null;
   const fill: Record<DayStatus, string> = {
     none: colors.border,
+    learning: colors.soft,
     usual: "#10B981",
     different: "#D97706",
   };
