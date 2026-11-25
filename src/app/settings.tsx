@@ -2,7 +2,6 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { AppScreen } from "../components/AppScreen";
 import {
-  Badge,
   Button,
   Card,
   Field,
@@ -115,13 +114,8 @@ export default function Settings() {
               void task.run(() => app.saveSetting("alerts", v ? "1" : "0"));
             }}
           />
-          <Badge
-            label="Reglas experimentales · Sin modelo validado"
-            tone="amber"
-          />
           <Label muted size={12}>
-            El análisis local periódico funciona con la app abierta. En la nube,
-            el cron requiere un proyecto Supabase configurado.
+            El análisis se genera solo con ese intervalo mientras la app está abierta.
           </Label>
         </Card>
       </Fold>

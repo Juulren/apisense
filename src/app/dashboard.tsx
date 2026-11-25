@@ -10,7 +10,6 @@ import {
   Row,
   Section,
 } from "../components/ui";
-import { useTheme } from "../components/ui/theme";
 import { HiveTile } from "../components/HiveTile";
 import { WeatherCard } from "../components/WeatherCard";
 import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
@@ -21,8 +20,7 @@ import { useTask } from "../state/useTask";
 import { latestSummary } from "../state/selectors";
 export default function Dashboard() {
   const app = useApp(),
-    task = useTask(),
-    { colors } = useTheme();
+    task = useTask();
   const { data } = app;
   const statuses = data.hives.map((h) => latestSummary(data.summaries, h.id));
   const normal = statuses.filter((s) => s?.overall_status === "optimal").length;
@@ -38,9 +36,6 @@ export default function Dashboard() {
   const season = phaseOn(calendarFor(data.apiaries[0]).calendar, new Date()).info;
   const nodeAlerts = pendingAlerts(data.verdicts);
   const quiet = useNodeState().silent;
-  const percentage = data.hives.length
-    ? Math.round((normal / data.hives.length) * 100)
-    : 0;
   return (
     <AppScreen>
       <View style={{ gap: 5 }}>
@@ -54,6 +49,7 @@ export default function Dashboard() {
           <Badge label={`Fase típica: ${phaseLabels[season.phase]}`} tone="amber" />
         ) : null}
       </View>
+      <WeatherCard apiary={data.apiaries[0]} />
       {data.hives.length ? (
         <Button
           label="Anotar observación"
@@ -110,27 +106,6 @@ export default function Dashboard() {
           />
         </Card>
       ) : null}
-      <Card tone="green">
-        <Row>
-          <Icon name="verified" color="#10B981" size={40} />
-          <View style={{ flex: 1, gap: 5 }}>
-            <Label color={colors.greenText} size={11} bold>
-              ESTADO ACÚSTICO GENERAL
-            </Label>
-            <Label bold size={21}>
-              {normal === data.hives.length && normal > 0
-                ? "Apiario en calma"
-                : normal > 0
-                  ? "La mayoría está en calma"
-                  : "Tu apiario, bajo seguimiento"}
-            </Label>
-            <Label muted size={12}>
-              {normal} de {data.hives.length} colmenas con patrón estable
-            </Label>
-          </View>
-          <Badge label={`${percentage}%`} />
-        </Row>
-      </Card>
       {alert && summary && data.settings.alerts !== "0" ? (
         <Card tone="amber">
           <Row>
@@ -165,7 +140,11 @@ export default function Dashboard() {
       ) : null}
       <Section
         title="Estado por Colmena"
-        caption="Resumen local para tu recorrido de campo"
+        caption={
+          data.hives.length
+            ? `${normal} de ${data.hives.length} con patrón estable`
+            : undefined
+        }
       >
         <Row>
           <Badge label={`${data.hives.length} colmenas`} tone="neutral" />
@@ -194,9 +173,8 @@ export default function Dashboard() {
           <Empty>Crea tu apiario y añade la primera colmena.</Empty>
         )}
       </Section>
-      <WeatherCard apiary={data.apiaries[0]} />
       {task.message ? <Label>{task.message}</Label> : null}
-      <Label muted size={11}>
+      <Label muted size={12}>
         Los patrones acústicos son orientativos. Confirma el estado de reina y
         cría durante la inspección.
       </Label>

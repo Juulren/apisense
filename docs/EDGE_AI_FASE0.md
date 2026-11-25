@@ -13,7 +13,7 @@ Objetivo: saber, con datos reales, si "desviación respecto al sonido habitual d
 - Para grabar días seguidos: alimentación estable (la laptop o un cargador), no la batería del nodo final.
 
 ## 3. Cómo grabar
-1. Cargar `firmware/capture_inmp441/capture_inmp441.ino` (ajustar los pines).
+1. Cargar `firmware/capture_inmp441/capture_inmp441.ino`. Ya usa el cableado de la prueba por WiFi que funcionó (SCK GPIO14, WS GPIO15, SD GPIO32, canal derecho/"canal B"); solo hay que cambiar los pines si el cableado cambia.
 2. `python -m apisense_audio.capture --port COMx --hive C-01 --minutes 5 --out data/raw --temperature <°C>`.
 3. Dejar grabando **al menos 7 días seguidos por colmena**; mejor 14. El día se corta en hora local de Mérida (UTC-6).
 4. Revisar cada día los JSON: `lost_percent` y `bad_crc` deben ser casi cero y `host.blocks_per_second` debe estar cerca de 62.5. Si no, revisar cable, puerto y alimentación.

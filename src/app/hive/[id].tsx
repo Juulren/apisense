@@ -13,9 +13,9 @@ import {
 } from "../../components/ui";
 import { Fold } from "../../components/ui/Fold";
 import { SummaryCard } from "../../components/SummaryCard";
-import { SeasonTracker } from "../../components/SeasonTracker";
 import { NodeCard } from "../../components/NodeCard";
 import { VerdictTimeline } from "../../components/VerdictTimeline";
+import { SeasonTracker } from "../../components/SeasonTracker";
 import { HiveReadings } from "../../components/HiveReadings";
 import { checkinSummary } from "../../services/Checkin";
 import { removeHive, renameHive } from "../../services/Hives";
@@ -80,22 +80,9 @@ export default function HiveDetail() {
           {summary ? (
             <SummaryCard summary={summary} compact />
           ) : (
-            <Empty>
-              Aún no hay resúmenes. Recibe una muestra para comenzar.
-            </Empty>
+            <Empty>El diagnóstico aparece solo cuando llegan lecturas.</Empty>
           )}
-          <Button
-            label="Generar resumen local"
-            icon="auto-awesome"
-            variant="secondary"
-            loading={task.busy}
-            onPress={() =>
-              task.run(async () => {
-                await app.workspace?.summaries.generate(id);
-                await app.refresh();
-              }, "Resumen guardado localmente")
-            }
-          />
+          <SeasonTracker key={`checkins-${id}`} hiveId={id} cta={false} brief />
           <Section
             title="Bitácora de campo"
             caption="Tus observaciones y acciones guardadas localmente"
@@ -140,9 +127,6 @@ export default function HiveDetail() {
             ) : null}
           </Section>
           <HiveReadings key={`readings-${id}`} hiveId={id} />
-          <Fold title="Temporada y calendario de la zona" testID="fold-season">
-            <SeasonTracker key={`season-${id}`} hiveId={id} cta={false} />
-          </Fold>
           <Row>
             <View style={{ flex: 1 }}>
               <Button

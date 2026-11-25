@@ -6,7 +6,6 @@ import {
   useAudioPlayerStatus,
 } from "expo-audio";
 import { router, useLocalSearchParams } from "expo-router";
-import { randomUUID } from "expo-crypto";
 import { AppScreen, Empty } from "../components/AppScreen";
 import {
   Badge,
@@ -14,14 +13,12 @@ import {
   Card,
   Label,
   Metric,
-  Section,
   Segmented,
 } from "../components/ui";
 import { AcousticChart } from "../components/AcousticChart";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { dateLabel, selectedReading } from "../state/selectors";
-import { simulate, type SimulationPattern } from "../services/iot/Simulator";
 import { supabase } from "../services/supabase";
 const labels = {
   healthy: "Patrón estable",
@@ -38,8 +35,7 @@ export default function Monitor() {
     playback = useAudioPlayerStatus(player);
   const [selected, setSelected] = useState(params.hiveId ?? ""),
     [focusedSample, setFocusedSample] = useState(params.sampleId),
-    [technical, setTechnical] = useState(false),
-    [pattern, setPattern] = useState<SimulationPattern>("healthy");
+    [technical, setTechnical] = useState(false);
   const hive = selected
       ? app.data.hives.find((h) => h.id === selected)
       : app.data.hives[0],
@@ -72,27 +68,13 @@ export default function Monitor() {
       player.replace({ uri });
       player.play();
     }, "Reproduciendo clip");
-  const capture = () =>
-    task.run(async () => {
-      if (!app.workspace?.demo || !hive || !mic)
-        throw new Error("El simulador solo está disponible en la demo");
-      await app.workspace.ingestion.ingest(
-        simulate(
-          pattern,
-          { id: randomUUID(), hive_id: hive.id, device_id: mic.id },
-          Date.now(),
-        ),
-        "simulator",
-      );
-      await app.workspace.summaries.generate(hive.id);
-      await app.refresh();
-    }, "Muestra simulada y resumen guardados");
   return (
     <AppScreen
       title="Monitoreo acústico"
       subtitle="Escucha inteligente de tus colmenas"
     >
       <Segmented
+        scroll
         value={hive?.id ?? ""}
         options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}
         onChange={(id) => {
@@ -143,14 +125,14 @@ export default function Monitor() {
             <Label muted>
               {sample
                 ? "El sonido ayuda a observar cambios de actividad. Contrasta cualquier variación con el entorno y tu inspección."
-                : "Vincula un micrófono o utiliza el simulador de la demo."}
+                : "Vincula un micrófono para recibir lecturas de esta colmena."}
             </Label>
             {sample ? (
               <Label muted size={11}>
                 {dateLabel(sample.recorded_at)} ·{" "}
                 {sample.classifier_version.startsWith("onnx:")
                   ? "Modelo ONNX"
-                  : "Reglas experimentales · sin modelo validado"}
+                  : "Análisis automático"}
               </Label>
             ) : null}
             <Button
@@ -224,29 +206,6 @@ export default function Monitor() {
                 mostrado es dBFS, no presión sonora SPL.
               </Label>
             </Card>
-          ) : null}
-          {app.workspace?.demo ? (
-            <Section
-              title="Simulador de campo"
-              caption="Genera audio sintético; estos datos permanecen en la demo"
-            >
-              <Segmented
-                value={pattern}
-                onChange={setPattern}
-                options={[
-                  { value: "healthy", label: "Sana" },
-                  { value: "swarming", label: "Piping" },
-                  { value: "queenless", label: "Sin reina" },
-                  { value: "pest_disturbance", label: "Perturbación" },
-                ]}
-              />
-              <Button
-                label="Simular muestra de 5 segundos"
-                icon="play-circle-outline"
-                loading={task.busy}
-                onPress={capture}
-              />
-            </Section>
           ) : null}
           <Button
             label="Vincular micrófono"

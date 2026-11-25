@@ -6,6 +6,7 @@ import type { SqlValue } from "../db/types";
 import {
   parseLocation,
   saveApiaryProfile,
+  setApiaryLocation,
   type ApiaryProfile,
 } from "./Apiaries";
 import { calendarFor, yucatanCalendar, type Calendar } from "./Seasons";
@@ -167,5 +168,34 @@ describe("apiary profile", () => {
     await expect(saveApiaryProfile(repo, "nope", profile())).rejects.toThrow(
       "ya no está",
     );
+  });
+});
+
+describe("picking the apiary's place", () => {
+  it("stores the place to ~100 m, turns the weather on and keeps everything else", async () => {
+    const repo = setup();
+    const a = await apiary(repo);
+    await saveApiaryProfile(repo, a.id, profile({ name: "Flor de Tajonal", checkin_frequency: "daily", region_preset: "yucatan", calendar: yucatanCalendar }));
+    const saved = await setApiaryLocation(repo, a.id, 20.967370999, -89.623743999);
+    expect(saved).toMatchObject({
+      latitude: 20.967,
+      longitude: -89.624,
+      weather_enabled: 1,
+      name: "Flor de Tajonal",
+      checkin_frequency: "daily",
+      region_preset: "yucatan",
+      check_interval_minutes: 45,
+    });
+    expect((await repo.get("apiaries", a.id))?.latitude).toBe(20.967);
+  });
+  it("rejects impossible coordinates and a removed or unknown apiary", async () => {
+    const repo = setup();
+    const a = await apiary(repo);
+    await expect(setApiaryLocation(repo, a.id, 95, 10)).rejects.toThrow("latitud y longitud");
+    await expect(setApiaryLocation(repo, a.id, 10, Number.NaN)).rejects.toThrow("latitud y longitud");
+    await expect(setApiaryLocation(repo, "nope", 10, 10)).rejects.toThrow("ya no está");
+    await repo.save("apiaries", { ...(await repo.get("apiaries", a.id))!, deleted_at: new Date().toISOString() });
+    await expect(setApiaryLocation(repo, a.id, 10, 10)).rejects.toThrow("ya no está");
+    expect((await repo.get("apiaries", a.id))?.latitude).toBeNull();
   });
 });

@@ -81,3 +81,32 @@ export async function saveApiaryProfile(
     checkin_frequency: profile.checkin_frequency,
   });
 }
+
+/**
+ * Picks the place where an apiary is (from a search result) and turns the weather on.
+ * Coordinates are kept to 3 decimals (about 100 m): enough for weather, not a street address.
+ * Everything else about the apiary stays as it was.
+ */
+export async function setApiaryLocation(
+  repo: Repository,
+  apiaryId: string,
+  latitude: number,
+  longitude: number,
+) {
+  const apiary = await repo.get("apiaries", apiaryId);
+  if (!apiary || apiary.deleted_at)
+    throw new Error("El apiario ya no está disponible");
+  const place = parseLocation(latitude.toFixed(3), longitude.toFixed(3));
+  return repo.save("apiaries", {
+    id: apiary.id,
+    user_id: apiary.user_id,
+    name: apiary.name,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    check_interval_minutes: apiary.check_interval_minutes,
+    region_preset: apiary.region_preset,
+    seasons_json: apiary.seasons_json,
+    weather_enabled: 1,
+    checkin_frequency: apiary.checkin_frequency,
+  });
+}

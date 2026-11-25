@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { Pressable } from "react-native";
 import type { AiSummary } from "../db/types";
 import { Badge, Card, Icon, Label, Row } from "./ui";
 import { dateLabel, statusLabel } from "../state/selectors";
 
 /**
- * `compact` leads with the status and the next step and keeps the long
- * analysis text behind "Ver detalle", so the screen starts with what to do.
+ * `compact` is the brief automatic diagnosis: the status and the next step, and
+ * when it was made. The history screen has the full text.
  */
 export function SummaryCard({
   summary,
@@ -15,9 +13,7 @@ export function SummaryCard({
   summary: AiSummary;
   compact?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const tone = summary.overall_status === "optimal" ? "green" : "amber";
-  const detail = !compact || open;
   return (
     <Card tone={tone}>
       <Row>
@@ -26,55 +22,20 @@ export function SummaryCard({
           color={tone === "green" ? "#10B981" : "#D97706"}
         />
         <Label bold style={{ flex: 1 }}>
-          Resumen acústico periódico
+          {compact ? "Diagnóstico automático" : "Resumen acústico periódico"}
         </Label>
         <Badge label={statusLabel(summary.overall_status)} tone={tone} />
       </Row>
-      {compact ? (
-        <>
-          <Label bold size={12}>
-            PRÓXIMO PASO
-          </Label>
-          <Label size={14}>{summary.recommended_action}</Label>
-        </>
-      ) : null}
-      {detail ? <Label>{summary.summary_text}</Label> : null}
-      {!compact ? <ViewRecommendation text={summary.recommended_action} /> : null}
-      {detail ? (
-        <Label muted size={11}>
-          {dateLabel(summary.period_start)} — {dateLabel(summary.period_end)} ·{" "}
-          {summary.samples_analyzed_count} muestras
-        </Label>
-      ) : null}
-      {compact ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ expanded: open }}
-          onPress={() => setOpen(!open)}
-          style={{
-            minHeight: 48,
-            justifyContent: "center",
-            alignSelf: "flex-start",
-          }}
-        >
-          <Row style={{ gap: 4 }}>
-            <Label bold size={13}>
-              {open ? "Ocultar detalle" : "Ver detalle del análisis"}
-            </Label>
-            <Icon name={open ? "expand-less" : "expand-more"} size={20} />
-          </Row>
-        </Pressable>
-      ) : null}
-    </Card>
-  );
-}
-function ViewRecommendation({ text }: { text: string }) {
-  return (
-    <>
+      {compact ? null : <Label>{summary.summary_text}</Label>}
       <Label bold size={12}>
         PRÓXIMO PASO
       </Label>
-      <Label size={13}>{text}</Label>
-    </>
+      <Label size={compact ? 14 : 13}>{summary.recommended_action}</Label>
+      <Label muted size={12}>
+        {compact
+          ? dateLabel(summary.period_end)
+          : `${dateLabel(summary.period_start)} — ${dateLabel(summary.period_end)} · ${summary.samples_analyzed_count} muestras`}
+      </Label>
+    </Card>
   );
 }

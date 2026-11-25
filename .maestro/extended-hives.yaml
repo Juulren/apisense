@@ -1,5 +1,5 @@
 appId: com.apisense.app
-name: Varios cuadros notas largas y paginacion de lecturas
+name: Notas largas, observaciones anteriores y lectura guardada
 ---
 - launchApp
 - openLink: apisense:///
@@ -54,31 +54,17 @@ name: Varios cuadros notas largas y paginacion de lecturas
     timeout: 60000
     element: { text: ".*FINAL NOTA LARGA QA.*" }
 - takeScreenshot: .artifacts/design/extended/05-older-long-note
-- openLink: apisense:///monitor?hiveId=00000000-0000-4000-8000-000000000102
-- scrollUntilVisible:
-    element: { text: "Simular muestra de 5 segundos" }
-- repeat:
-    times: 11
-    commands:
-      - tapOn: "Simular muestra de 5 segundos"
-      - extendedWaitUntil:
-          visible: { text: "Simular muestra de 5 segundos", enabled: true }
-          timeout: 60000
+# The field simulator was removed from Acústica; the demo seeds one reading for this hive.
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
     centerElement: true
-    element: { text: 'Ver lecturas guardadas \(12\)' }
-- tapOn: 'Ver lecturas guardadas \(12\)'
+    element: { text: "Ver lecturas guardadas.*" }
+- tapOn: "Ver lecturas guardadas.*"
 - scrollUntilVisible:
     centerElement: true
-    timeout: 60000
-    element: { text: "Mostrar más lecturas" }
-- tapOn: "Mostrar más lecturas"
-- scrollUntilVisible:
-    centerElement: true
-    element: { text: "Abrir lectura 12" }
-- takeScreenshot: .artifacts/design/extended/06-reading-pagination
-- tapOn: "Abrir lectura 12"
+    element: { text: "Abrir lectura 1" }
+- takeScreenshot: .artifacts/design/extended/06-reading-list
+- tapOn: "Abrir lectura 1"
 - assertVisible: "Lectura seleccionada del historial"
 - scrollUntilVisible:
     centerElement: true

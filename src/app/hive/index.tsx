@@ -8,6 +8,7 @@ import { latestSummary, statusLabel } from "../../state/selectors";
 import { latestVerdict, verdictSummary } from "../../services/EdgeVerdicts";
 import { silentText } from "../../services/NodeStatus";
 import { useNodeState } from "../../state/useNodeState";
+import { SeasonBrief } from "../../components/SeasonBrief";
 
 // "Diagnóstico": every hive one tap away. Opens a hive's detail directly.
 export default function HiveList() {
@@ -20,6 +21,7 @@ export default function HiveList() {
       title="Diagnóstico"
       subtitle="Elige una colmena para ver su estado o anotar"
     >
+      <SeasonBrief />
       {data.hives.length ? (
         data.hives.map((hive) => {
           const summary = latestSummary(data.summaries, hive.id),

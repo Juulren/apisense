@@ -262,5 +262,11 @@ export function ApiaryProfile({ apiary }: { apiary: Apiary | undefined }) {
     );
   // Keyed by apiary only: saving something else on the same screen (for example the
   // analysis interval) must not wipe what the user is typing here.
-  return <Form key={apiary.id} apiary={apiary} />;
+  // The place and the weather switch are part of the key because the dashboard can change them too.
+  return (
+    <Form
+      key={`${apiary.id}:${apiary.latitude}:${apiary.longitude}:${apiary.weather_enabled}`}
+      apiary={apiary}
+    />
+  );
 }

@@ -28,6 +28,7 @@ export default function Inspection() {
   }, [hiveId]);
   const hiveSelector = (
     <Segmented
+      scroll
       value={hive?.id ?? ""}
       onChange={setSelected}
       options={app.data.hives.map((h) => ({ value: h.id, label: h.code }))}

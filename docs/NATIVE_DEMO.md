@@ -79,6 +79,6 @@ Para recompilar la demo con el workflow actual, selecciona `field_app=false`; el
 6. Cierra completamente y vuelve a abrir la app, entra a la demo y comprueba que la inspección permanece.
 7. En **Ajustes**, cambia tema o intervalo. **Salir de la demo** vuelve a la portada y conserva los datos locales para la siguiente entrada.
 
-El simulador de la pantalla Acústica permite generar más patrones WAV. Los datos permanecen en la base de demo y no sincronizan. La reproducción no solicita permiso de micrófono: esta app escucha clips recibidos o sintéticos y no graba el micrófono del teléfono. BLE/MQTT reales siguen fuera de la demo.
+La pantalla Acústica ya no incluye el simulador de campo: la demo trae lecturas de ejemplo. Los datos permanecen en la base de demo y no sincronizan. La reproducción no solicita permiso de micrófono: esta app escucha clips recibidos o sintéticos y no graba el micrófono del teléfono. BLE/MQTT reales siguen fuera de la demo.
 
 `.maestro/demo.yaml` automatiza entrada, navegación, reproducción, mapa, inspección, reapertura y salida en Android Emulator e iOS Simulator. En Android, la prueba desactiva Wi-Fi y datos del emulador antes de abrir la app. Las capturas de dispositivos virtuales, los resultados JUnit y los logs se conservan junto con los binarios. Las pruebas físicas, tiendas, hardware, cuentas reales y validación científica mantienen sus pendientes en #15/#8/#25.

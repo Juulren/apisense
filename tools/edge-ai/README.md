@@ -21,7 +21,7 @@ Requiere Python 3.10+ y `numpy`. Para grabar por USB: `pip install pyserial`.
 cd tools/edge-ai
 python -m unittest discover -s tests             # pruebas (sin hardware)
 
-# 1) Carga capture_inmp441.ino al ESP32 (ajusta los pines del cableado) y graba:
+# 1) Carga capture_inmp441.ino al ESP32 (ya usa el cableado de tu prueba por WiFi: SCK 14, WS 15, SD 32, canal derecho) y graba:
 python -m apisense_audio.capture --port COM4 --hive C-01 --minutes 5 --out data/raw --temperature 28
 
 # 2) Después de varios días, analiza (los días posteriores a --train-days quedan para probar):

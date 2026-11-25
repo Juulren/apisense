@@ -40,9 +40,12 @@ const dueText: Record<Frequency, string> = {
 export function SeasonTracker({
   hiveId,
   cta = true,
+  brief = false,
 }: {
   hiveId: string;
   cta?: boolean;
+  /** Only this hive's own records: the 14-day strip, the reminder and the signals. */
+  brief?: boolean;
 }) {
   const app = useApp(),
     { colors } = useTheme();
@@ -73,58 +76,62 @@ export function SeasonTracker({
     router.push({ pathname: "/inspection", params: { hiveId } });
   return (
     <Card>
-      <Badge label="Temporada · orientativa" tone="amber" />
-      <SeasonRing calendar={calendar} today={today} info={info} />
-      {info ? (
-        <View style={{ gap: 6 }}>
-          <Label bold>{info.flora}</Label>
-          <Label>{info.note}</Label>
-          <Label muted size={12}>
-            {info.confidence ? `Confianza: ${info.confidence}` : "Tu calendario"}
-            {info.single ? " · fuente única" : ""}
-            {info.confidence && regionById(apiary?.region_preset)
-              ? ` · ${regionById(apiary?.region_preset)?.reference}`
-              : ""}
-          </Label>
-          {position.changesIn !== null && position.next ? (
+      {brief ? null : (
+        <>
+        <Badge label="Temporada típica de la zona" tone="amber" />
+        <SeasonRing calendar={calendar} today={today} info={info} />
+        {info ? (
+          <View style={{ gap: 6 }}>
+            <Label bold>{info.flora}</Label>
+            <Label>{info.note}</Label>
             <Label muted size={12}>
-              {position.changesIn === 1
-                ? "El próximo mes"
-                : `En ${position.changesIn} meses`}{" "}
-              ({monthLong[(position.month + position.changesIn) % 12]}) suele
-              pasar a: {phaseLabels[position.next.phase]}.
+              {info.confidence ? `Confianza: ${info.confidence}` : "Tu calendario"}
+              {info.single ? " · fuente única" : ""}
+              {info.confidence && regionById(apiary?.region_preset)
+                ? ` · ${regionById(apiary?.region_preset)?.reference}`
+                : ""}
             </Label>
-          ) : null}
-        </View>
-      ) : (
-        <View style={{ gap: 8 }}>
-          <Label>
-            {calendar
-              ? "Este mes no tiene datos en tu calendario."
-              : regionById(
-                    suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null),
-                  )
-                ? `Tu apiario está en la zona del calendario «${regionById(suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null))?.label}»: elígelo en Ajustes > Mi apiario.`
-                : "Aún no hay un calendario regional para este lugar. Completa el tuyo en Ajustes > Mi apiario: ahí ves el clima de cada mes en tu ubicación."}
+            {position.changesIn !== null && position.next ? (
+              <Label muted size={12}>
+                {position.changesIn === 1
+                  ? "El próximo mes"
+                  : `En ${position.changesIn} meses`}{" "}
+                ({monthLong[(position.month + position.changesIn) % 12]}) suele
+                pasar a: {phaseLabels[position.next.phase]}.
+              </Label>
+            ) : null}
+          </View>
+        ) : (
+          <View style={{ gap: 8 }}>
+            <Label>
+              {calendar
+                ? "Este mes no tiene datos en tu calendario."
+                : regionById(
+                      suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null),
+                    )
+                  ? `Tu apiario está en la zona del calendario «${regionById(suggestPreset(apiary?.latitude ?? null, apiary?.longitude ?? null))?.label}»: elígelo en Ajustes > Mi apiario.`
+                  : "Aún no hay un calendario regional para este lugar. Completa el tuyo en Ajustes > Mi apiario: ahí ves el clima de cada mes en tu ubicación."}
+            </Label>
+            <Button
+              label="Ir a Ajustes"
+              variant="secondary"
+              onPress={() => router.push("/settings")}
+            />
+          </View>
+        )}
+        {climate?.reading ? (
+          <Label muted size={12}>
+            {monthClimate
+              ? `Clima de este mes en tu lugar: ${monthClimate}. `
+              : "Clima de este mes en tu lugar: sin diferencia marcada con el resto del año. "}
+            ({CLIMATE_SOURCE}, {climate.reading.fromYear}–{climate.reading.toYear}).{" "}
+            {CLIMATE_NOTE}
           </Label>
-          <Button
-            label="Ir a Ajustes"
-            variant="secondary"
-            onPress={() => router.push("/settings")}
-          />
-        </View>
+        ) : null}
+        </>
       )}
-      {climate?.reading ? (
-        <Label muted size={12}>
-          {monthClimate
-            ? `Clima de este mes en tu lugar: ${monthClimate}. `
-            : "Clima de este mes en tu lugar: sin diferencia marcada con el resto del año. "}
-          ({CLIMATE_SOURCE}, {climate.reading.fromYear}–{climate.reading.toYear}).{" "}
-          {CLIMATE_NOTE}
-        </Label>
-      ) : null}
       <View style={{ gap: 8 }}>
-        <Label bold>Registro rápido</Label>
+        <Label bold>{brief ? "Registros de esta colmena" : "Registro rápido"}</Label>
         {checkins.length === 0 ? (
           <Label muted size={12}>
             Sin registros: mostrando información general de la temporada.
@@ -184,9 +191,11 @@ export function SeasonTracker({
           <Label style={{ flex: 1 }}>{signal.text}</Label>
         </View>
       ))}
-      <Label muted size={12}>
-        {calendarDisclaimer}
-      </Label>
+      {brief ? null : (
+        <Label muted size={12}>
+          {calendarDisclaimer}
+        </Label>
+      )}
     </Card>
   );
 }

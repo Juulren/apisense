@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { AppScreen, Empty } from "../components/AppScreen";
-import { Button, Label, Segmented } from "../components/ui";
+import { Label, Segmented } from "../components/ui";
 import { SummaryCard } from "../components/SummaryCard";
 import { useApp } from "../state/AppProvider";
-import { useTask } from "../state/useTask";
 export default function History() {
   const params = useLocalSearchParams<{ hiveId?: string }>(),
-    app = useApp(),
-    task = useTask();
+    app = useApp();
   const [selected, setSelected] = useState(params.hiveId ?? "all"),
     [status, setStatus] = useState("all");
   const summaries = app.data.summaries
@@ -25,6 +23,7 @@ export default function History() {
       back
     >
       <Segmented
+        scroll
         value={selected}
         onChange={setSelected}
         options={[
@@ -48,22 +47,10 @@ export default function History() {
         ))
       ) : (
         <Empty>
-          No hay resúmenes para estos filtros. Genera uno desde el detalle de
-          una colmena después de recibir audio.
+          No hay resúmenes para estos filtros. Se generan solos cuando llegan
+          lecturas.
         </Empty>
       )}
-      <Button
-        label="Revisar resúmenes pendientes"
-        variant="secondary"
-        loading={task.busy}
-        onPress={() =>
-          task.run(async () => {
-            await app.workspace?.summaries.runDue();
-            await app.refresh();
-          }, "Revisión completada")
-        }
-      />
-      {task.message ? <Label>{task.message}</Label> : null}
     </AppScreen>
   );
 }

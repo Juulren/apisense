@@ -1,7 +1,8 @@
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -360,68 +361,96 @@ export function Toggle({
     </Row>
   );
 }
+/**
+ * Choices as chips. With `scroll` they sit in ONE row you can drag sideways (for
+ * long lists such as the hives); the chosen one is scrolled into view.
+ */
 export function Segmented<T extends string>({
   value,
   options,
   onChange,
+  scroll = false,
 }: {
   value: T;
   options: { value: T; label: string; description?: string }[];
   onChange: (v: T) => void;
+  scroll?: boolean;
 }) {
   const { colors } = useTheme();
   const { fontScale, width } = useWindowDimensions();
   const largeText = fontScale > 1.2;
   const rows = width < 380 || options.some((option) => option.description);
+  const strip = useRef<ScrollView>(null);
+  const offsets = useRef<Record<string, { x: number; w: number }>>({});
+  const placed = useRef(false);
+  useEffect(() => {
+    const at = offsets.current[value];
+    if (scroll && at) strip.current?.scrollTo({ x: Math.max(0, at.x - 24), animated: true });
+  }, [value, scroll]);
+  const chips = options.map((option) => (
+    <Pressable
+      key={option.value}
+      accessibilityRole="radio"
+      accessibilityLabel={
+        option.description ? `${option.label} · ${option.description}` : option.label
+      }
+      accessibilityState={{ checked: option.value === value }}
+      aria-checked={option.value === value}
+      onPress={() => onChange(option.value)}
+      onLayout={(e) => {
+        offsets.current[option.value] = {
+          x: e.nativeEvent.layout.x,
+          w: e.nativeEvent.layout.width,
+        };
+        // First layout: bring the chosen chip into view (later changes use the effect above).
+        if (scroll && option.value === value && !placed.current) {
+          placed.current = true;
+          strip.current?.scrollTo({ x: Math.max(0, e.nativeEvent.layout.x - 24), animated: false });
+        }
+      }}
+      style={{
+        ...(scroll
+          ? { minWidth: 112 }
+          : { flexGrow: 1, flexBasis: largeText ? (rows ? "100%" : "45%") : 100 }),
+        borderWidth: option.value === value ? 2 : 1,
+        borderColor: option.value === value ? tokens.honey : colors.border,
+        borderRadius: 12,
+        padding: 12,
+        minHeight: 48,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 3,
+        backgroundColor: option.value === value ? colors.amber : colors.card,
+      }}
+    >
+      <Label size={12} bold color={option.value === value ? colors.amberText : colors.muted}>
+        {option.label}
+      </Label>
+      {option.description ? (
+        <Label size={12} color={option.value === value ? colors.amberText : colors.muted}>
+          {option.description}
+        </Label>
+      ) : null}
+    </Pressable>
+  ));
+  if (scroll)
+    return (
+      <ScrollView
+        ref={strip}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        accessibilityRole="radiogroup"
+        contentContainerStyle={{ gap: 8, paddingVertical: 2, paddingRight: 8 }}
+      >
+        {chips}
+      </ScrollView>
+    );
   return (
     <View
       accessibilityRole="radiogroup"
       style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}
     >
-      {options.map((option) => (
-        <Pressable
-          key={option.value}
-          accessibilityRole="radio"
-          accessibilityLabel={
-            option.description
-              ? `${option.label} · ${option.description}`
-              : option.label
-          }
-          accessibilityState={{ checked: option.value === value }}
-          aria-checked={option.value === value}
-          onPress={() => onChange(option.value)}
-          style={{
-            flexGrow: 1,
-            flexBasis: largeText ? (rows ? "100%" : "45%") : 100,
-            borderWidth: option.value === value ? 2 : 1,
-            borderColor: option.value === value ? tokens.honey : colors.border,
-            borderRadius: 12,
-            padding: 12,
-            minHeight: 48,
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 3,
-            backgroundColor:
-              option.value === value ? colors.amber : colors.card,
-          }}
-        >
-          <Label
-            size={12}
-            bold
-            color={option.value === value ? colors.amberText : colors.muted}
-          >
-            {option.label}
-          </Label>
-          {option.description ? (
-            <Label
-              size={12}
-              color={option.value === value ? colors.amberText : colors.muted}
-            >
-              {option.description}
-            </Label>
-          ) : null}
-        </Pressable>
-      ))}
+      {chips}
     </View>
   );
 }
