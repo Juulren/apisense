@@ -11,6 +11,8 @@
 //   field (default)   60 s window every 10 min, 7 days of learning
 //   bench (-DAPISENSE_BENCH)  5 s windows back to back, "1 day" of learning (about 3 minutes):
 //                     ONLY to check that the chain works. It says nothing about detection.
+//   quick (-DAPISENSE_QUICK)  60 s windows back to back, ready after 30 of them (about 31 minutes). A
+//                     short first baseline of one part of one day: expect changes of the day to look different.
 // Changing build erases what was learned (windows of different length are not comparable).
 //
 // Serial, 921600, text lines.
@@ -30,6 +32,12 @@ static const uint32_t CYCLE_SECONDS = 0;  // back to back
 static const int LEARN_DAYS = 1;
 static const int LEARN_STRIDE = 1;
 static const char *MODE = "bench";
+#elif defined(APISENSE_QUICK)
+static const uint32_t WINDOW_SECONDS = 60;  // the field's window length
+static const uint32_t CYCLE_SECONDS = 0;    // back to back: ready after 30 windows, about 31 minutes
+static const int LEARN_DAYS = 1;
+static const int LEARN_STRIDE = 1;
+static const char *MODE = "rapido";
 #else
 static const uint32_t WINDOW_SECONDS = 60;
 static const uint32_t CYCLE_SECONDS = 600;
@@ -208,10 +216,11 @@ static void listenOnce() {
     sinceSave = 0;
   }
   const float threshold = node.meta().phase == apisense::kReady ? node.baseline().threshold : 0.0f;
-  Serial.printf("WINDOW estado=%d alarma=%d puntaje=%.3f umbral=%.3f aprendida=%d dias=%d ventanas=%d rms_db=%.1f perdido_ms=%d proceso_ms=%u micro=%s pila_libre=%u\n",
+  Serial.printf("WINDOW estado=%d alarma=%d puntaje=%.3f umbral=%.3f aprendida=%d dias=%d ventanas=%d rms_db=%.1f perdido_ms=%d proceso_ms=%u micro=%s pila_libre=%u memoria_libre=%u memoria_minima=%u\n",
                 (int)(micFault || broken ? node.status() : r.status), r.alarm, r.score, threshold, r.learned ? 1 : 0, node.daysSeen(),
                 node.learner().total(), window.frames() ? features[RMS_MEAN] : -120.0f, (int)lostMs,
-                (unsigned)(processing / 1000), micFault ? "FALLA" : "ok", (unsigned)uxTaskGetStackHighWaterMark(NULL));
+                (unsigned)(processing / 1000), micFault ? "FALLA" : "ok", (unsigned)uxTaskGetStackHighWaterMark(NULL),
+                (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMinFreeHeap());
   uint8_t message[apisense::kPayloadBytes];
   apisense::encodePayload(
       apisense::uplinkFor(r, threshold, uplinkCounter++, micFault ? apisense::kFlagMicFault : 0), message);

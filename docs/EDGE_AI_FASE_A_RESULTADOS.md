@@ -107,3 +107,21 @@ Las AUC de la placa en hive1 (0,22 y 0,21) **están sesgadas**: la línea base i
 - Lo aprendido con estas colmenas **no se carga en la tuya**: cada colmena aprende su propio sonido.
 
 No se cambió el umbral a partir de estos datos: ajustarlo con ellos no tiene validez para otras colmenas. Se decidirá con grabaciones propias y eventos controlados.
+
+## Modelo inicial con los datasets, cargado en el ESP32 (25 nov)
+
+A petición del usuario se entrenó en la placa una línea base con 512 ventanas de audio etiquetado como normal (`apisense_audio/pretrain.py`): 256 de Kaggle «con reina», 192 «abeja» de To bee or not to bee (sin las grabaciones marcadas «Missing Queen») y 64 «Active» de Open Source Beehives, repartidas al azar entre las franjas horarias. En la placa dio el mismo centro, escala y umbral (4,21) que en Python, y sobrevive a un reinicio. El firmware `apisense_node` en modo rápido la usa sin borrarla. (Una primera versión incluía ventanas de una colmena sin reina y no mezclaba las franjas como se decía; la revisión de Opus lo detectó. Al corregirlo, la conclusión no cambió.)
+
+| Entrada (en la PC, mismo modelo, franja de las 12 a las 15 h) | Puntaje | Sobre el umbral |
+|---|---|---|
+| Grabación propia del usuario (9 ventanas de 60 s) | 3,45–4,52 | 5 de 9 |
+| Control: casi silencio | 3,24 | no |
+| Control: ruido blanco | 2,99 | no |
+| Control: tono de 1 kHz | 4,45 | sí |
+| Control: tono de 3 kHz fuerte | 4,62 | sí |
+
+En vivo en la placa, 5 ventanas con el micrófono del usuario dieron 1,40–4,36: 1 sobre el umbral y ninguna alarma (la regla pide 3 de las últimas 4).
+
+**Este modelo no sirve para vigilar una colmena:** considera habitual el casi silencio y el ruido blanco, y en la grabación propia cruza el umbral varias veces sin que se conozca ningún problema. Causas probables (revisión de Opus): los datasets difieren unos 30 dB de nivel, así que el nivel absoluto casi no cuenta, y el puntaje lo deciden las variaciones dentro de la ventana, que con el micrófono del usuario son mayores que en los datasets. La deriva lenta tampoco lo adapta a la colmena propia: solo aprende ventanas bajo el umbral y con un tope pequeño. Sirve para demostrar que la cadena funciona dentro del ESP32. Una posible mejora, no probada: características que no dependan de la ganancia del micrófono. Lo recomendado sigue siendo que cada nodo aprenda su colmena (comando `RESET`, unos 31 min en modo rápido para una primera línea base).
+
+Ojo: el firmware borra lo aprendido si la compilación anterior en esa placa era otra (de campo o de banco) o si la placa es nueva; en ese caso hay que cargar una vez el modo rápido antes de `pretrain`.
