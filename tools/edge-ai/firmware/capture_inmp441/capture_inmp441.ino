@@ -14,8 +14,9 @@
 //              measures both slots at start-up and uses the one with sound)
 // If you wire it differently, change the pins below.
 //
-// Built for Arduino-ESP32 core 2.x (legacy driver/i2s.h). On core 3.x the same
-// header still compiles with a deprecation warning.
+// Built for Arduino-ESP32 core 3.x and 4.x with the ESP_I2S library (the legacy
+// driver/i2s.h used by older sketches no longer exists in core 4.0). Compiled
+// against esp32:esp32 4.0.0 for the "DOIT ESP32 DEVKIT V1" board.
 //
 // This measures relative level, not calibrated SPL. It records; it does not
 // classify anything.
@@ -25,12 +26,12 @@
 // about 62.5 blocks/s. An I2S DMA overrun is not visible in the
 // sequence number (that only counts loss on the USB side); the measured block
 // rate is what reveals a stalled board.
-#include <driver/i2s.h>
+#include <ESP_I2S.h>
 
 static const int PIN_SCK = 14;
 static const int PIN_WS = 15;
 static const int PIN_SD = 32;
-static const i2s_port_t PORT = I2S_NUM_0;
+static I2SClass i2s;
 // The slot with the microphone's data. The WiFi test read the RIGHT slot (index 1), but the
 // slot order can differ between ESP32 core versions, so at start-up the sketch measures
 // both slots and uses the one that carries sound. PREFERRED_CHANNEL breaks a tie.
@@ -64,36 +65,20 @@ static bool primed = false;
 void setup() {
   Serial.setTxBufferSize(8192);
   Serial.begin(921600);
-  i2s_config_t config = {};
-  config.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX);
-  config.sample_rate = SAMPLE_RATE;
-  config.bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT;
-  config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-  config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
-  config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
-  config.dma_buf_count = 8;
-  config.dma_buf_len = BLOCK_SAMPLES;
-  config.use_apll = false;
-  i2s_pin_config_t pins = {};
-  pins.bck_io_num = PIN_SCK;
-  pins.ws_io_num = PIN_WS;
-  pins.data_out_num = I2S_PIN_NO_CHANGE;
-  pins.data_in_num = PIN_SD;
   // If the driver or the pins fail, say so (the PC skips text) and stop: silence would look like a quiet hive.
-  if (i2s_driver_install(PORT, &config, 0, NULL) != ESP_OK || i2s_set_pin(PORT, &pins) != ESP_OK) {
+  i2s.setPins(PIN_SCK, PIN_WS, -1, PIN_SD, -1);  // bclk, ws, dout (unused), din, mclk (unused)
+  if (!i2s.begin(I2S_MODE_STD, SAMPLE_RATE, I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO, I2S_STD_SLOT_BOTH)) {
     for (;;) {
       Serial.println("ERROR: no se pudo iniciar I2S");
       delay(1000);
     }
   }
-  i2s_zero_dma_buffer(PORT);
   // The INMP441 needs about 260 ms to start and clicks while it does: read and throw away
   // ~0.5 s, measuring the energy of each slot on the way (values as in the sent samples).
   double energy[2] = {0.0, 0.0};
   long counted = 0;
   for (int k = 0; k < 32; k++) {
-    size_t got = 0;
-    i2s_read(PORT, raw, sizeof(raw), &got, portMAX_DELAY);
+    const size_t got = i2s.readBytes((char *)raw, sizeof(raw));
     if (k < 16) continue;  // the first half second is the start-up transient
     const int pairs = got / (2 * sizeof(int32_t));
     for (int i = 0; i < pairs; i++) {
@@ -125,9 +110,8 @@ void setup() {
 }
 
 void loop() {
-  size_t read = 0;
-  i2s_read(PORT, raw, sizeof(raw), &read, portMAX_DELAY);
-  const int n = read / (2 * sizeof(int32_t));
+  const size_t got = i2s.readBytes((char *)raw, sizeof(raw));  // blocks until a block arrives (1 s timeout)
+  const int n = got / (2 * sizeof(int32_t));
   if (n <= 0) return;
   size_t at = 0;
   packet[at++] = 0xA5;
