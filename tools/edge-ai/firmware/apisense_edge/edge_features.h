@@ -200,9 +200,8 @@ inline int bucketOf(float hour) {
   return h / (24 / kHourBuckets);
 }
 
-// How far a window is from the hive's usual sound at this hour (0 = typical).
-inline float score(const Baseline& b, const float window[kFeatures], float hour) {
-  const int k = bucketOf(hour);
+// How far a window is from the hive's usual sound in 3-hour slot `k` (0 = typical).
+inline float scoreIn(const Baseline& b, const float window[kFeatures], int k) {
   double acc = 0.0;
   for (int i = 0; i < kFeatures; i++) {
     float z = (window[i] - b.center[k][i]) / b.scale[k][i];
@@ -213,12 +212,25 @@ inline float score(const Baseline& b, const float window[kFeatures], float hour)
   return static_cast<float>(sqrt(acc / kFeatures));
 }
 
+// The same at a given hour of the day.
+inline float score(const Baseline& b, const float window[kFeatures], float hour) {
+  return scoreIn(b, window, bucketOf(hour));
+}
+
 // The node's one-number verdict: 0 usual, 1 different.
 class Detector {
  public:
   // Keeps a reference: the Baseline must outlive the Detector.
   explicit Detector(const Baseline& b) : b_(b) {}
   void reset() { count_ = 0; }  // forget recent windows (call when time was not recorded in between)
+  // How many of the last `of` windows exceeded the threshold (0 = all recent windows were usual).
+  int recentOver() const {
+    int n = count_ < b_.of ? count_ : b_.of;
+    if (n > kMaxOf) n = kMaxOf;
+    int over = 0;
+    for (int i = 0; i < n; i++) over += history_[(head_ - 1 - i + kMaxOf) % kMaxOf];
+    return over;
+  }
   int update(const float window[kFeatures], float hour, float* scoreOut = nullptr) {
     const float s = score(b_, window, hour);
     if (scoreOut) *scoreOut = s;

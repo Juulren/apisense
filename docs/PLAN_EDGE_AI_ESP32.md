@@ -47,6 +47,14 @@ Puerta B: características dentro de tolerancia en todas las ventanas de prueba;
 1. Aprendizaje: el nodo solo aprende durante el periodo definido por la fase 0 (**7 a 14 días**, no 3). Acorta el tiempo solo si los datos reales lo permiten.
 2. Después compara cada ventana con la línea base y aplica la persistencia.
 3. Casos a tratar: corte de energía (la línea base se conserva en NVS), reloj sin hora, deriva lenta (actualización lenta con tope para que un problema sostenido no se vuelva «habitual»), y comando para reiniciar el aprendizaje.
+**Estado (25 nov): código hecho y probado en la placa; falta la puerta con datos propios.**
+- Código: `edge_learn.h`, `edge_node.h`, `edge_storage.h`; banco de pruebas `firmware/learn_test` + `apisense_audio/learn_parity.py` (10 grupos de comprobaciones, todas pasan): la línea base aprendida en la placa es igual a `HiveBaseline.fit` de Python (también con franjas desbordadas, escasas o vacías), 7 días con ≥ 12 ventanas cada uno, sin reloj no hace nada, recupera el estado tras reiniciar y el reinicio de aprendizaje borra todo.
+- Diseño: se guardan las últimas 64 ventanas por franja de 3 h (~49 KB de RAM) en lugar de un estimador en flujo: las medianas son exactas y «aprender despacio» es que el anillo olvida lo más viejo. En flash: línea base de referencia (NVS, 1,5 KB) y un archivo de 6 KB por franja.
+- Regla de deriva con tope (revisada por Opus): solo entran ventanas bajo el umbral y sin ninguna de las últimas 4 por encima; el umbral no se mueve; el centro no se aleja más de 3 escalas de la referencia y la escala no baja de 0,8 de ella. Un cambio duradero real (reina nueva, colmena movida) exige el comando de reinicio.
+- Un reinicio a mitad del día no cuenta el día dos veces (se guarda el último día contado).
+- **No cubierto todavía:** un corte de energía real en medio de una escritura a flash; registros dañados (CRC) en meta y franjas; la marca de altura de pila (`uxTaskGetStackHighWaterMark`); el desborde real de `millis()` a los 49 días (el banco usa su propio reloj); días de funcionamiento continuo.
+- **Riesgo para la fase D:** tras un corte de energía el nodo no juzga nada hasta recibir la hora (estado «sin reloj»). El nodo debe pedir la hora al arrancar (DeviceTimeReq) y enviar ese estado en el mensaje, para que la app avise de que la colmena no se está vigilando.
+
 4. Puerta C = **puerta de la fase 0 con grabaciones propias:** al menos 7 días, 2 colmenas, ≥ 10 eventos controlados detectados en ≥ 80 %, ≤ 1 falsa alarma por colmena y día, datos perdidos < 1 %. Con un fin de semana de grabaciones no se llega a 10 eventos; hacen falta más días o eventos provocados.
 
 ## Fase D · Enviar a la app y a Supabase
