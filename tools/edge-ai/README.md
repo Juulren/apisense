@@ -12,6 +12,9 @@ Protocolo de grabación y criterios: `docs/EDGE_AI_FASE0.md`.
 - `apisense_audio/baseline.py` — línea base robusta por colmena y franja horaria, y regla de persistencia (3 de las últimas 4 ventanas).
 - `apisense_audio/evaluate.py` — entrena con los primeros días y prueba con los siguientes; falsas alarmas por día y eventos detectados.
 - `apisense_audio/analyze.py` — carpeta de grabaciones → informe y línea base en JSON.
+- `apisense_audio/datasets.py` y `phase_a.py` — cargan los datasets públicos (Kaggle beehive-sounds, To bee or not to bee, Open Source Beehives), calculan las mismas características y generan el informe de la fase A (`docs/EDGE_AI_FASE_A_RESULTADOS.md`). Solo comprueban las características; no son una puerta de aprobación.
+- `firmware/apisense_edge/edge_features.h` — el detector en C++ (características de ventana, puntuación contra la línea base y regla 3 de 4), sin dependencias de Arduino.
+- `firmware/parity_test/` y `apisense_audio/parity.py` — la PC manda audio a la placa, la placa calcula con el código real del nodo y se comparan los números con Python. Resultado del 25 nov: **idénticos** en una grabación propia, una de Kaggle y una de To bee or not to bee; 16,7 ms por trama de 32 ms disponibles.
 - `apisense_audio/synthetic.py` — audio sintético **solo para pruebas**. Que pase con audio sintético no dice nada sobre colmenas reales.
 
 ## Uso
