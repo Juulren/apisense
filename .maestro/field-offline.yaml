@@ -2,7 +2,7 @@ appId: com.apisense.app
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "Buenos días, apicultor"
+    visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
 - scrollUntilVisible:
     centerElement: true

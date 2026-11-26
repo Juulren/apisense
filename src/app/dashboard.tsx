@@ -12,6 +12,7 @@ import {
 } from "../components/ui";
 import { HiveTile } from "../components/HiveTile";
 import { WeatherCard } from "../components/WeatherCard";
+import { greetingFor } from "../services/Greeting";
 import { calendarFor, phaseLabels, phaseOn } from "../services/Seasons";
 import { pendingAlerts } from "../services/EdgeVerdicts";
 import { useNodeState } from "../state/useNodeState";
@@ -32,7 +33,7 @@ export default function Dashboard() {
     <AppScreen>
       <View style={{ gap: 5 }}>
         <Label bold size={24}>
-          Buenos días, {data.settings.name || "apicultor"}
+          {greetingFor(new Date())}, {data.settings.name || "apicultor"}
         </Label>
         <Label muted>
           {data.apiaries[0]?.name || "Tu próximo apiario comienza aquí"}

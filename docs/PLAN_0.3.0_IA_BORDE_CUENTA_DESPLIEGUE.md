@@ -131,7 +131,7 @@ Fuentes: el tablero FigJam «Proyecto ganadería equipo 2» (leído en solo lect
 - Columnas sin uso (`hives.queen_status`, `hives.health_score`): decidir si se usan o se retiran.
 
 **Cambiar**
-- Saludo por hora del día y con el nombre del perfil (hoy siempre «Buenos días»; los flujos Maestro asumen ese texto).
+- Saludo por hora del día y con el nombre del perfil: **hecho** (25 nov; los flujos Maestro aceptan los tres saludos, sin haberse vuelto a ejecutar).
 - Mosaicos de colmena más compactos y con **estado del nodo** (batería, última lectura).
 - Vocabulario único; revisar microcopy.
 

@@ -25,7 +25,7 @@ name: App de campo Android con cuentas Supabase y sincronización
       text: "Entrar al Apiario"
 - tapOn: "Entrar al Apiario"
 - extendedWaitUntil:
-    visible: "Buenos días, apicultor"
+    visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
 - assertNotVisible: "Datos de demostración · Sin envío a nube"
 - scrollUntilVisible:

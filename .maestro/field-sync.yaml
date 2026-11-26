@@ -2,7 +2,7 @@ appId: com.apisense.app
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "Buenos días, apicultor"
+    visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
 - tapOn:
     id: "nav-Ajustes"
@@ -39,7 +39,7 @@ appId: com.apisense.app
     centerElement: false
     element:
       text: "Comenzar"
-- assertNotVisible: "Buenos días, apicultor"
+- assertNotVisible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
 - tapOn: "Comenzar"
 - tapOn:
     id: "login-email"
@@ -59,7 +59,7 @@ appId: com.apisense.app
       text: "Entrar al Apiario"
 - tapOn: "Entrar al Apiario"
 - extendedWaitUntil:
-    visible: "Buenos días, apicultor"
+    visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
 - scrollUntilVisible:
     centerElement: true
