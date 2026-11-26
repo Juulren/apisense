@@ -34,7 +34,7 @@ export default function Dashboard() {
     (h) => nodeHiveStatus(data.verdicts, h.id, nodes.stateOf(h.id))?.stable,
   ).length;
   return (
-    <AppScreen>
+    <AppScreen title="Apisense">
       <Label bold size={24} accessibilityRole="header">
         {greetingFor(new Date())}, {data.settings.name || "apicultor"}
       </Label>

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -125,6 +126,14 @@ export function Screen({
                     ? router.back()
                     : router.replace("/dashboard")
                 }
+              />
+            ) : title ? (
+              // The app's mark, where the back arrow would be. It is only
+              // decoration: the title beside it says where you are.
+              <Image
+                source={require("../../../assets/brand-logo.png")}
+                accessible={false}
+                style={{ width: 32, height: 32, borderRadius: 16 }}
               />
             ) : null}
             <Label

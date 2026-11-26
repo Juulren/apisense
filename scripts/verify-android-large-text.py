@@ -27,7 +27,7 @@ def intersects(a, b):
 
 
 sync = unique("content-desc", "Demo. Ver estado de sincronización")
-for label in ["Anotar observación"]:
+for label in ["Anotar"]:
     if intersects(bounds(unique("text", label)), bounds(sync)):
         raise SystemExit(f"Large-text header overlaps sync action: {label}")
 
@@ -45,7 +45,7 @@ for label in ["Inicio", "Colmenas", "Ajustes"]:
 if selected != 1:
     raise SystemExit("Exactly one native navigation item must be selected")
 
-save = unique("content-desc", "Guardar observación")
+save = unique("content-desc", "Guardar")
 left, top, right, bottom = bounds(save)
 if bottom-top < 52*density-1 or save.get("enabled") != "true" or save.get("clickable") != "true":
     raise SystemExit("Large-text save action lost its native touch target/state")

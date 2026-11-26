@@ -15,6 +15,7 @@ import { Fold } from "../components/ui/Fold";
 import { NotDiagnosis } from "../components/NotDiagnosis";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { useDoneSound } from "../state/useDoneSound";
 import { reviewLabels } from "../services/EdgeVerdicts";
 import {
   alertEpisodes,
@@ -28,7 +29,8 @@ import type { VerdictReview } from "../db/types";
 
 export default function Alerts() {
   const app = useApp(),
-    task = useTask();
+    task = useTask(),
+    done = useDoneSound();
   // Keyed by the episode's first alert, which stays put while it grows.
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [writing, setWriting] = useState<Record<string, boolean>>({});
@@ -49,6 +51,7 @@ export default function Alerts() {
       );
       setNotes((n) => ({ ...n, [key]: "" }));
       await app.refresh();
+      done();
     }, `Marcada: ${reviewLabels[decision].toLowerCase()}`);
   return (
     <AppScreen title="Alertas" back>

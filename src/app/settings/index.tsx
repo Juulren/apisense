@@ -18,6 +18,7 @@ import { useTask } from "../../state/useTask";
 import { useAccountEmail } from "../../state/useAccountEmail";
 import { startAt } from "../../state/startAt";
 import { syncProblem } from "../../services/HeaderStatus";
+import { playDone } from "../../services/sounds";
 
 /** A card that opens another screen. */
 function LinkRow({
@@ -117,6 +118,19 @@ export default function Settings() {
           ]}
           onChange={(value) => {
             void task.run(() => app.saveSetting("theme", value));
+          }}
+        />
+      </Card>
+      <Card style={{ padding: 16 }}>
+        <Toggle
+          testID="sounds-toggle"
+          label="Sonidos"
+          caption="Un tono suave al guardar"
+          value={app.data.settings.sounds !== "0"}
+          onChange={(v) => {
+            // Turning them on lets the person hear what they will get.
+            if (v) playDone();
+            void task.run(() => app.saveSetting("sounds", v ? "1" : "0"));
           }}
         />
       </Card>

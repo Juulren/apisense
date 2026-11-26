@@ -74,6 +74,22 @@ export const hasStructured = (input: CheckinInput) =>
       input.queen_cells,
   );
 
+/** Whether leaving now would lose something the person wrote or marked. */
+export const hasUnsavedCheckin = (input: CheckinInput) =>
+  Boolean(input.notes.trim() || input.tags.trim()) || hasStructured(input);
+
+/**
+ * The hive being written about: the one asked for or tapped, or the only one.
+ * With several and none asked for, none: a note must not land on the wrong hive.
+ */
+export function chosenHive<T extends { id: string }>(
+  hives: T[],
+  selected: string,
+): T | undefined {
+  if (selected) return hives.find((h) => h.id === selected);
+  return hives.length === 1 ? hives[0] : undefined;
+}
+
 /** A note of at least 3 characters, or at least one chosen state, is enough. */
 export function validateCheckin(input: CheckinInput) {
   const notes = input.notes.trim();

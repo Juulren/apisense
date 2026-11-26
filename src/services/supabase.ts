@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import { DEMO_ONLY } from "../config/runtime";
 import { createAuthCallbackHandler } from "./authCallback";
+import { guardedSession, parseStoredAccount, sessionKey } from "./storedSession";
 
 const storage = {
   async getItem(key: string) {
@@ -24,11 +25,14 @@ const secureUrl =
   url &&
   (url.startsWith("https://") ||
     (__DEV__ && /^http:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(url)));
+const authKey = secureUrl ? sessionKey(url) : "";
+const session = guardedSession(storage, authKey);
 export const supabase =
   !DEMO_ONLY && secureUrl && key
     ? createClient(url, key, {
         auth: {
-          storage,
+          storage: session.storage,
+          storageKey: authKey,
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: false,
@@ -37,8 +41,32 @@ export const supabase =
       })
     : null;
 
+/** The account saved on this phone: answers with no signal and an old token. */
+export async function storedAccount() {
+  if (!supabase) return null;
+  return parseStoredAccount(await storage.getItem(authKey));
+}
+
+/** Await before signing in: an earlier sign-out may still be finishing. */
+export const sessionSettled = () => session.settled();
+
+/** Leaves the account on this phone, with or without signal. */
+export async function signOutHere() {
+  const client = supabase;
+  if (!client) return;
+  await session.leave(
+    {
+      revoke: (token) => client.auth.admin.signOut(token, "local"),
+      signOut: () => client.auth.signOut({ scope: "local" }),
+    },
+    // With bad signal the screen does not wait longer than this.
+    5_000,
+  );
+}
+
 export const completeAuthCallback = createAuthCallbackHandler(async (code) => {
   if (!supabase) throw new Error("Configura Supabase en la app de campo.");
+  await sessionSettled();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error || !data.session)
     throw new Error(

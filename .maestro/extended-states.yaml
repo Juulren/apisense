@@ -48,16 +48,16 @@ name: Mapa errores y colmena sin lecturas
     element: { text: "Anotar" }
 - tapOn: "Anotar"
 - scrollUntilVisible:
-    element: { text: "Guardar observación" }
-- tapOn: "Guardar observación"
+    element: { id: "inspection-save" }
+- tapOn: { id: "inspection-save" }
 - scrollUntilVisible:
     element: { text: "Escribe una nota de al menos 3 caracteres o elige cómo la ves" }
 - takeScreenshot: .artifacts/design/states/04-inspection-validation
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000009999
 - scrollUntilVisible:
     direction: UP
-    element: { text: "Selecciona una colmena válida" }
+    element: { text: "Elige la colmena" }
 - scrollUntilVisible:
-    element: { text: "Guardar observación" }
-- assertVisible: { text: "Guardar observación", enabled: false }
+    element: { id: "inspection-save" }
+- assertVisible: { id: "inspection-save", enabled: false }
 - takeScreenshot: .artifacts/design/states/05-invalid-hive-disabled

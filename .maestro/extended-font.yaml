@@ -4,18 +4,18 @@ name: Formulario con texto al 200 por ciento
 - launchApp
 - openLink: apisense:///
 - scrollUntilVisible:
-    element: { text: "Explorar demo local" }
-- tapOn: "Explorar demo local"
+    element: { id: "login-demo" }
+- tapOn: { id: "login-demo" }
 - extendedWaitUntil:
     visible: "Anotar"
     timeout: 60000
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
 - extendedWaitUntil:
-    visible: "Observaciones de Colmena 02"
+    visible: { id: "inspection-hive" }
     timeout: 30000
 - scrollUntilVisible:
     direction: UP
-    element: { text: "Observaciones de Colmena 02" }
+    element: { id: "inspection-hive" }
 - takeScreenshot: .artifacts/design/font200/03-hive-options
 - scrollUntilVisible:
     centerElement: true
@@ -25,5 +25,5 @@ name: Formulario con texto al 200 por ciento
 - takeScreenshot: .artifacts/design/font200/04-notes-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar observación" }
+    element: { id: "inspection-save" }
 - takeScreenshot: .artifacts/design/font200/05-save-reachable

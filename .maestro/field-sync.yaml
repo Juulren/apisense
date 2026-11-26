@@ -36,16 +36,15 @@ appId: com.apisense.app
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Comenzar"
+      id: "login-email"
     timeout: 60000
 - stopApp
 - launchApp
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Comenzar"
+      id: "login-email"
 - assertNotVisible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
-- tapOn: "Comenzar"
 - tapOn:
     id: "login-email"
 - inputText: ${MAESTRO_QA_B_EMAIL}
@@ -61,8 +60,9 @@ appId: com.apisense.app
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Entrar al Apiario"
-- tapOn: "Entrar al Apiario"
+      id: "login-submit"
+- tapOn:
+    id: "login-submit"
 - extendedWaitUntil:
     visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000

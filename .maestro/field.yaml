@@ -5,8 +5,7 @@ name: App de campo Android con cuentas Supabase y sincronización
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Comenzar"
-- tapOn: "Comenzar"
+      id: "login-email"
 - tapOn:
     id: "login-email"
 - inputText: ${MAESTRO_QA_A_EMAIL}
@@ -22,8 +21,9 @@ name: App de campo Android con cuentas Supabase y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Entrar al Apiario"
-- tapOn: "Entrar al Apiario"
+      id: "login-submit"
+- tapOn:
+    id: "login-submit"
 - extendedWaitUntil:
     visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
@@ -63,10 +63,11 @@ name: App de campo Android con cuentas Supabase y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Guardar observación"
-- tapOn: "Guardar observación"
+      id: "inspection-save"
+- tapOn:
+    id: "inspection-save"
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Observación guardada en este dispositivo.*"
+      text: "Guardada en este teléfono.*"
 - stopApp

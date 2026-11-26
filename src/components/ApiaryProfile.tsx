@@ -5,6 +5,7 @@ import { useApp } from "../state/AppProvider";
 import { useClimate } from "../state/useClimate";
 import { contextLabel, monthContexts } from "../services/Climate";
 import { useTask } from "../state/useTask";
+import { useDoneSound } from "../state/useDoneSound";
 import { saveApiaryProfile } from "../services/Apiaries";
 import {
   PLACE_DEBOUNCE_MS,
@@ -46,7 +47,8 @@ function Form({
   editing: boolean;
   onEditing: () => void;
 }) {
-  const app = useApp();
+  const app = useApp(),
+    done = useDoneSound();
   const resolved = calendarFor(apiary);
   const [name, setName] = useState(apiary.name),
     [lat, setLat] = useState(apiary.latitude === null ? "" : String(apiary.latitude)),
@@ -120,6 +122,7 @@ function Form({
         calendar,
       });
       await app.refresh();
+      done();
     }, "Apiario guardado en este dispositivo");
   const moved =
     lat !== (apiary.latitude === null ? "" : String(apiary.latitude)) ||

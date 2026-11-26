@@ -42,17 +42,15 @@ name: Demo nativa offline y persistencia
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Guardar observación"
-- tapOn: "Guardar observación"
+      id: "inspection-save"
+- tapOn:
+    id: "inspection-save"
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Observación de demo guardada localmente."
-- assertVisible: "Observación de demo guardada localmente."
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "Volver"
+      text: "Guardada en la demo."
+- assertVisible: "Guardada en la demo."
+# The header arrow: always on screen.
 - tapOn: "Volver"
 - scrollUntilVisible:
     centerElement: true

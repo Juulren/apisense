@@ -15,10 +15,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - openLink: apisense:///
 - scrollUntilVisible:
     element:
-      text: "Comenzar"
-- takeScreenshot: .artifacts/design/${THEME_KEY}/01-welcome
-- tapOn: "Comenzar"
-- assertVisible: "Bienvenido de nuevo"
+      id: login-email
 - takeScreenshot: .artifacts/design/${THEME_KEY}/02-login
 - tapOn:
     id: login-email
@@ -28,8 +25,9 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - hideKeyboard
 - scrollUntilVisible:
     element:
-      text: "Entrar al Apiario"
-- tapOn: "Entrar al Apiario"
+      id: login-submit
+- tapOn:
+    id: login-submit
 - scrollUntilVisible:
     element:
       text: "Escribe tu contraseña"
@@ -37,8 +35,9 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - openLink: apisense:///
 - scrollUntilVisible:
     element:
-      text: "Explorar demo local"
-- tapOn: "Explorar demo local"
+      id: login-demo
+- tapOn:
+    id: login-demo
 - extendedWaitUntil:
     visible: "Anotar"
     timeout: 60000
@@ -63,7 +62,8 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - assertVisible: "Micrófonos IoT"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/08-pairing
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000101
-- assertVisible: "Anotar observación"
+- assertVisible:
+    id: inspection-notes
 - takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection
 - tapOn:
     id: inspection-notes
@@ -86,7 +86,8 @@ name: Pantallas Android con datos sintéticos y tema explícito
       text: "Salir de la demo"
 - tapOn: "Salir de la demo"
 - extendedWaitUntil:
-    visible: "Comenzar"
+    visible:
+      id: login-email
     timeout: 30000
 # Leave an account-free control surface for the native bounds regression.
 - openLink: apisense:///ui-catalog

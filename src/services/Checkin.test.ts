@@ -6,7 +6,9 @@ import type { SqlValue } from "../db/types";
 import { addHive, removeHive } from "./Hives";
 import {
   checkinSummary,
+  chosenHive,
   emptyCheckin,
+  hasUnsavedCheckin,
   saveCheckin,
   validateCheckin,
 } from "./Checkin";
@@ -118,5 +120,24 @@ describe("quick check-in rules", () => {
     await expect(
       saveCheckin(repo, "no-existe", { ...emptyCheckin, notes: "otra nota" }),
     ).rejects.toThrow("ya no está");
+  });
+});
+
+describe("leaving and choosing the hive", () => {
+  it("asks before losing anything written or marked", () => {
+    expect(hasUnsavedCheckin(emptyCheckin)).toBe(false);
+    expect(hasUnsavedCheckin({ ...emptyCheckin, notes: "   " })).toBe(false);
+    expect(hasUnsavedCheckin({ ...emptyCheckin, notes: "a" })).toBe(true);
+    expect(hasUnsavedCheckin({ ...emptyCheckin, tags: "cría" })).toBe(true);
+    expect(hasUnsavedCheckin({ ...emptyCheckin, queen_cells: "none" })).toBe(true);
+  });
+  it("never picks a hive for the person when there are several", () => {
+    const two = [{ id: "a" }, { id: "b" }];
+    expect(chosenHive(two, "")).toBeUndefined();
+    expect(chosenHive(two, "b")).toEqual({ id: "b" });
+    expect(chosenHive([{ id: "a" }], "")).toEqual({ id: "a" });
+    // The hive asked for is gone: not even the only one left stands in for it.
+    expect(chosenHive([{ id: "a" }], "gone")).toBeUndefined();
+    expect(chosenHive([], "")).toBeUndefined();
   });
 });

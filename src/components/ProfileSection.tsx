@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Button, Card, Field, Label } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { useDoneSound } from "../state/useDoneSound";
 import { useAccountEmail } from "../state/useAccountEmail";
 import { newPasswordProblem } from "../services/Profile";
 import { startAt } from "../state/startAt";
@@ -10,7 +11,8 @@ import { startAt } from "../state/startAt";
 /** "Mi cuenta": the name shown in the greeting, and the account's own controls. */
 export function ProfileSection() {
   const app = useApp(),
-    task = useTask();
+    task = useTask(),
+    done = useDoneSound();
   const demo = app.workspace?.demo ?? true;
   const email = useAccountEmail(demo);
   const [draft, setDraft] = useState<string | null>(null),
@@ -46,6 +48,7 @@ export function ProfileSection() {
             task.run(async () => {
               const result = await app.saveName(name);
               setDraft(null);
+              done();
               task.setMessage(
                 result.synced || demo
                   ? "Nombre guardado"
@@ -95,6 +98,7 @@ export function ProfileSection() {
                 if (problem) throw new Error(problem);
                 await app.changePassword(current, next);
                 close();
+                done();
                 task.setMessage("Contraseña actualizada");
               })
             }

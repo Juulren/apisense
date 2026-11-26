@@ -3,8 +3,8 @@ name: Observaciones y lecturas por colmena
 ---
 - openLink: apisense:///
 - scrollUntilVisible:
-    element: { text: "Explorar demo local" }
-- tapOn: "Explorar demo local"
+    element: { id: "login-demo" }
+- tapOn: { id: "login-demo" }
 - extendedWaitUntil:
     visible: "Anotar"
     timeout: 60000
@@ -17,18 +17,17 @@ name: Observaciones y lecturas por colmena
     direction: UP
     element: { text: "Anotar" }
 - tapOn: "Anotar"
-- assertVisible: "Observaciones de Colmena 01"
+- assertVisible: "Colmena Colmena 01.*"
 - tapOn: { id: "inspection-notes" }
 - inputText: Observacion QA persistente de Colmena 01
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar observación" }
-- tapOn: "Guardar observación"
+    element: { id: "inspection-save" }
+- tapOn: { id: "inspection-save" }
 - scrollUntilVisible:
-    element: { text: "Observación de demo guardada localmente." }
+    element: { text: "Guardada en la demo." }
 - takeScreenshot: .artifacts/design/functional/03-observation-saved
-- scrollUntilVisible:
-    element: { text: "Volver" }
+# The header arrow: always on screen.
 - tapOn: "Volver"
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - assertNotVisible: Observacion QA persistente de Colmena 01
@@ -36,8 +35,8 @@ name: Observaciones y lecturas por colmena
 - launchApp
 - openLink: apisense:///
 - scrollUntilVisible:
-    element: { text: "Explorar demo local" }
-- tapOn: "Explorar demo local"
+    element: { id: "login-demo" }
+- tapOn: { id: "login-demo" }
 - extendedWaitUntil:
     visible: "Anotar"
     timeout: 60000

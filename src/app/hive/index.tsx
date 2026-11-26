@@ -15,11 +15,13 @@ import { NewApiaryForm } from "../../components/NewApiaryForm";
 import { addHive } from "../../services/Hives";
 import { useApp } from "../../state/AppProvider";
 import { useTask } from "../../state/useTask";
+import { useDoneSound } from "../../state/useDoneSound";
 
 // "Colmenas": every hive one tap away, as a list or with the apiary's map.
 export default function Hives() {
   const app = useApp(),
-    task = useTask();
+    task = useTask(),
+    done = useDoneSound();
   const { data } = app;
   const [view, setView] = useState<"list" | "map">("list"),
     [query, setQuery] = useState(""),
@@ -42,6 +44,7 @@ export default function Hives() {
       setCode("");
       setAdding(false);
       await app.refresh();
+      done();
     }, "Colmena guardada localmente");
   const showNewApiary = newApiary || !data.apiaries.length;
   return (

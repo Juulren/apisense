@@ -32,7 +32,17 @@ import type {
   EdgeVerdict,
 } from "../db/types";
 import { verdictSince } from "../services/EdgeVerdicts";
-import { supabase } from "../services/supabase";
+import {
+  supabase,
+  sessionSettled,
+  signOutHere,
+  storedAccount,
+} from "../services/supabase";
+import {
+  authMessage,
+  NO_ACCOUNTS,
+  OPEN_FAILED,
+} from "../services/AuthMessages";
 import {
   cleanName,
   newPasswordProblem,
@@ -116,7 +126,6 @@ type State = {
   changePassword: (current: string, next: string) => Promise<void>;
   /** Deletes the account on the server (after re-authenticating) and erases local data. */
   deleteAccount: (password: string) => Promise<void>;
-  offlineLogin: () => Promise<void>;
   logout: () => Promise<void>;
   saveSetting: (key: string, value: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -219,6 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       "name",
       "theme",
       "offline",
+      "sounds",
       "alerts",
       "dismissed_alert",
     ]) {
@@ -401,20 +411,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     if (supabase) {
-      void supabase.auth
-        .getSession()
-        .then(async ({ data, error: authError }) => {
+      // Offline first: whoever is saved on this phone gets their data at once.
+      // The library renews the token when it can; if the server rejects it, it
+      // announces SIGNED_OUT below and the data is closed.
+      const startedAt = epoch.current;
+      void storedAccount()
+        .then(async (saved) => {
           if (!mounted) return;
-          if (authError) setError(authError.message);
-          if (data.session) {
+          if (saved) {
             // An interrupted recovery left a session without a new password.
             if ((await SecureStore.getItemAsync(RECOVERY_KEY)) === "1") {
-              await supabase?.auth.signOut({ scope: "local" });
+              await signOutHere();
               await clearRecovery();
               setBusy(false);
               return;
             }
-            return activate(data.session.user.id, false);
+            // Signed out (or in again) meanwhile: that already took over.
+            if (!mounted || epoch.current !== startedAt) return;
+            return activate(saved.id, false);
           }
           setBusy(false);
         })
@@ -426,7 +440,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((event, session) => {
         if (!mounted) return;
-        if (event === "SIGNED_OUT") {
+        // The demo has no account: a sign-out finishing late is not about it.
+        if (event === "SIGNED_OUT" && !desired.current?.startsWith("demo:")) {
           setRestorableUser(null);
           const sequence = ++epoch.current;
           desired.current = null;
@@ -445,10 +460,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
               if (mounted && sequence === epoch.current) setBusy(false);
             });
         }
-        if (event === "SIGNED_IN" && session && !recovering.current)
-          void activate(session.user.id, false).catch((e) =>
-            setError(String(e)),
-          );
+        if (event === "SIGNED_IN" && session && !recovering.current) {
+          const at = epoch.current;
+          void SecureStore.getItemAsync(RECOVERY_KEY)
+            .then((unfinished) => {
+              if (
+                !mounted ||
+                unfinished === "1" ||
+                recovering.current ||
+                epoch.current !== at
+              )
+                return;
+              return activate(session.user.id, false);
+            })
+            .catch((e) => setError(String(e)));
+        }
       });
       return () => {
         mounted = false;
@@ -477,22 +503,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     return () => sub.remove();
   }, []);
+  // Why it would not open stays in `error` and `restorable`, for the screen.
+  const openAccount = (userId: string) =>
+    activate(userId, false).catch(() => {
+      throw new Error(OPEN_FAILED);
+    });
   const login = async (email: string, password: string) => {
-    if (!supabase)
-      throw new Error(
-        "Configura Supabase en .env para iniciar sesión. Puedes explorar la demo local.",
-      );
+    if (!supabase) throw new Error(NO_ACCOUNTS);
+    await sessionSettled();
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
-    if (error) throw error;
-    if (!data.user) throw new Error("No se pudo iniciar sesión");
-    await activate(data.user.id, false);
+    if (error) throw new Error(authMessage(error, "login"));
+    if (!data.user) throw new Error(authMessage(null, "login"));
+    await openAccount(data.user.id);
   };
   const register = async (email: string, password: string, name = "") => {
-    if (!supabase) throw new Error("Configura Supabase en .env");
+    if (!supabase) throw new Error(NO_ACCOUNTS);
     const displayName = cleanName(name);
+    await sessionSettled();
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -501,25 +531,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         data: displayName ? { display_name: displayName } : {},
       },
     });
-    if (error) throw error;
+    if (error) throw new Error(authMessage(error, "register"));
     if (data.session && data.user) {
-      await activate(data.user.id, false);
+      await openAccount(data.user.id);
       return "Cuenta creada";
     }
     return "Revisa tu correo para confirmar la cuenta y después inicia sesión.";
-  };
-  const offlineLogin = async () => {
-    if (!supabase)
-      throw new Error(
-        "Primero inicia sesión en línea en este dispositivo o usa la demo",
-      );
-    const { data } = await supabase.auth.getSession();
-    if (!data.session)
-      throw new Error("No hay una sesión guardada en este dispositivo");
-    await activate(data.session.user.id, false, true);
-    current.current?.gate.setOffline(true);
-    await current.current?.repo.setSetting("offline", "1");
-    await refresh();
   };
   const logout = async () => {
     const sequence = ++epoch.current;
@@ -534,14 +551,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSyncState({ status: "offline", error: null, lastSyncedAt: null });
     try {
       // This phone stops receiving the account's alerts (best effort, needs the session).
-      await releasePushToken().catch(() => {});
+      // Not for long: the saved session is still there while this waits.
+      await Promise.race([
+        releasePushToken().catch(() => {}),
+        new Promise((done) => setTimeout(done, 4_000)),
+      ]);
+      // Started before closing the database: the saved session goes first, so
+      // closing the app during a slow close cannot open this account again.
+      const leaving = signOutHere();
       try {
         await w?.dispose();
       } finally {
-        if (supabase) {
-          const { error } = await supabase.auth.signOut({ scope: "local" });
-          if (error) setError(error.message);
-        }
+        await leaving;
       }
     } finally {
       if (sequence === epoch.current) setBusy(false);
@@ -562,7 +583,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return result;
   };
   const requestPasswordReset = async (email: string) => {
-    if (!supabase) throw new Error("Configura Supabase en .env");
+    if (!supabase) throw new Error(NO_ACCOUNTS);
     // GoTrue answers the same for known and unknown addresses.
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
     if (error)
@@ -572,9 +593,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   /** Step 1: the code opens a recovery session that cannot enter the app yet. */
   const verifyRecoveryCode = async (email: string, code: string) => {
-    if (!supabase) throw new Error("Configura Supabase en .env");
+    if (!supabase) throw new Error(NO_ACCOUNTS);
     recovering.current = true;
     await SecureStore.setItemAsync(RECOVERY_KEY, "1");
+    await sessionSettled();
     const { error } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token: code.trim(),
@@ -611,12 +633,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   /** Leaves a recovery that the user abandoned. */
   const cancelRecovery = async () => {
     if (!recovering.current) return;
+    // The flag stays until the session is gone: closing the app in between
+    // must not open the account without a new password.
+    await signOutHere();
     recovering.current = false;
     await clearRecovery();
-    await supabase?.auth.signOut({ scope: "local" });
   };
   const changePassword = async (currentPassword: string, next: string) => {
-    if (!supabase) throw new Error("Configura Supabase en .env");
+    if (!supabase) throw new Error(NO_ACCOUNTS);
     const user = (await supabase.auth.getUser()).data.user;
     if (!user?.email) throw new Error("Inicia sesión en línea para cambiarla");
     const problem = newPasswordProblem(next, user.email);
@@ -670,9 +694,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const userId = restorableUser;
     if (!userId || !supabase) throw new Error("No hay nada que restaurar");
     // Only the account that is signed in right now can be restored.
-    const session = (await supabase.auth.getSession()).data.session;
-    if (session?.user.id !== userId)
+    if ((await storedAccount())?.id !== userId)
       throw new Error("Inicia sesión con esa cuenta para restaurarla");
+    // With no signal there is nothing to restore from: keep the local copy.
+    if (!(await supabase.auth.getSession()).data.session)
+      throw new Error("Para restaurar necesitas internet");
     await quarantineLocalData(userId);
     setRestorableUser(null);
     setError(null);
@@ -710,7 +736,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         cancelRecovery,
         changePassword,
         deleteAccount,
-        offlineLogin,
         logout,
         saveSetting,
       }}

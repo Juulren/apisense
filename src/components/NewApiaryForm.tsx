@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Button, Card, Field, Label } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { useDoneSound } from "../state/useDoneSound";
 
 /** A new apiary: a name and, optionally, its coordinates. */
 export function NewApiaryForm({ onCreated }: { onCreated: (id: string) => void }) {
   const app = useApp(),
-    task = useTask();
+    task = useTask(),
+    done = useDoneSound();
   const [name, setName] = useState(""),
     [lat, setLat] = useState(""),
     [lon, setLon] = useState("");
@@ -38,6 +40,7 @@ export function NewApiaryForm({ onCreated }: { onCreated: (id: string) => void }
       setLat("");
       setLon("");
       await app.refresh();
+      done();
       onCreated(created.id);
     }, "Apiario guardado en este dispositivo");
   return (

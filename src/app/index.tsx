@@ -1,5 +1,5 @@
 import { ActivityIndicator, Image, View } from "react-native";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { Badge, Button, Card, Icon, Label } from "../components/ui";
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
@@ -7,10 +7,13 @@ import { useTask } from "../state/useTask";
 import { DEMO_ONLY, SECURITY_QA } from "../config/runtime";
 import { startAt } from "../state/startAt";
 import { StartAt } from "../components/StartAt";
+// Only the demo-only build has a welcome; the app goes straight to signing in.
 export default function Welcome() {
   const app = useApp(),
     task = useTask();
   if (app.workspace) return <StartAt href="/dashboard" />;
+  // A replace, not a push: back from signing in must not come here and bounce.
+  if (!DEMO_ONLY) return <Redirect href="/login" />;
   return (
     <Screen header={false}>
       <View style={{ alignItems: "center", paddingTop: 64, gap: 18 }}>
@@ -43,17 +46,9 @@ export default function Welcome() {
         <ActivityIndicator accessibilityLabel="Restaurando sesión" />
       ) : (
         <>
-          {!DEMO_ONLY ? (
-            <Button
-              label="Comenzar"
-              icon="arrow-forward"
-              onPress={() => router.push("/login")}
-            />
-          ) : (
-            <Badge label="Demo sin conexión · Datos sintéticos" tone="blue" />
-          )}
+          <Badge label="Demo sin conexión · Datos sintéticos" tone="blue" />
           <Button
-            label={DEMO_ONLY ? "Entrar a la demo" : "Explorar demo local"}
+            label="Entrar a la demo"
             variant="ghost"
             icon="eco"
             loading={task.busy}

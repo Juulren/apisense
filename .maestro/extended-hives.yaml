@@ -4,8 +4,8 @@ name: Notas largas, observaciones anteriores y lectura guardada
 - launchApp
 - openLink: apisense:///
 - scrollUntilVisible:
-    element: { text: "Explorar demo local" }
-- tapOn: "Explorar demo local"
+    element: { id: "login-demo" }
+- tapOn: { id: "login-demo" }
 - extendedWaitUntil:
     visible: "Anotar"
     timeout: 60000
@@ -15,16 +15,16 @@ name: Notas largas, observaciones anteriores y lectura guardada
 - tapOn: "Claro"
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
-- assertVisible: "Observaciones de Colmena 02"
+- assertVisible: "Colmena Colmena 02.*"
 - tapOn: { id: inspection-notes }
 - inputText: "QA nota larga inicial. Revision de cuadros, cria y reservas. Se describe lo observado en campo sin deducir un diagnostico del audio. Se revisaron entradas, ventilacion y alimentacion. La reina solo se marca si se ve directamente. Se conservaron las observaciones de este lote para comparar con la siguiente visita. Esta nota comprueba que el texto extenso se puede escribir, desplazar, guardar y consultar de nuevo. La ausencia de una medicion no se sustituye por un dato sintetico. FINAL NOTA LARGA QA."
 - takeScreenshot: .artifacts/design/extended/04-long-note-keyboard
 - hideKeyboard
 - scrollUntilVisible:
-    element: { text: "Guardar observación" }
-- tapOn: "Guardar observación"
+    element: { id: "inspection-save" }
+- tapOn: { id: "inspection-save" }
 - scrollUntilVisible:
-    element: { text: "Observación de demo guardada localmente." }
+    element: { text: "Guardada en la demo." }
 - repeat:
     times: 6
     commands:
@@ -33,10 +33,10 @@ name: Notas largas, observaciones anteriores y lectura guardada
       - inputText: QA visita adicional para consultar observaciones anteriores
       - hideKeyboard
       - scrollUntilVisible:
-          element: { text: "Guardar observación" }
-      - tapOn: "Guardar observación"
+          element: { id: "inspection-save" }
+      - tapOn: { id: "inspection-save" }
       - scrollUntilVisible:
-          element: { text: "Observación de demo guardada localmente." }
+          element: { text: "Guardada en la demo." }
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000102
 - scrollUntilVisible:
     # This control is near the bottom; centering it is physically impossible.

@@ -21,6 +21,7 @@ import { calendarFor, phaseOn, seasonSignals } from "../../services/Seasons";
 import { useApp } from "../../state/AppProvider";
 import { useNodeState } from "../../state/useNodeState";
 import { useTask } from "../../state/useTask";
+import { useDoneSound } from "../../state/useDoneSound";
 import { dateLabel, parseTags } from "../../state/selectors";
 export default function HiveRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,7 +30,8 @@ export default function HiveRoute() {
 }
 function HiveDetail({ id }: { id: string }) {
   const app = useApp(),
-    task = useTask();
+    task = useTask(),
+    done = useDoneSound();
   const { colors } = useTheme();
   const nodes = useNodeState();
   const hive = app.data.hives.find((h) => h.id === id);
@@ -121,6 +123,7 @@ function HiveDetail({ id }: { id: string }) {
                     await renameHive(app.workspace.repo, hive.id, draft ?? "");
                     setDraft(null);
                     await app.refresh();
+                    done();
                   }, "Nombre guardado")
                 }
               />

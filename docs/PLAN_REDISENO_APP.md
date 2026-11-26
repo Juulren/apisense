@@ -96,6 +96,21 @@ Abrir una colmena sigue llevando a su detalle.
 
 **Probado en el emulador con la demo:** las tres pantallas, regresar desde ellas y desde el aviso superior, «Temporada: elegir calendario», cambiar de apiario, guardar coordenadas nuevas y salir de la demo. **Sin probar:** lo que pide una cuenta (confirmar el cierre de sesión, contraseña, borrar la cuenta y los avisos de sincronización), texto grande, pantallas angostas, TalkBack y los flujos Maestro. Del rediseño de la fase 3 faltan Anotar, la entrada y el nodo.
 
+## Anotar y entrada (fase 3, segunda parte)
+**Aprobada (26 nov)** la maqueta y programada:
+- Sin sesión, la app abre en **Entrar**; solo la compilación demo conserva su bienvenida. **Crear cuenta** es otra pantalla y regresar vuelve a Entrar. Se quitó «Modo sin internet».
+- Los errores al entrar o crear la cuenta se dicen en español y sin detalle técnico.
+- En **Anotar**, con varias colmenas y sin venir de una, hay que elegirla. Regresar con algo sin guardar pregunta antes de descartarlo. Se quitó el botón «Volver» de abajo.
+
+**Entrar sin señal (fallo corregido).** Con la sesión expirada y sin señal, la librería de acceso responde que no hay nadie aunque la sesión sigue guardada, así que la app pedía iniciar sesión y no dejaba ver los datos. Ahora abre de inmediato los datos de la cuenta guardada en el teléfono; el token se renueva cuando hay red y, si el servidor lo rechaza, la sesión se cierra. Cerrar sesión borra la sesión guardada aunque no haya señal (la librería tampoco lo hacía). Se reprodujo con la librería y datos inventados.
+
+## Icono y sonidos (pedido el 26 nov)
+- La barra superior muestra el icono donde no hay flecha de regresar.
+- Un tono suave al guardar, con **Sonidos** para apagarlo en Ajustes. No suena con el teléfono en silencio o vibración ni pausa la música. El tono lo genera `scripts/make-sounds.py`. Por esto `expo-audio` ya **no** se quita en la fase 4.
+- Icono del APK: Stitch solo exporta el logo a 200 × 200, así que se redibujó en grande (`scripts/make-icons.py`) a partir de esa imagen. Se comprueba en el APK de GitHub: la compilación local de la demo no regenera los iconos.
+
+**Probado en el emulador con la demo:** el icono arriba en Inicio y Ajustes; Anotar desde Inicio (sin colmena elegida y «Guardar» apagado) y desde una colmena (con «Cambiar»); la pregunta al regresar con tecla, gesto y flecha; guardar; salir de la demo con una nota pendiente; y Sonidos, que se recuerda al reiniciar (apagado no reproduce; encendido, el emulador registra el tono, **sin haberlo oído**). **Sin probar:** nada de lo que pide una cuenta en el APK (entrar sin señal, Entrar, Crear cuenta y sus errores, cerrar sesión), el silencio del teléfono, y los flujos Maestro. No hay flujo nuevo para la pregunta de descartar ni para abrir sin señal.
+
 ## Regresar (26 nov)
 **Regla:** regresar (botón o gesto de Android) lleva a la pantalla que se veía antes; los botones «Volver» hacen lo mismo. En la primera pantalla de la sesión, Android sale de la app. Entrar o salir de la cuenta empieza un historial nuevo (`startAt`).
 
