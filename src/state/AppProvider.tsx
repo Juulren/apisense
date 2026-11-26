@@ -120,6 +120,10 @@ type State = {
   logout: () => Promise<void>;
   saveSetting: (key: string, value: string) => Promise<void>;
   refresh: () => Promise<void>;
+  /** The pull-to-refresh: syncs with the server and reads everything again. */
+  reload: () => Promise<void>;
+  /** Goes up with each reload, so data loaded outside `data` is asked for again. */
+  reloads: number;
   /** Set when the local database cannot be opened because its key is gone. */
   restorable: boolean;
   /** Erases the unreadable local copy and downloads the account's data again. */
@@ -240,6 +244,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
         settings,
       });
   }, []);
+  const [reloads, setReloads] = useState(0);
+  const reload = useCallback(async () => {
+    const w = current.current;
+    if (!w) return;
+    // A failed or very slow sync must not leave the spinner turning: the header
+    // already shows the sync state, and what is on the phone is read anyway.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([
+      w.sync?.sync().catch(() => {}),
+      new Promise((done) => {
+        timer = setTimeout(done, w.sync ? 15_000 : 0);
+      }),
+    ]);
+    clearTimeout(timer);
+    try {
+      await refresh();
+    } catch (e) {
+      // Leaving the session mid-way closes the database: not the next one's error.
+      if (current.current === w) setError(String(e));
+    }
+    if (current.current === w) setReloads((n) => n + 1);
+  }, [refresh]);
   const activate = useCallback(
     (userId: string, demo: boolean, forceOffline = false): Promise<void> => {
       const key = `${demo ? "demo" : "user"}:${userId}`;
@@ -670,6 +696,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         error,
         syncState,
         refresh,
+        reload,
+        reloads,
         restorable: restorableUser !== null,
         restoreFromCloud,
         enterDemo: () => activate(DEMO_USER, true),

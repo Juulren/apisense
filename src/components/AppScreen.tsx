@@ -5,7 +5,7 @@ import { Screen } from "./ui/Screen";
 import { Label } from "./ui";
 import { useApp } from "../state/AppProvider";
 export function AppScreen(props: ComponentProps<typeof Screen>) {
-  const { workspace, busy, syncState, error } = useApp();
+  const { workspace, busy, syncState, error, reload } = useApp();
   if (busy)
     return (
       <Screen>
@@ -24,7 +24,7 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
           ? "Sin conexión"
           : "En línea";
   return (
-    <Screen {...props} status={status}>
+    <Screen onRefresh={reload} {...props} status={status}>
       {error ? (
         <View accessibilityRole="alert">
           <Label tone="warning">{error}</Label>

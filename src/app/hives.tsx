@@ -75,6 +75,7 @@ export default function Hives() {
       title="Mis colmenas"
       subtitle="Tu recorrido, con o sin señal"
       back
+      pullEnabled={view !== "map"}
     >
       <Segmented
         value={view}

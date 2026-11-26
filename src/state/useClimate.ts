@@ -33,7 +33,7 @@ export function useClimate(apiary: Apiary | undefined) {
       return () => {
         cancelled = true;
       };
-    }, [workspace, id, lat, lon, enabled, offline]),
+    }, [workspace, id, lat, lon, enabled, offline, app.reloads]),
   );
   return state;
 }

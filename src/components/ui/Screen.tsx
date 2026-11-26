@@ -1,10 +1,11 @@
-import { useCallback, useRef, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   TextInput,
   useWindowDimensions,
@@ -14,6 +15,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Badge, Icon, Label, Row } from ".";
 import { useTheme } from "./theme";
+import { scrollToReveal } from "../../services/KeyboardScroll";
 export function Screen({
   children,
   title,
@@ -22,6 +24,8 @@ export function Screen({
   header = true,
   status = "Local",
   action,
+  onRefresh,
+  pullEnabled = true,
 }: {
   children: ReactNode;
   title?: string;
@@ -30,29 +34,55 @@ export function Screen({
   header?: boolean;
   status?: string;
   action?: ReactNode;
+  /** With it, pulling the content down reloads the screen's data. */
+  onRefresh?: () => Promise<unknown>;
+  /** Off while something inside needs the downward drag (the map). */
+  pullEnabled?: boolean;
 }) {
   const { colors } = useTheme();
   const inset = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale > 1.2;
   const scroll = useRef<ScrollView>(null);
+  const viewport = useRef<View>(null);
+  const offset = useRef(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const pull = () => {
+    setRefreshing(true);
+    void onRefresh?.()
+      .catch(() => {})
+      .finally(() => setRefreshing(false));
+  };
   useFocusEffect(
     useCallback(() => {
-      let frame: number | undefined;
-      const shown = Keyboard.addListener("keyboardDidShow", () => {
-        frame = requestAnimationFrame(() => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const shown = Keyboard.addListener("keyboardDidShow", (event) => {
+        clearTimeout(timer);
+        // Measured after the layout settles: the bottom bar hides and the screen
+        // shrinks when the keyboard appears.
+        timer = setTimeout(() => {
           const input = TextInput.State.currentlyFocusedInput();
-          if (input)
-            scroll.current?.scrollResponderScrollNativeHandleToKeyboard(
-              input,
-              16,
-              true,
-            );
-        });
+          input?.measureInWindow((_x, inputTop, _width, inputHeight) => {
+            viewport.current?.measureInWindow((_vx, viewTop, _vw, height) => {
+              const y = scrollToReveal({
+                offset: offset.current,
+                inputTop,
+                inputHeight,
+                viewTop,
+                viewBottom: Math.min(
+                  viewTop + height,
+                  event.endCoordinates.screenY,
+                ),
+                margin: 16,
+              });
+              if (y !== null) scroll.current?.scrollTo({ y, animated: true });
+            });
+          });
+        }, 120);
       });
       return () => {
         shown.remove();
-        if (frame !== undefined) cancelAnimationFrame(frame);
+        clearTimeout(timer);
       };
     }, []),
   );
@@ -144,9 +174,26 @@ export function Screen({
           </View>
         </View>
       ) : null}
+      <View ref={viewport} collapsable={false} style={{ flex: 1 }}>
       <ScrollView
         ref={scroll}
         keyboardDismissMode="on-drag"
+        onScroll={(e) => {
+          offset.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              enabled={pullEnabled}
+              refreshing={refreshing}
+              onRefresh={pull}
+              colors={[colors.amberText]}
+              tintColor={colors.amberText}
+              progressBackgroundColor={colors.card}
+            />
+          ) : undefined
+        }
         contentContainerStyle={{
           padding: 20,
           gap: 24,
@@ -175,6 +222,7 @@ export function Screen({
         ) : null}
         {children}
       </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
