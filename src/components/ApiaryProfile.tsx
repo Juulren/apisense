@@ -28,9 +28,25 @@ import type { Apiary, CheckinFrequency, RegionPreset } from "../db/types";
 const cycle: (Phase | null)[] = [null, "flow", "hard", "reactivation", "transition"];
 const empty = (): Calendar => Array.from({ length: 12 }, () => null);
 
-function Form({ apiary }: { apiary: Apiary }) {
-  const app = useApp(),
-    task = useTask();
+type Task = ReturnType<typeof useTask>;
+
+function Form({
+  apiary,
+  task,
+  open,
+  onToggle,
+  editing,
+  onEditing,
+}: {
+  apiary: Apiary;
+  task: Task;
+  /** "Avanzado": coordinates and the season calendar. */
+  open: boolean;
+  onToggle: () => void;
+  editing: boolean;
+  onEditing: () => void;
+}) {
+  const app = useApp();
   const resolved = calendarFor(apiary);
   const [name, setName] = useState(apiary.name),
     [lat, setLat] = useState(apiary.latitude === null ? "" : String(apiary.latitude)),
@@ -39,7 +55,6 @@ function Form({ apiary }: { apiary: Apiary }) {
     [weather, setWeather] = useState(apiary.weather_enabled === 1),
     [preset, setPreset] = useState<RegionPreset | null>(apiary.region_preset),
     [calendar, setCalendar] = useState<Calendar | null>(resolved.calendar),
-    [editing, setEditing] = useState(false),
     [query, setQuery] = useState(""),
     [places, setPlaces] = useState<Place[]>([]);
   const offline = app.data.settings.offline === "1";
@@ -106,160 +121,205 @@ function Form({ apiary }: { apiary: Apiary }) {
       });
       await app.refresh();
     }, "Apiario guardado en este dispositivo");
+  const moved =
+    lat !== (apiary.latitude === null ? "" : String(apiary.latitude)) ||
+    lon !== (apiary.longitude === null ? "" : String(apiary.longitude));
   return (
-    <Card>
+    <>
       <Field label="Nombre del apiario" value={name} onChangeText={setName} maxLength={80} />
-      <Field
-        label="Buscar lugar (opcional)"
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Mérida, Yucatán"
-        editable={canSearch}
-      />
-      {!canSearch ? (
-        <Label muted size={12}>
-          La búsqueda necesita conexión: desactiva el modo sin conexión.
-        </Label>
-      ) : (
-        <Label muted size={12}>
-          Solo se envía el texto que escribes para buscar el lugar.
-        </Label>
-      )}
-      {places.map((place) => (
-        <Button
-          key={`${place.latitude},${place.longitude}`}
-          label={`${place.name} · ${place.region}`}
-          variant="secondary"
-          onPress={() => {
-            setLat(place.latitude.toFixed(3));
-            setLon(place.longitude.toFixed(3));
-            setQuery("");
-            setPlaces([]);
-          }}
+      <View style={{ gap: 8 }}>
+        <Field
+          label={
+            moved
+              ? "Lugar · cambiado, falta guardar"
+              : lat && lon
+                ? "Lugar · ubicación guardada"
+                : "Lugar (opcional)"
+          }
+          value={query}
+          onChangeText={setQuery}
+          placeholder={lat && lon ? "Buscar otro lugar" : "Mérida, Yucatán"}
+          editable={canSearch}
         />
-      ))}
-      <Field
-        label="Latitud"
-        value={lat}
-        onChangeText={setLat}
-        keyboardType="numbers-and-punctuation"
-        placeholder="20.970"
-      />
-      <Field
-        label="Longitud"
-        value={lon}
-        onChangeText={setLon}
-        keyboardType="numbers-and-punctuation"
-        placeholder="-89.620"
-      />
-      <Label bold>Calendario de temporadas</Label>
-      <Segmented
-        value={(preset ?? "custom") as RegionPreset}
-        onChange={choosePreset}
-        options={[
-          ...regionalCalendars.map((r) => ({ value: r.id as RegionPreset, label: r.label })),
-          { value: "custom" as RegionPreset, label: "Personalizado" },
-        ]}
-      />
-      {regionById(preset) ? (
         <Label muted size={12}>
-          Basado en pocas fuentes técnicas y reportes de apicultores ({regionById(preset)?.reference}).
+          {canSearch
+            ? "Solo se envía el texto que escribes."
+            : "La búsqueda necesita conexión: apaga «Sin conexión»."}
         </Label>
-      ) : regionById(suggestion) ? (
-        <Label muted size={12}>
-          Tu ubicación está en la zona del calendario «{regionById(suggestion)?.label}»: puedes elegirlo.
-        </Label>
-      ) : (
-        <Label muted size={12}>
-          Aún no hay un calendario regional verificado para este lugar. Completa tu
-          propio calendario o déjalo vacío: abajo ves cómo es el clima de cada mes
-          en tu ubicación.
-        </Label>
-      )}
+        {places.map((place) => (
+          <Button
+            key={`${place.latitude},${place.longitude}`}
+            label={`${place.name} · ${place.region}`}
+            variant="secondary"
+            onPress={() => {
+              setLat(place.latitude.toFixed(3));
+              setLon(place.longitude.toFixed(3));
+              setQuery("");
+              setPlaces([]);
+            }}
+          />
+        ))}
+      </View>
+      <Card style={{ padding: 16 }}>
+        <Toggle
+          label="Mostrar el clima"
+          caption="Envía a Open-Meteo la ubicación redondeada (~1 km)."
+          value={weather}
+          onChange={(value) => setWeather(value)}
+        />
+      </Card>
+      <View style={{ gap: 8 }}>
+        <Label bold>Recordatorio de registro</Label>
+        <Segmented
+          value={frequency}
+          onChange={setFrequency}
+          options={[
+            { value: "daily", label: "Diario" },
+            { value: "weekly", label: "Semanal" },
+            { value: "off", label: "No" },
+          ]}
+        />
+      </View>
       <Pressable
-        testID="calendar-edit"
+        testID="apiary-advanced"
         accessibilityRole="button"
-        accessibilityState={{ expanded: editing }}
-        onPress={() => setEditing(!editing)}
-        style={{ minHeight: 48, flexDirection: "row", alignItems: "center", gap: 8 }}
+        accessibilityState={{ expanded: open }}
+        accessibilityLabel="Avanzado: coordenadas y temporadas"
+        onPress={onToggle}
+        style={{ minHeight: 64 }}
       >
-        <Icon name={editing ? "expand-less" : "expand-more"} />
-        <Label bold>Editar meses</Label>
+        <Card style={{ padding: 16 }}>
+          <Row>
+            <View style={{ flex: 1 }}>
+              <Label bold size={16}>
+                Avanzado
+              </Label>
+              <Label muted size={12}>
+                Coordenadas y temporadas
+              </Label>
+            </View>
+            <Icon name={open ? "expand-less" : "expand-more"} />
+          </Row>
+        </Card>
       </Pressable>
-      {editing ? (
-        <View style={{ gap: 6 }}>
+      {open ? (
+        <Card style={{ padding: 16 }}>
+          <Field
+            label="Latitud"
+            value={lat}
+            onChangeText={setLat}
+            keyboardType="numbers-and-punctuation"
+            placeholder="20.970"
+          />
+          <Field
+            label="Longitud"
+            value={lon}
+            onChangeText={setLon}
+            keyboardType="numbers-and-punctuation"
+            placeholder="-89.620"
+          />
+          <Label bold>Calendario de temporadas</Label>
+          <Segmented
+            value={(preset ?? "custom") as RegionPreset}
+            onChange={choosePreset}
+            options={[
+              ...regionalCalendars.map((r) => ({ value: r.id as RegionPreset, label: r.label })),
+              { value: "custom" as RegionPreset, label: "Personalizado" },
+            ]}
+          />
+          {regionById(preset) ? (
+            <Label muted size={12}>
+              Basado en pocas fuentes técnicas y reportes de apicultores ({regionById(preset)?.reference}).
+            </Label>
+          ) : regionById(suggestion) ? (
+            <Label muted size={12}>
+              Tu ubicación está en la zona de «{regionById(suggestion)?.label}»: puedes elegirlo.
+            </Label>
+          ) : (
+            <Label muted size={12}>
+              Sin calendario verificado para este lugar: llena el tuyo o déjalo vacío.
+            </Label>
+          )}
+          <Pressable
+            testID="calendar-edit"
+            accessibilityRole="button"
+            accessibilityState={{ expanded: editing }}
+            onPress={onEditing}
+            style={{ minHeight: 48, flexDirection: "row", alignItems: "center", gap: 8 }}
+          >
+            <Icon name={editing ? "expand-less" : "expand-more"} />
+            <Label bold>Editar meses</Label>
+          </Pressable>
+          {editing ? (
+            <View style={{ gap: 6 }}>
+              <Label muted size={12}>
+                Toca un mes para cambiar su fase típica.
+              </Label>
+              {monthShort.map((month, i) => (
+                <Pressable
+                  key={month}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${month}: ${calendar?.[i] ? phaseLabels[calendar[i]!.phase] : "sin dato"}`}
+                  onPress={() => cycleMonth(i)}
+                  style={{ minHeight: 44, justifyContent: "center" }}
+                >
+                  <Row>
+                    <View style={{ flex: 1 }}>
+                      <Label bold>{month}</Label>
+                      {contexts && contextLabel(contexts[i]) ? (
+                        <Label muted size={11}>
+                          Clima aquí: {contextLabel(contexts[i])}
+                        </Label>
+                      ) : null}
+                    </View>
+                    <Badge
+                      label={calendar?.[i] ? phaseLabels[calendar[i]!.phase] : "Sin dato"}
+                      tone={calendar?.[i] ? "amber" : "neutral"}
+                    />
+                  </Row>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
           <Label muted size={12}>
-            Toca un mes para cambiar su fase típica.
+            {calendarDisclaimer}
           </Label>
-          {monthShort.map((month, i) => (
-            <Pressable
-              key={month}
-              accessibilityRole="button"
-              accessibilityLabel={`${month}: ${calendar?.[i] ? phaseLabels[calendar[i]!.phase] : "sin dato"}`}
-              onPress={() => cycleMonth(i)}
-              style={{ minHeight: 44, justifyContent: "center" }}
-            >
-              <Row>
-                <View style={{ flex: 1 }}>
-                  <Label bold>{month}</Label>
-                  {contexts && contextLabel(contexts[i]) ? (
-                    <Label muted size={11}>
-                      Clima aquí: {contextLabel(contexts[i])}
-                    </Label>
-                  ) : null}
-                </View>
-                <Badge
-                  label={calendar?.[i] ? phaseLabels[calendar[i]!.phase] : "Sin dato"}
-                  tone={calendar?.[i] ? "amber" : "neutral"}
-                />
-              </Row>
-            </Pressable>
-          ))}
-        </View>
+        </Card>
       ) : null}
-      <Label muted size={12}>
-        {calendarDisclaimer}
-      </Label>
-      <Label bold>Recordatorio de registro</Label>
-      <Segmented
-        value={frequency}
-        onChange={setFrequency}
-        options={[
-          { value: "daily", label: "Diario" },
-          { value: "weekly", label: "Semanal" },
-          { value: "off", label: "Sin recordatorio" },
-        ]}
-      />
-      <Label muted size={12}>
-        Solo es un recordatorio: puedes dejar días sin registrar.
-      </Label>
-      <Toggle
-        label="Mostrar el clima del apiario"
-        caption="Envía a Open-Meteo la ubicación redondeada (~1 km) para pedir el clima."
-        value={weather}
-        onChange={(value) => setWeather(value)}
-      />
-      <Button label="Guardar apiario" icon="save-alt" loading={task.busy} onPress={save} />
+      <Button testID="apiary-save" label="Guardar" icon="save-alt" loading={task.busy} onPress={save} />
       {task.message ? <Label accessibilityLiveRegion="polite">{task.message}</Label> : null}
-    </Card>
+    </>
   );
 }
 
 /** Apiary name, location, season calendar, reminders and weather, editable at any time. */
-export function ApiaryProfile({ apiary }: { apiary: Apiary | undefined }) {
-  if (!apiary)
-    return (
-      <Card>
-        <Label>Crea primero un apiario desde Inicio &gt; Gestionar apiario.</Label>
-      </Card>
-    );
+export function ApiaryProfile({
+  apiary,
+  advanced = false,
+}: {
+  apiary: Apiary;
+  /** Opens with "Avanzado" unfolded. */
+  advanced?: boolean;
+}) {
+  // Held here, above the key below, so saving a new place does not take the
+  // "saved" message or fold "Avanzado" away.
+  const task = useTask();
+  const [open, setOpen] = useState(advanced);
+  const [editing, setEditing] = useState(false);
   // Keyed by apiary only: saving something else on the same screen (for example the
   // analysis interval) must not wipe what the user is typing here.
   // The place and the weather switch are part of the key because the dashboard can change them too.
   return (
-    <Form
-      key={`${apiary.id}:${apiary.latitude}:${apiary.longitude}:${apiary.weather_enabled}`}
-      apiary={apiary}
-    />
+    <View style={{ gap: 24 }}>
+      <Form
+        key={`${apiary.id}:${apiary.latitude}:${apiary.longitude}:${apiary.weather_enabled}`}
+        apiary={apiary}
+        task={task}
+        open={open}
+        onToggle={() => setOpen(!open)}
+        editing={editing}
+        onEditing={() => setEditing(!editing)}
+      />
+    </View>
   );
 }

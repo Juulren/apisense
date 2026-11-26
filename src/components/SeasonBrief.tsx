@@ -29,7 +29,14 @@ export function SeasonBrief({ apiary }: { apiary: Apiary | undefined }) {
         testID="fold-season"
         accessibilityRole="button"
         accessibilityState={info ? { expanded: open } : undefined}
-        onPress={() => (info ? setOpen(!open) : router.push("/settings"))}
+        onPress={() =>
+          info
+            ? setOpen(!open)
+            : router.push({
+                pathname: "/settings/apiary",
+                params: { id: apiary.id, advanced: "1" },
+              })
+        }
         style={{ minHeight: 48, justifyContent: "center" }}
       >
         <Row>

@@ -38,6 +38,14 @@ function Shell() {
             options={{ animation: "slide_from_right", animationDuration: 250 }}
           />
           <Stack.Screen
+            name="settings/account"
+            options={{ animation: "slide_from_right", animationDuration: 250 }}
+          />
+          <Stack.Screen
+            name="settings/apiary"
+            options={{ animation: "slide_from_right", animationDuration: 250 }}
+          />
+          <Stack.Screen
             name="forgot-password"
             options={{ animation: "slide_from_right", animationDuration: 250 }}
           />

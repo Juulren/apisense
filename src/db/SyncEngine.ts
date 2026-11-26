@@ -6,6 +6,13 @@ import {
   type EntityMap,
   type Table,
 } from "./types";
+
+/** The signed-in account is not the one this local database belongs to. */
+export const ACCOUNT_MISMATCH =
+  "Inicia sesión con la cuenta de esta base local";
+/** Ends the error of a sync where some records could not be sent. */
+export const RETRIES_ALONE = "se reintentará automáticamente";
+
 export interface RemotePort {
   identity(): Promise<string | null>;
   clock(): Promise<string>;
@@ -90,7 +97,7 @@ export class SyncEngine {
     this.update({ status: "syncing", error: null });
     try {
       if ((await this.remote.identity()) !== this.owner)
-        throw new Error("Inicia sesión con la cuenta de esta base local");
+        throw new Error(ACCOUNT_MISMATCH);
       await this.local.recoverQueue();
       const failures = await this.pushLocalChanges();
       if (this.stopped || !this.online) {
@@ -100,7 +107,7 @@ export class SyncEngine {
       await this.pullRemoteChanges(await this.local.checkpoint());
       if (failures)
         throw new Error(
-          `${failures} registros pendientes; se reintentará automáticamente`,
+          `${failures} registros pendientes; ${RETRIES_ALONE}`,
         );
       this.update({ status: "idle", lastSyncedAt: this.now().toISOString() });
     } catch (error) {

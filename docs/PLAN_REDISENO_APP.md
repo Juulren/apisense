@@ -19,7 +19,7 @@
 | Colmena | Botón largo, nodo, línea de tiempo, registros, bitácora, vincular y administrar | Estado grande y «Revisar» si hay alerta; línea de tiempo; últimas notas. Renombrar y quitar, en un menú. Vincular el nodo pasa a administración |
 | Alertas | **Una tarjeta por cada mensaje** (hubo 20 de una colmena en una prueba de unos 20 minutos), con cuatro botones y una nota cada una | **Una por colmena y episodio** («desde las 22:42 · 20 avisos»). Dos botones: **Confirmada** / **Falsa alarma**, y nota opcional |
 | Anotar | Subtítulo, etiqueta y encabezado antes de escribir | Colmena, nota y Guardar; el resto plegado |
-| Ajustes | Párrafos, botón de forzar sincronización y catálogo de componentes (pantalla de desarrollo) | Perfil, Apiario, Apariencia, **Sin conexión** (con «N sin enviar» si hay), Cuenta. Sin botón de sincronizar (se desliza para actualizar). El catálogo, solo en la compilación de pruebas |
+| Ajustes | Párrafos, botón de forzar sincronización y catálogo de componentes (pantalla de desarrollo) | **Mi cuenta** y **Mi apiario** (cada una en su pantalla), Apariencia, **Sin conexión** (con «N sin enviar» si hay) y Cerrar sesión. Sin botón de sincronizar (se desliza para actualizar) ni acceso al catálogo (las pruebas lo abren por enlace) |
 | Mi apiario | Formulario largo | Nombre y lugar (buscador); coordenadas y calendario en «Avanzado» |
 | Temporada | Varios textos de fuentes y advertencias | Una línea (mes y fase); el resto al tocarla |
 | Entrada | Pantalla de bienvenida con tarjeta explicativa | En la app normal, ir directo a iniciar sesión, con la demo como enlace. La compilación solo demo conserva su entrada |
@@ -85,6 +85,16 @@ Arranque en frío antes del rediseño, demo en el emulador: **mediana 673 ms** e
 | Pestaña «Diagnóstico» | Se llama «Colmenas» |
 
 Abrir una colmena sigue llevando a su detalle.
+
+## Ajustes, Mi cuenta y Mi apiario (fase 3, primera parte)
+**Aprobada (26 nov)** la maqueta de las tres pantallas y programada. Decisiones:
+- «Perfil» y «Cuenta» se juntan en **Mi cuenta**: nombre, correo, contraseña y borrar la cuenta.
+- **Cerrar sesión** pide confirmar y avisa que para volver hace falta internet. Lo que esté sin enviar se queda en el teléfono hasta entrar otra vez con la misma cuenta. La demo sale sin preguntar.
+- Un fallo de sincronización se dice sin detalle técnico: arriba «No se actualizó»; en Ajustes, qué hacer. «Desliza para reintentar» no aparece si reintentar no sirve (la sesión no corresponde a los datos del teléfono).
+- En Mi apiario, las coordenadas y el calendario van en **Avanzado**; «Temporada: elegir calendario» abre la pantalla con esa sección abierta. Los avisos de qué se envía (al buscar un lugar y al mostrar el clima) quedan fuera de Avanzado.
+- Se quitó la fecha de la última sincronización.
+
+**Probado en el emulador con la demo:** las tres pantallas, regresar desde ellas y desde el aviso superior, «Temporada: elegir calendario», cambiar de apiario, guardar coordenadas nuevas y salir de la demo. **Sin probar:** lo que pide una cuenta (confirmar el cierre de sesión, contraseña, borrar la cuenta y los avisos de sincronización), texto grande, pantallas angostas, TalkBack y los flujos Maestro. Del rediseño de la fase 3 faltan Anotar, la entrada y el nodo.
 
 ## Regresar (26 nov)
 **Regla:** regresar (botón o gesto de Android) lleva a la pantalla que se veía antes; los botones «Volver» hacen lo mismo. En la primera pantalla de la sesión, Android sale de la app. Entrar o salir de la cuenta empieza un historial nuevo (`startAt`).

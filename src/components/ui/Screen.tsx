@@ -139,7 +139,9 @@ export function Screen({
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`${status}. Ver estado de sincronización`}
-                onPress={() => router.push("/settings")}
+                // navigate, not push: on Ajustes itself a second copy would make
+                // back seem to do nothing.
+                onPress={() => router.navigate("/settings")}
                 style={{ minHeight: 48, justifyContent: "center" }}
               >
                 <Badge label={status} tone={status === "Demo" ? "blue" : "amber"} />

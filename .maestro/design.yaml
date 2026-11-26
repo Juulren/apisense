@@ -71,7 +71,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - takeScreenshot: .artifacts/design/${THEME_KEY}/09-inspection-keyboard
 - hideKeyboard
 - openLink: apisense:///settings
-- assertVisible: "Ajustes y configuración"
+- assertVisible: "Apariencia"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/10-settings
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:

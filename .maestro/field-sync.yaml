@@ -9,25 +9,30 @@ appId: com.apisense.app
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Modo sin conexión"
+      id: "offline-toggle"
+# The observation made offline is still waiting: without this, the wait below
+# could pass without anything having been sent.
+- assertVisible: "[0-9]+ sin enviar"
+# Turning "Sin conexión" off starts a sync. Pulling down is not covered here.
 - tapOn:
     id: "offline-toggle"
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "Forzar sincronización local a nube"
-- tapOn: "Forzar sincronización local a nube"
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "0 registros en cola local"
+- extendedWaitUntil:
+    notVisible: ".*sin enviar.*"
     timeout: 60000
+- assertNotVisible: "No se pudo actualizar.*"
 - takeScreenshot: .artifacts/field-synchronized
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Cerrar sesión local"
-- tapOn: "Cerrar sesión local"
+      id: "logout"
+- tapOn:
+    id: "logout"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      id: "logout-confirm"
+- tapOn:
+    id: "logout-confirm"
 - scrollUntilVisible:
     centerElement: false
     element:
@@ -75,5 +80,12 @@ appId: com.apisense.app
 - scrollUntilVisible:
     centerElement: false
     element:
-      text: "Cerrar sesión local"
-- tapOn: "Cerrar sesión local"
+      id: "logout"
+- tapOn:
+    id: "logout"
+- scrollUntilVisible:
+    centerElement: false
+    element:
+      id: "logout-confirm"
+- tapOn:
+    id: "logout-confirm"

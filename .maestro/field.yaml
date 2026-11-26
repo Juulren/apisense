@@ -41,7 +41,7 @@ name: App de campo Android con cuentas Supabase y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Modo sin conexión"
+      id: "offline-toggle"
 - tapOn:
     id: "offline-toggle"
 - tapOn:

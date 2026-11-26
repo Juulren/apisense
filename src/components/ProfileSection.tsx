@@ -1,37 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
-import { Button, Card, Field, Label, Section } from "./ui";
+import { Button, Card, Field, Label } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
-import { supabase } from "../services/supabase";
+import { useAccountEmail } from "../state/useAccountEmail";
 import { newPasswordProblem } from "../services/Profile";
 import { startAt } from "../state/startAt";
 
-/** "Mi perfil": the name shown in the greeting, and the account's own controls. */
+/** "Mi cuenta": the name shown in the greeting, and the account's own controls. */
 export function ProfileSection() {
   const app = useApp(),
     task = useTask();
   const demo = app.workspace?.demo ?? true;
+  const email = useAccountEmail(demo);
   const [draft, setDraft] = useState<string | null>(null),
-    [email, setEmail] = useState<string | null>(null),
     [panel, setPanel] = useState<"none" | "password" | "delete">("none"),
     [current, setCurrent] = useState(""),
     [next, setNext] = useState("");
   const saved = app.data.settings.name ?? "";
   const name = draft ?? saved;
-  useEffect(() => {
-    let mounted = true;
-    if (!demo && supabase)
-      void supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          if (mounted) setEmail(data.session?.user.email ?? null);
-        })
-        .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, [demo]);
   const close = () => {
     setPanel("none");
     setCurrent("");
@@ -39,15 +26,8 @@ export function ProfileSection() {
   };
   const offline = app.data.settings.offline === "1";
   return (
-    <Section
-      title="Mi perfil"
-      caption={
-        demo
-          ? "Modo demo: el nombre solo se guarda en este dispositivo"
-          : "Tu cuenta de Apisense"
-      }
-    >
-      <Card>
+    <>
+      <Card style={{ padding: 16, gap: 12 }}>
         <Field
           testID="profile-name"
           label="Tu nombre"
@@ -74,114 +54,114 @@ export function ProfileSection() {
             })
           }
         />
-        {!demo ? (
+        {demo ? (
+          <Label muted size={12}>
+            Demo: el nombre solo se guarda en este teléfono.
+          </Label>
+        ) : (
           <View style={{ gap: 4 }}>
             <Label muted size={12}>
-              Correo de la cuenta
+              Correo
             </Label>
             <Label bold>{email ?? "—"}</Label>
           </View>
-        ) : null}
+        )}
       </Card>
-      {!demo ? (
-        <Card>
-          {panel === "password" ? (
-            <View style={{ gap: 16 }}>
-              <Field
-                testID="profile-current-password"
-                label="Contraseña actual"
-                secureTextEntry
-                autoComplete="current-password"
-                value={current}
-                onChangeText={setCurrent}
-              />
-              <Field
-                testID="profile-new-password"
-                label="Contraseña nueva"
-                secureTextEntry
-                autoComplete="new-password"
-                placeholder="Mínimo 10 caracteres"
-                value={next}
-                onChangeText={setNext}
-              />
-              <Button
-                label="Guardar contraseña"
-                loading={task.busy}
-                onPress={() =>
-                  task.run(async () => {
-                    const problem = newPasswordProblem(next, email ?? "");
-                    if (problem) throw new Error(problem);
-                    await app.changePassword(current, next);
-                    close();
-                    task.setMessage("Contraseña actualizada");
-                  })
-                }
-              />
-              <Button label="Cancelar" variant="ghost" onPress={close} />
-            </View>
-          ) : (
-            <Button
-              label="Cambiar contraseña"
-              variant="secondary"
-              icon="lock"
-              disabled={offline || panel === "delete"}
-              onPress={() => setPanel("password")}
-            />
-          )}
-          {offline ? (
-            <Label muted size={12}>
-              Desactiva el modo sin conexión para cambiar la contraseña o
-              borrar la cuenta.
-            </Label>
-          ) : null}
+      {demo ? null : panel === "password" ? (
+        <Card style={{ padding: 16 }}>
+          <Field
+            testID="profile-current-password"
+            label="Contraseña actual"
+            secureTextEntry
+            autoComplete="current-password"
+            value={current}
+            onChangeText={setCurrent}
+          />
+          <Field
+            testID="profile-new-password"
+            label="Contraseña nueva"
+            secureTextEntry
+            autoComplete="new-password"
+            placeholder="Mínimo 10 caracteres"
+            value={next}
+            onChangeText={setNext}
+          />
+          <Button
+            label="Guardar contraseña"
+            loading={task.busy}
+            onPress={() =>
+              task.run(async () => {
+                const problem = newPasswordProblem(next, email ?? "");
+                if (problem) throw new Error(problem);
+                await app.changePassword(current, next);
+                close();
+                task.setMessage("Contraseña actualizada");
+              })
+            }
+          />
+          <Button label="Cancelar" variant="ghost" onPress={close} />
         </Card>
+      ) : (
+        <Button
+          label="Cambiar contraseña"
+          variant="secondary"
+          icon="lock"
+          disabled={offline || panel === "delete"}
+          onPress={() => setPanel("password")}
+        />
+      )}
+      {task.message ? (
+        <Label accessibilityLiveRegion="polite">{task.message}</Label>
       ) : null}
-      {task.message ? <Label>{task.message}</Label> : null}
-      {!demo ? (
-        <Card>
-          <Label bold>Borrar mi cuenta</Label>
-          {panel === "delete" ? (
-            <View style={{ gap: 16 }}>
-              <Label tone="warning">
-                Se borrarán para siempre tu cuenta y todos tus datos en la nube
-                (apiarios, colmenas, observaciones, lecturas y avisos), y también
-                los de este dispositivo. Lo que aún no se haya sincronizado (
-                {app.data.pending} registros) se perderá. No se puede deshacer.
-              </Label>
-              <Field
-                testID="delete-password"
-                label="Tu contraseña, para confirmar"
-                secureTextEntry
-                autoComplete="current-password"
-                value={current}
-                onChangeText={setCurrent}
-              />
-              <Button
-                label="Borrar cuenta y datos"
-                variant="secondary"
-                icon="delete-forever"
-                loading={task.busy}
-                disabled={current.length === 0}
-                onPress={() =>
-                  task.run(async () => {
-                    await app.deleteAccount(current);
-                    startAt("/");
-                  })
-                }
-              />
-              <Button label="Cancelar" variant="ghost" onPress={close} />
-            </View>
-          ) : (
-            <Button
-              label="Borrar mi cuenta"
-              variant="secondary"
-              icon="delete-forever"
-              disabled={offline || panel === "password"}
-              onPress={() => setPanel("delete")}
-            />
-          )}
+      {demo ? null : panel === "delete" ? (
+        <Card style={{ padding: 16 }}>
+          <Label bold accessibilityRole="header">
+            Borrar mi cuenta
+          </Label>
+          <Label tone="warning">
+            Se borrarán para siempre tu cuenta y todos tus datos en la nube
+            (apiarios, colmenas, observaciones, lecturas y avisos), y también los
+            de este dispositivo. Lo que aún no se haya sincronizado (
+            {app.data.pending} registros) se perderá. No se puede deshacer.
+          </Label>
+          <Field
+            testID="delete-password"
+            label="Tu contraseña, para confirmar"
+            secureTextEntry
+            autoComplete="current-password"
+            value={current}
+            onChangeText={setCurrent}
+          />
+          <Button
+            label="Borrar cuenta y datos"
+            variant="secondary"
+            icon="delete-forever"
+            loading={task.busy}
+            disabled={current.length === 0}
+            onPress={() =>
+              task.run(async () => {
+                await app.deleteAccount(current);
+                startAt("/");
+              })
+            }
+          />
+          <Button label="Cancelar" variant="ghost" onPress={close} />
         </Card>
+      ) : (
+        <Button
+          label="Borrar mi cuenta"
+          variant="secondary"
+          icon="delete-forever"
+          disabled={offline || panel === "password"}
+          onPress={() => setPanel("delete")}
+        />
+      )}
+      {!demo && offline ? (
+        <Label muted size={12}>
+          La contraseña y el borrado necesitan conexión: apaga «Sin conexión» en
+          Ajustes.
+        </Label>
       ) : null}
-    </Section>
+    </>
   );
 }
