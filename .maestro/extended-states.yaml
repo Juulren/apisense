@@ -3,7 +3,7 @@ name: Mapa errores y colmena sin lecturas
 ---
 - openLink: apisense:///hives
 - extendedWaitUntil:
-    visible: "Mis colmenas"
+    visible: "Buscar colmena"
     timeout: 30000
 - tapOn: { text: "^Mapa$" }
 - scrollUntilVisible:
@@ -11,6 +11,7 @@ name: Mapa errores y colmena sin lecturas
     element: { id: "demo-map" }
 - takeScreenshot: .artifacts/design/states/01-local-map
 - scrollUntilVisible:
+    direction: UP
     element: { text: "Nombre o código" }
 - tapOn: "Nombre o código"
 - inputText: zzz-no-existe
@@ -18,6 +19,9 @@ name: Mapa errores y colmena sin lecturas
 - scrollUntilVisible:
     element: { text: "No hay colmenas para esta búsqueda." }
 - takeScreenshot: .artifacts/design/states/02-empty-search
+- scrollUntilVisible:
+    element: { text: "Añadir colmena" }
+- tapOn: "Añadir colmena"
 - scrollUntilVisible:
     element: { text: "Colmena 09" }
 - tapOn: "Colmena 09"
@@ -41,8 +45,8 @@ name: Mapa errores y colmena sin lecturas
 - tapOn: "Abrir QA sin lecturas"
 - scrollUntilVisible:
     direction: UP
-    element: { text: "Anotar observación de esta colmena" }
-- tapOn: "Anotar observación de esta colmena"
+    element: { text: "Anotar" }
+- tapOn: "Anotar"
 - scrollUntilVisible:
     element: { text: "Guardar observación" }
 - tapOn: "Guardar observación"

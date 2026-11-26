@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -13,7 +12,7 @@ import {
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Badge, Icon, Label, Row } from ".";
+import { Badge, IconButton, Label, Row } from ".";
 import { useTheme } from "./theme";
 import { scrollToReveal } from "../../services/KeyboardScroll";
 export function Screen({
@@ -22,7 +21,7 @@ export function Screen({
   subtitle,
   back = false,
   header = true,
-  status = "Local",
+  status,
   action,
   onRefresh,
   pullEnabled = true,
@@ -95,7 +94,8 @@ export function Screen({
         paddingTop: inset.top,
       }}
     >
-      {header ? (
+      {/* The bar only takes room when it has something to say. */}
+      {header && (back || title || action || status) ? (
         <View
           style={{
             backgroundColor: colors.card,
@@ -103,75 +103,50 @@ export function Screen({
             borderColor: colors.border,
           }}
         >
-          <View
+          <Row
             style={{
               width: "100%",
               maxWidth: 480,
               alignSelf: "center",
-              paddingHorizontal: 20,
-              paddingVertical: 16,
+              paddingHorizontal: back ? 8 : 20,
+              paddingVertical: 8,
+              minHeight: 64,
+              gap: 8,
+              flexWrap: largeText ? "wrap" : "nowrap",
+              justifyContent: "flex-end",
             }}
           >
-            <Row
-              style={
-                largeText
-                  ? { flexDirection: "column", alignItems: "stretch" }
-                  : undefined
-              }
+            {back ? (
+              <IconButton
+                icon="arrow-back"
+                label="Volver"
+                onPress={() =>
+                  router.canGoBack()
+                    ? router.back()
+                    : router.replace("/dashboard")
+                }
+              />
+            ) : null}
+            <Label
+              bold
+              size={20}
+              accessibilityRole="header"
+              style={{ flex: 1 }}
             >
-              <Row
-                style={{
-                  flex: largeText ? undefined : 1,
-                  justifyContent: "flex-start",
-                  gap: 10,
-                  flexWrap: largeText ? "wrap" : "nowrap",
-                }}
-              >
-                {back ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Volver"
-                    onPress={() =>
-                      router.canGoBack()
-                        ? router.back()
-                        : router.replace("/dashboard")
-                    }
-                    style={{
-                      minWidth: 48,
-                      minHeight: 48,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Icon name="arrow-back" />
-                  </Pressable>
-                ) : (
-                  <Image
-                    source={require("../../../assets/brand-logo.png")}
-                    style={{ width: 30, height: 30, borderRadius: 15 }}
-                  />
-                )}
-                <Label bold size={18}>
-                  Apisense
-                </Label>
-                <Label muted size={11}>
-                  Apiario
-                </Label>
-              </Row>
+              {title ?? ""}
+            </Label>
+            {status ? (
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Ver estado de sincronización"
+                accessibilityLabel={`${status}. Ver estado de sincronización`}
                 onPress={() => router.push("/settings")}
-                style={{
-                  minHeight: 48,
-                  justifyContent: "center",
-                  alignSelf: largeText ? "flex-start" : undefined,
-                }}
+                style={{ minHeight: 48, justifyContent: "center" }}
               >
-                <Badge label={status} tone="green" />
+                <Badge label={status} tone={status === "Demo" ? "blue" : "amber"} />
               </Pressable>
-            </Row>
-          </View>
+            ) : null}
+            {action}
+          </Row>
         </View>
       ) : null}
       <View ref={viewport} collapsable={false} style={{ flex: 1 }}>
@@ -204,22 +179,7 @@ export function Screen({
         }}
         keyboardShouldPersistTaps="handled"
       >
-        {title ? (
-          <View style={{ gap: 6 }}>
-            <Row>
-              <Label
-                bold
-                size={24}
-                accessibilityRole="header"
-                style={{ flex: 1 }}
-              >
-                {title}
-              </Label>
-              {action}
-            </Row>
-            {subtitle ? <Label muted>{subtitle}</Label> : null}
-          </View>
-        ) : null}
+        {subtitle ? <Label muted>{subtitle}</Label> : null}
         {children}
       </ScrollView>
       </View>

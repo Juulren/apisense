@@ -26,14 +26,14 @@ def intersects(a, b):
     return max(a[0], b[0]) < min(a[2], b[2]) and max(a[1], b[1]) < min(a[3], b[3])
 
 
-sync = unique("content-desc", "Ver estado de sincronización")
-for label in ["Apisense", "Apiario"]:
+sync = unique("content-desc", "Demo. Ver estado de sincronización")
+for label in ["Anotar observación"]:
     if intersects(bounds(unique("text", label)), bounds(sync)):
         raise SystemExit(f"Large-text header overlaps sync action: {label}")
 
 controls = []
 selected = 0
-for label in ["Inicio", "Diagnóstico", "Ajustes"]:
+for label in ["Inicio", "Colmenas", "Ajustes"]:
     node = unique("resource-id", f"nav-{label}")
     if node.get("content-desc") != label or node.get("clickable") != "true" or node.get("enabled") != "true" or node.get("focusable") != "true":
         raise SystemExit(f"Native navigation label/action missing: {label}")

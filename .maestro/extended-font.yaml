@@ -7,7 +7,7 @@ name: Formulario con texto al 200 por ciento
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 - openLink: apisense:///inspection?hiveId=00000000-0000-4000-8000-000000000102
 - extendedWaitUntil:

@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { View } from "react-native";
-import { Card, Label, Row } from "./ui";
-import { Fold } from "./ui/Fold";
+import { Button, Card, Label, Row } from "./ui";
 import { useTheme } from "./ui/theme";
 import { useApp } from "../state/AppProvider";
 import {
@@ -27,6 +27,7 @@ const statusText: Record<DayStatus, string> = {
 export function VerdictTimeline({ hiveId }: { hiveId: string }) {
   const { data } = useApp();
   const { colors } = useTheme();
+  const [open, setOpen] = useState(false);
   const days = verdictDays(data.verdictStats, data.verdicts, hiveId);
   const total = days.reduce((sum, d) => sum + d.count, 0);
   if (total === 0) return null;
@@ -40,9 +41,8 @@ export function VerdictTimeline({ hiveId }: { hiveId: string }) {
   const shown = (d: (typeof days)[number]) =>
     d.verdicts.filter((v) => isAlert(v)).slice(0, 5);
   return (
-    <View style={{ gap: 12 }}>
-      <Card>
-        <Label bold>Línea de tiempo del nodo</Label>
+    <Card style={{ gap: 10 }}>
+        <Label bold>Últimos 14 días</Label>
         <View
           accessible
           accessibilityLabel={`Últimos 14 días. ${timelineSummary(days)}`}
@@ -77,13 +77,18 @@ export function VerdictTimeline({ hiveId }: { hiveId: string }) {
             hoy
           </Label>
         </Row>
-        <Label muted size={13}>
-          {timelineSummary(days)}
-        </Label>
-      </Card>
-      <Fold title="Ver mensajes del nodo" testID="fold-node-messages">
-        <Card>
-          {withData.map((d) => (
+      <Label muted size={13}>
+        {timelineSummary(days)}
+      </Label>
+      <Button
+        testID="fold-node-messages"
+        label={open ? "Ocultar mensajes" : "Ver mensajes"}
+        variant="ghost"
+        compact
+        onPress={() => setOpen(!open)}
+      />
+      {open
+        ? withData.map((d) => (
             <View key={d.key} style={{ gap: 4 }}>
               <Label bold size={13}>
                 {dayLabel(d.key)} · {statusText[d.status]} · {d.count}{" "}
@@ -95,9 +100,8 @@ export function VerdictTimeline({ hiveId }: { hiveId: string }) {
                 </Label>
               ))}
             </View>
-          ))}
-        </Card>
-      </Fold>
-    </View>
+          ))
+        : null}
+    </Card>
   );
 }

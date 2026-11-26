@@ -34,8 +34,8 @@ const items: {
   },
   {
     route: "/hive",
-    label: "Diagnóstico",
-    icon: "health-and-safety",
+    label: "Colmenas",
+    icon: "hive",
     prefix: ["/hive", "/hives", "/inspection", "/pairing"],
   },
   {

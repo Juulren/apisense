@@ -35,7 +35,7 @@
 ## Por confirmar antes de la fase 3
 - ¿Quiénes serán administradores?
 - ¿El apicultor puede seguir creando, renombrando y quitando sus propios apiarios y colmenas? (Se asume que **sí**; solo la configuración del micrófono y nodo pasa a ser del admin.)
-- ¿La configuración BLE del micrófono y la calibración se conservan? Venían de la sección de audio ya retirada; con el nodo LoRaWAN bastaría el DevEUI.
+- Respondido el 26 nov: Bluetooth y MQTT **se quitan**; con el nodo LoRaWAN basta el DevEUI. Todo lo técnico queda en administración y el cliente no lo ve. Falta confirmar si la calibración del micrófono antiguo se quita con ellos (venía de la sección de audio ya retirada).
 
 ## Nota sobre el estado intermedio
 Hasta implementar la fase 4, **cualquier usuario sigue pudiendo abrir la pantalla de vinculación**, ahora con un botón visible en cada colmena («Vincular nodo de la colmena»). Esa pantalla todavía se titula «Micrófonos IoT» e incluye la búsqueda BLE, la calibración y MQTT, que servían al monitor retirado: las lecturas que crearan ya no se muestran en ningún sitio. En la fase 3 se rehace como configuración del nodo.

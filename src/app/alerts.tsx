@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pressable } from "react-native";
 import { router } from "expo-router";
 import { AppScreen, Empty } from "../components/AppScreen";
 import {
@@ -6,135 +7,147 @@ import {
   Button,
   Card,
   Field,
+  Icon,
   Label,
   Row,
-  Section,
 } from "../components/ui";
+import { Fold } from "../components/ui/Fold";
+import { NotDiagnosis } from "../components/NotDiagnosis";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
+import { reviewLabels } from "../services/EdgeVerdicts";
 import {
-  isAlert,
-  nodeWarnings,
-  pendingAlerts,
-  reviewLabels,
-  reviewVerdict,
-  verdictSummary,
-} from "../services/EdgeVerdicts";
-import type { EdgeVerdict, VerdictReview } from "../db/types";
-
-const sourceLabel: Record<EdgeVerdict["source"], string> = {
-  lora: "LoRaWAN",
-  ble: "Bluetooth",
-  mqtt: "MQTT",
-  simulator: "Simulado",
-};
+  alertEpisodes,
+  episodeCount,
+  reviewEpisode,
+  reviewedGroups,
+  timeText,
+  type AlertEpisode,
+} from "../services/AlertEpisodes";
+import type { VerdictReview } from "../db/types";
 
 export default function Alerts() {
   const app = useApp(),
     task = useTask();
+  // Keyed by the episode's first alert, which stays put while it grows.
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [writing, setWriting] = useState<Record<string, boolean>>({});
   const hiveCode = (id: string) =>
     app.data.hives.find((h) => h.id === id)?.code ?? "Colmena";
-  const pending = pendingAlerts(app.data.verdicts);
-  const reviewed = app.data.verdicts
-    .filter((v) => isAlert(v) && v.review !== null)
-    .sort((a, b) => (b.reviewed_at ?? "").localeCompare(a.reviewed_at ?? ""))
-    .slice(0, 10);
-  const review = (v: EdgeVerdict, decision: VerdictReview) =>
+  const episodes = alertEpisodes(app.data.verdicts);
+  const reviewed = reviewedGroups(app.data.verdicts);
+  const review = (episode: AlertEpisode, decision: VerdictReview) =>
     task.run(async () => {
       if (!app.workspace) return;
-      await reviewVerdict(app.workspace.repo, v.id, decision, notes[v.id] ?? "");
-      setNotes((n) => ({ ...n, [v.id]: "" }));
+      const key = episode.ids[0]!;
+      // Only the alerts on the card: one that arrives meanwhile opens another.
+      await reviewEpisode(
+        app.workspace.repo,
+        episode.ids,
+        decision,
+        notes[key] ?? "",
+      );
+      setNotes((n) => ({ ...n, [key]: "" }));
       await app.refresh();
     }, `Marcada: ${reviewLabels[decision].toLowerCase()}`);
   return (
-    <AppScreen
-      title="Alertas del nodo"
-      subtitle="Lo que reportó el clasificador del nodo"
-      back
-    >
-      <Card>
-        <Label muted size={12}>
-          El nodo clasifica el sonido en el propio dispositivo y manda solo un
-          código. «Sonido diferente al habitual» únicamente significa que se oye
-          distinto de lo normal en esa colmena; el nodo no sabe por qué. Revísala
-          y marca el resultado: tu respuesta sirve para ajustar el modelo.
-        </Label>
-      </Card>
-      <Section title="Por revisar" caption={`${pending.length} sin revisar`}>
-        {pending.length ? (
-          pending.map((v) => (
-            <Card key={v.id} tone="amber">
+    <AppScreen title="Alertas" back>
+      {episodes.map((episode) => {
+        const key = episode.ids[0]!;
+        const code = hiveCode(episode.hive_id);
+        const when =
+          episode.first === episode.last
+            ? timeText(episode.first)
+            : `${timeText(episode.first)} a ${timeText(episode.last)}`;
+        return (
+          <Card key={key} tone="amber" style={{ gap: 10 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Abrir ${code}`}
+              onPress={() =>
+                router.push({
+                  pathname: "/hive/[id]",
+                  params: { id: episode.hive_id },
+                })
+              }
+              style={{ minHeight: 48, justifyContent: "center" }}
+            >
               <Row>
-                <Label bold style={{ flex: 1 }}>
-                  {hiveCode(v.hive_id)}
+                <Label bold size={20} style={{ flex: 1 }}>
+                  {code}
                 </Label>
-                <Badge label={sourceLabel[v.source]} tone="blue" />
+                {episode.latest.source === "simulator" ? (
+                  <Badge label="Simulado" tone="blue" />
+                ) : null}
+                <Icon name="chevron-right" />
               </Row>
-              <Label>{verdictSummary(v)}</Label>
-              {nodeWarnings(v).length ? (
-                <Label tone="warning" size={12}>
-                  Aviso del nodo: {nodeWarnings(v).join(", ")}.
-                </Label>
-              ) : null}
+            </Pressable>
+            <Label>{episodeCount(episode.ids.length)}</Label>
+            <Label muted size={13}>
+              {when} · confianza {Math.round(episode.latest.confidence * 100)} %
+            </Label>
+            {episode.warnings.length ? (
+              <Label tone="warning" size={13}>
+                Aviso del nodo: {episode.warnings.join(", ")}.
+              </Label>
+            ) : null}
+            <NotDiagnosis />
+            {writing[key] ? (
               <Field
                 label="Nota (opcional)"
-                value={notes[v.id] ?? ""}
-                onChangeText={(text) => setNotes((n) => ({ ...n, [v.id]: text }))}
+                value={notes[key] ?? ""}
+                onChangeText={(text) => setNotes((n) => ({ ...n, [key]: text }))}
                 maxLength={500}
                 placeholder="Qué encontraste al revisar"
               />
+            ) : (
               <Button
-                label="Confirmada tras inspección"
-                icon="check"
-                loading={task.busy}
-                onPress={() => review(v, "confirmed")}
-              />
-              <Button
-                label="Falsa alarma"
-                variant="secondary"
-                disabled={task.busy}
-                onPress={() => review(v, "false_alarm")}
-              />
-              <Button
-                label="Marcar como vista"
+                label="Añadir nota"
+                icon="add"
                 variant="ghost"
-                disabled={task.busy}
-                onPress={() => review(v, "seen")}
+                compact
+                onPress={() => setWriting((w) => ({ ...w, [key]: true }))}
               />
-              <Button
-                label="Abrir la colmena"
-                variant="ghost"
-                onPress={() =>
-                  router.push({ pathname: "/hive/[id]", params: { id: v.hive_id } })
-                }
-              />
-            </Card>
-          ))
-        ) : (
-          <Empty>No hay alertas pendientes.</Empty>
-        )}
-      </Section>
+            )}
+            <Button
+              label="Confirmada"
+              icon="check"
+              variant="secondary"
+              loading={task.busy}
+              onPress={() => review(episode, "confirmed")}
+            />
+            <Button
+              label="Falsa alarma"
+              icon="close"
+              variant="secondary"
+              disabled={task.busy}
+              onPress={() => review(episode, "false_alarm")}
+            />
+          </Card>
+        );
+      })}
+      {!episodes.length ? <Empty>Nada por revisar.</Empty> : null}
       {reviewed.length ? (
-        <Section title="Revisadas recientemente">
-          {reviewed.map((v) => (
-            <Card key={v.id}>
-              <Row>
+        <Fold title="Revisadas" testID="fold-reviewed">
+          {reviewed.map((group) => (
+            <Card key={group.key} style={{ padding: 14, gap: 6 }}>
+              <Row style={{ flexWrap: "wrap", rowGap: 6 }}>
                 <Label bold style={{ flex: 1 }}>
-                  {hiveCode(v.hive_id)}
+                  {hiveCode(group.hive_id)}
                 </Label>
                 <Badge
-                  label={v.review ? reviewLabels[v.review] : ""}
-                  tone={v.review === "confirmed" ? "amber" : "neutral"}
+                  label={reviewLabels[group.review]}
+                  tone={group.review === "confirmed" ? "amber" : "neutral"}
                 />
               </Row>
               <Label muted size={12}>
-                {verdictSummary(v)}
+                {episodeCount(group.count)}
+                {group.reviewedAt ? ` · ${timeText(group.reviewedAt)}` : ""}
               </Label>
-              {v.review_note ? <Label>{v.review_note}</Label> : null}
+              {group.note ? <Label>{group.note}</Label> : null}
             </Card>
           ))}
-        </Section>
+        </Fold>
       ) : null}
       {task.message ? (
         <Label accessibilityLiveRegion="polite">{task.message}</Label>

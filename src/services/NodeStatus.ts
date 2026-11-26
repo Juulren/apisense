@@ -112,6 +112,33 @@ export function nodeHiveStatus(
   return { label: "Sonido habitual", tone: "green", detail: "Según el último mensaje del nodo", stable: true };
 }
 
+/**
+ * The home screen's list: hives with an alert to review or a node that stopped
+ * reporting, alerts first. A hive left out is not thereby fine: it may have no
+ * node, not be judging yet, or not be synced.
+ */
+export function hivesNeedingAttention(
+  hives: Hive[],
+  verdicts: EdgeVerdict[],
+  stateOf: (hiveId: string) => NodeState,
+  now = new Date(),
+) {
+  const alerted = new Set(pendingAlerts(verdicts).map((v) => v.hive_id));
+  return hives
+    .map((hive) => ({
+      hive,
+      status: nodeHiveStatus(verdicts, hive.id, stateOf(hive.id), now),
+    }))
+    .filter(
+      (row): row is { hive: Hive; status: NodeHiveStatus } =>
+        row.status?.tone === "amber",
+    )
+    .sort(
+      (a, b) =>
+        Number(alerted.has(b.hive.id)) - Number(alerted.has(a.hive.id)),
+    );
+}
+
 /** Hives whose node has stopped reporting. */
 export function silentHives(
   hives: Hive[],

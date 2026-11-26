@@ -11,18 +11,13 @@ name: Demo nativa offline y persistencia
 - assertVisible: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 - takeScreenshot: .artifacts/demo-dashboard
 - tapOn:
-    id: "nav-Inicio"
-- scrollUntilVisible:
-    centerElement: true
-    element:
-      text: "Ver lista / mapa"
-- tapOn: "Ver lista / mapa"
+    id: "nav-Colmenas"
 - extendedWaitUntil:
-    visible: "Mis colmenas"
+    visible: "Buscar colmena"
     timeout: 15000
 - tapOn: "Mapa"
 - scrollUntilVisible:
@@ -30,8 +25,6 @@ name: Demo nativa offline y persistencia
     element:
       text: "Ubicación de referencia · Demo"
 - takeScreenshot: .artifacts/demo-map
-- tapOn:
-    id: "nav-Inicio"
 - scrollUntilVisible:
     centerElement: true
     element:
@@ -40,8 +33,8 @@ name: Demo nativa offline y persistencia
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Anotar observación de esta colmena"
-- tapOn: "Anotar observación de esta colmena"
+      text: "Anotar"
+- tapOn: "Anotar"
 - tapOn:
     id: "inspection-notes"
 - inputText: "Inspeccion de prueba nativa persistente"
@@ -74,8 +67,10 @@ name: Demo nativa offline y persistencia
       text: "Entrar a la demo"
 - tapOn: "Entrar a la demo"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
+- tapOn:
+    id: "nav-Colmenas"
 - scrollUntilVisible:
     centerElement: true
     element:

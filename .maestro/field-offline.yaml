@@ -4,6 +4,8 @@ appId: com.apisense.app
 - extendedWaitUntil:
     visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
+- tapOn:
+    id: "nav-Colmenas"
 - scrollUntilVisible:
     centerElement: true
     element:

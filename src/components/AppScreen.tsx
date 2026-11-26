@@ -4,8 +4,9 @@ import type { ComponentProps, ReactNode } from "react";
 import { Screen } from "./ui/Screen";
 import { Label } from "./ui";
 import { useApp } from "../state/AppProvider";
+import { headerStatus } from "../services/HeaderStatus";
 export function AppScreen(props: ComponentProps<typeof Screen>) {
-  const { workspace, busy, syncState, error, reload } = useApp();
+  const { workspace, busy, syncState, error, reload, data } = useApp();
   if (busy)
     return (
       <Screen>
@@ -14,15 +15,12 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
       </Screen>
     );
   if (!workspace) return <Redirect href="/login" />;
-  const status = workspace.demo
-    ? "Local"
-    : syncState.status === "syncing"
-      ? "Sincronizando"
-      : syncState.status === "error"
-        ? "Sync pendiente"
-        : syncState.status === "offline"
-          ? "Sin conexión"
-          : "En línea";
+  const status = headerStatus({
+    demo: workspace.demo,
+    sync: syncState.status,
+    offlineMode: data.settings.offline === "1",
+    pending: data.pending,
+  });
   return (
     <Screen onRefresh={reload} {...props} status={status}>
       {error ? (

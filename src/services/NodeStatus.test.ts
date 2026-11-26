@@ -5,6 +5,7 @@ import { isAlert } from "./EdgeVerdicts";
 import {
   SILENT_AFTER_MS,
   dayLabel,
+  hivesNeedingAttention,
   nodeHiveStatus,
   nodeState,
   silentHives,
@@ -193,5 +194,31 @@ describe("what a hive's tile says because of its node", () => {
     expect(status([], { kind: "none" })).toBeNull();
     // Another hive's alert is not this hive's.
     expect(status([verdict({ hive_id: "h2", class_code: 1 })], { kind: "none" })).toBeNull();
+  });
+});
+
+describe("the home screen's attention list", () => {
+  const hive = (id: string) => ({ id, code: id }) as Hive;
+  it("keeps only hives to review or silent, alerts first, and never invents an all-clear", () => {
+    const hives = ["quiet", "silent", "alert", "nonode"].map(hive);
+    const verdicts = [
+      verdict({ hive_id: "quiet" }),
+      verdict({ hive_id: "alert", class_code: 1 }),
+    ];
+    const rows = hivesNeedingAttention(
+      hives,
+      verdicts,
+      (id) =>
+        id === "silent"
+          ? { kind: "silent", lastAt: null, hours: null }
+          : id === "nonode"
+            ? { kind: "none" }
+            : { kind: "ok", lastAt: ago(H) },
+      NOW,
+    );
+    expect(rows.map((r) => [r.hive.id, r.status.label])).toEqual([
+      ["alert", "Por revisar"],
+      ["silent", "Sin reportar"],
+    ]);
   });
 });

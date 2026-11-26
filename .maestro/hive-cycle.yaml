@@ -6,7 +6,7 @@ name: Observaciones y lecturas por colmena
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:
@@ -15,8 +15,8 @@ name: Observaciones y lecturas por colmena
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
 - scrollUntilVisible:
     direction: UP
-    element: { text: "Anotar observación de esta colmena" }
-- tapOn: "Anotar observación de esta colmena"
+    element: { text: "Anotar" }
+- tapOn: "Anotar"
 - assertVisible: "Observaciones de Colmena 01"
 - tapOn: { id: "inspection-notes" }
 - inputText: Observacion QA persistente de Colmena 01
@@ -39,7 +39,7 @@ name: Observaciones y lecturas por colmena
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
 - scrollUntilVisible:

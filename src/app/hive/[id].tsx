@@ -3,29 +3,39 @@ import { Alert } from "react-native";
 import { useState } from "react";
 import { AppScreen, Empty } from "../../components/AppScreen";
 import {
-  Badge,
   Button,
   Card,
   Field,
+  Icon,
+  IconButton,
   Label,
   Row,
-  Section,
 } from "../../components/ui";
-import { Fold } from "../../components/ui/Fold";
+import { useTheme } from "../../components/ui/theme";
 import { NodeCard } from "../../components/NodeCard";
 import { VerdictTimeline } from "../../components/VerdictTimeline";
-import { SeasonTracker } from "../../components/SeasonTracker";
 import { checkinSummary } from "../../services/Checkin";
 import { removeHive, renameHive } from "../../services/Hives";
+import { pendingAlerts } from "../../services/EdgeVerdicts";
+import { calendarFor, phaseOn, seasonSignals } from "../../services/Seasons";
 import { useApp } from "../../state/AppProvider";
+import { useNodeState } from "../../state/useNodeState";
 import { useTask } from "../../state/useTask";
 import { dateLabel, parseTags } from "../../state/selectors";
-export default function HiveDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>(),
-    app = useApp(),
+export default function HiveRoute() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  // Keyed by hive: the open menu or a half-typed name never carries to another.
+  return <HiveDetail key={id} id={id} />;
+}
+function HiveDetail({ id }: { id: string }) {
+  const app = useApp(),
     task = useTask();
+  const { colors } = useTheme();
+  const nodes = useNodeState();
   const hive = app.data.hives.find((h) => h.id === id);
-  const [inspectionLimit, setInspectionLimit] = useState(3);
+  const apiary = app.data.apiaries.find((a) => a.id === hive?.apiary_id);
+  const [shown, setShown] = useState(1);
+  const [menu, setMenu] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
   const confirmRemove = () => {
     if (!hive || !app.workspace) return;
@@ -51,78 +61,47 @@ export default function HiveDetail() {
   const inspections = app.data.inspections
     .filter((i) => i.hive_id === id)
     .sort((a, b) => b.inspected_at.localeCompare(a.inspected_at));
+  const today = new Date();
+  const signals = seasonSignals(
+    inspections,
+    phaseOn(calendarFor(apiary).calendar, today).info?.phase ?? null,
+    today,
+  );
+  const toReview = pendingAlerts(app.data.verdicts).some(
+    (v) => v.hive_id === id,
+  );
+  const note = (variant: "primary" | "secondary") => (
+    <Button
+      label="Anotar"
+      icon="edit-note"
+      variant={variant}
+      onPress={() =>
+        router.push({ pathname: "/inspection", params: { hiveId: id } })
+      }
+    />
+  );
   return (
     <AppScreen
       title={hive?.code ?? "Detalle de colmena"}
-      subtitle={app.data.apiaries.find((a) => a.id === hive?.apiary_id)?.name}
+      subtitle={app.data.apiaries.length > 1 ? apiary?.name : undefined}
       back
+      action={
+        hive ? (
+          <IconButton
+            testID="fold-admin"
+            icon="more-vert"
+            label="Opciones de la colmena"
+            expanded={menu}
+            onPress={() => setMenu(!menu)}
+          />
+        ) : undefined
+      }
     >
       {!hive ? (
         <Empty>La colmena no existe en esta base local.</Empty>
       ) : (
         <>
-          <Button
-            label="Anotar observación de esta colmena"
-            icon="edit-note"
-            onPress={() =>
-              router.push({ pathname: "/inspection", params: { hiveId: id } })
-            }
-          />
-          <NodeCard key={`node-${id}`} hiveId={id} />
-          <VerdictTimeline key={`timeline-${id}`} hiveId={id} />
-          <SeasonTracker key={`checkins-${id}`} hiveId={id} cta={false} brief />
-          <Section
-            title="Bitácora de campo"
-            caption="Tus observaciones y acciones guardadas localmente"
-          >
-            {inspections.length ? (
-              inspections.slice(0, inspectionLimit).map((inspection) => (
-                <Card key={inspection.id}>
-                  <Row>
-                    <Label bold>Observación</Label>
-                    <Badge
-                      label={
-                        inspection.synced_at ? "Sincronizada" : "Guardada local"
-                      }
-                      tone="blue"
-                    />
-                  </Row>
-                  <Label muted size={11}>
-                    {dateLabel(inspection.inspected_at)}
-                  </Label>
-                  {checkinSummary(inspection).length ? (
-                    <Label bold size={12}>
-                      {checkinSummary(inspection).join(" · ")}
-                    </Label>
-                  ) : null}
-                  {inspection.notes ? <Label>{inspection.notes}</Label> : null}
-                  {parseTags(inspection.tags_json).length ? (
-                    <Label muted size={12}>
-                      {parseTags(inspection.tags_json).join(" · ")}
-                    </Label>
-                  ) : null}
-                </Card>
-              ))
-            ) : (
-              <Empty>Aún no has anotado observaciones.</Empty>
-            )}
-            {inspections.length > inspectionLimit ? (
-              <Button
-                label="Ver observaciones anteriores"
-                variant="secondary"
-                onPress={() => setInspectionLimit(inspectionLimit + 5)}
-              />
-            ) : null}
-          </Section>
-          <Button
-            label="Vincular nodo de la colmena"
-            icon="link"
-            variant="secondary"
-            onPress={() =>
-              router.push({ pathname: "/pairing", params: { hiveId: id } })
-            }
-          />
-          <Fold title="Administrar colmena" testID="fold-admin">
+          {menu ? (
             <Card>
               <Field
                 label="Nombre o código"
@@ -145,6 +124,15 @@ export default function HiveDetail() {
                   }, "Nombre guardado")
                 }
               />
+              {/* Moves to administration once that screen exists. */}
+              <Button
+                label="Vincular nodo de la colmena"
+                icon="link"
+                variant="secondary"
+                onPress={() =>
+                  router.push({ pathname: "/pairing", params: { hiveId: id } })
+                }
+              />
               <Button
                 label="Quitar colmena"
                 icon="delete-outline"
@@ -152,7 +140,62 @@ export default function HiveDetail() {
                 onPress={confirmRemove}
               />
             </Card>
-          </Fold>
+          ) : null}
+          <NodeCard hiveId={id} state={nodes.stateOf(id)} />
+          {signals.map((signal) => (
+            <Card
+              key={signal.text}
+              tone={signal.tone === "info" ? "blue" : "amber"}
+              style={{ padding: 14 }}
+            >
+              <Row>
+                <Icon
+                  name={signal.tone === "info" ? "info-outline" : "report-problem"}
+                  color={
+                    signal.tone === "info" ? colors.blueText : colors.amberText
+                  }
+                />
+                <Label size={13} style={{ flex: 1 }}>
+                  {signal.text}
+                </Label>
+              </Row>
+            </Card>
+          ))}
+          {toReview ? (
+            <Button label="Revisar" onPress={() => router.push("/alerts")} />
+          ) : (
+            note("primary")
+          )}
+          <VerdictTimeline hiveId={id} />
+          {inspections.slice(0, shown).map((inspection, i) => (
+            <Card key={inspection.id} style={{ gap: 6 }}>
+              <Label bold>{i === 0 ? "Última nota" : "Nota"}</Label>
+              <Label muted size={12}>
+                {dateLabel(inspection.inspected_at)}
+                {inspection.synced_at ? "" : " · sin enviar"}
+              </Label>
+              {checkinSummary(inspection).length ? (
+                <Label bold size={12}>
+                  {checkinSummary(inspection).join(" · ")}
+                </Label>
+              ) : null}
+              {inspection.notes ? <Label>{inspection.notes}</Label> : null}
+              {parseTags(inspection.tags_json).length ? (
+                <Label muted size={12}>
+                  {parseTags(inspection.tags_json).join(" · ")}
+                </Label>
+              ) : null}
+            </Card>
+          ))}
+          {!inspections.length ? <Label muted>Aún no hay notas.</Label> : null}
+          {inspections.length > shown ? (
+            <Button
+              label="Ver observaciones anteriores"
+              variant="ghost"
+              onPress={() => setShown(shown + 5)}
+            />
+          ) : null}
+          {toReview ? note("secondary") : null}
           {task.message ? <Label>{task.message}</Label> : null}
         </>
       )}

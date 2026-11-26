@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { View } from "react-native";
-import { Button, Card, Icon, Label, Row } from "./ui";
+import { Pressable, View } from "react-native";
+import { Button, Card, Icon, IconButton, Label, Row } from "./ui";
 import { PlacePicker } from "./PlacePicker";
 import { useTask } from "../state/useTask";
 import { setApiaryLocation } from "../services/Apiaries";
@@ -10,14 +10,15 @@ import { ageLabel, WEATHER_LABEL } from "../services/Weather";
 import type { Apiary } from "../db/types";
 
 /**
- * Current weather for the apiary, with a way to pick (or change) the place it
- * is for. With no place chosen it shows the picker straight away.
+ * Current weather for the apiary in one line; touching it shows the rest, with a
+ * way to change the place it is for.
  */
 export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
   const state = useWeather(apiary);
   const app = useApp();
   const task = useTask();
   const [choosing, setChoosing] = useState(false);
+  const [open, setOpen] = useState(false);
   if (!apiary || !state) return null;
   if (state.disabled === "off" || state.disabled === "no-location") {
     const hasPlace = apiary.latitude !== null && apiary.longitude !== null;
@@ -61,6 +62,45 @@ export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
     );
   }
   const reading = state.reading;
+  const old = state.stale || state.disabled === "offline";
+  if (!open)
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Clima del apiario"
+        accessibilityHint={
+          reading
+            ? `${Math.round(reading.temperature)} grados, pronóstico`
+            : "Sin datos recientes"
+        }
+        accessibilityState={{ expanded: false }}
+        onPress={() => setOpen(true)}
+        style={{ minHeight: 48 }}
+      >
+        <Card style={{ paddingVertical: 12, gap: 2 }}>
+          <Row>
+            <Icon name="cloud-queue" size={22} />
+            <View style={{ flex: 1 }}>
+              <Label bold>
+                {reading
+                  ? `${Math.round(reading.temperature)} °C · ${
+                      reading.precipitation > 0
+                        ? `lluvia ${reading.precipitation.toFixed(1)} mm`
+                        : "sin lluvia"
+                    }`
+                  : "Clima sin datos recientes"}
+              </Label>
+              {reading ? (
+                <Label muted size={12}>
+                  Estimado, no medido aquí{old ? " · sin actualizar" : ""}
+                </Label>
+              ) : null}
+            </View>
+            <Icon name="expand-more" size={22} />
+          </Row>
+        </Card>
+      </Pressable>
+    );
   return (
     <Card>
       <Row>
@@ -73,7 +113,15 @@ export function WeatherCard({ apiary }: { apiary: Apiary | undefined }) {
           compact
           onPress={() => setChoosing(!choosing)}
         />
-        <Icon name="cloud-queue" />
+        <IconButton
+          icon="expand-less"
+          label="Ocultar el clima"
+          expanded
+          onPress={() => {
+            setOpen(false);
+            setChoosing(false);
+          }}
+        />
       </Row>
       {reading ? (
         <>

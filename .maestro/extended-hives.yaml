@@ -7,7 +7,7 @@ name: Notas largas, observaciones anteriores y lectura guardada
     element: { text: "Explorar demo local" }
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 - openLink: apisense:///ui-catalog
 - scrollUntilVisible:
@@ -44,12 +44,11 @@ name: Notas largas, observaciones anteriores y lectura guardada
     timeout: 60000
     element: { text: "Ver observaciones anteriores" }
 - tapOn: "Ver observaciones anteriores"
-# The log shows 3 entries first and loads 5 more per tap; tap again if more remain.
-- runFlow:
-    when:
-      visible: "Ver observaciones anteriores"
-    commands:
-      - tapOn: "Ver observaciones anteriores"
+# The hive shows the last note and loads 5 more per tap; 7 notes need a second tap.
+- scrollUntilVisible:
+    timeout: 60000
+    element: { text: "Ver observaciones anteriores" }
+- tapOn: "Ver observaciones anteriores"
 - scrollUntilVisible:
     timeout: 60000
     element: { text: ".*FINAL NOTA LARGA QA.*" }

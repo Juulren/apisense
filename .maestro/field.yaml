@@ -28,6 +28,8 @@ name: App de campo Android con cuentas Supabase y sincronización
     visible: "(Buenos días|Buenas tardes|Buenas noches), apicultor"
     timeout: 60000
 - assertNotVisible: "Datos de demostración · Sin envío a nube"
+- tapOn:
+    id: "nav-Colmenas"
 - scrollUntilVisible:
     centerElement: true
     element:
@@ -43,7 +45,7 @@ name: App de campo Android con cuentas Supabase y sincronización
 - tapOn:
     id: "offline-toggle"
 - tapOn:
-    id: "nav-Inicio"
+    id: "nav-Colmenas"
 - scrollUntilVisible:
     centerElement: true
     element:
@@ -52,8 +54,8 @@ name: App de campo Android con cuentas Supabase y sincronización
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Anotar observación de esta colmena"
-- tapOn: "Anotar observación de esta colmena"
+      text: "Anotar"
+- tapOn: "Anotar"
 - tapOn:
     id: "inspection-notes"
 - inputText: ${MAESTRO_QA_NOTE}

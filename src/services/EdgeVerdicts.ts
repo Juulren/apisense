@@ -13,7 +13,7 @@ import {
 export const reviewLabels: Record<VerdictReview, string> = {
   seen: "Vista",
   false_alarm: "Falsa alarma",
-  confirmed: "Confirmada tras inspección",
+  confirmed: "Confirmada",
 };
 export const MAX_REVIEW_NOTE = 500;
 export const VERDICT_WINDOW_DAYS = 14;

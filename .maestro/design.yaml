@@ -40,7 +40,7 @@ name: Pantallas Android con datos sintéticos y tema explícito
       text: "Explorar demo local"
 - tapOn: "Explorar demo local"
 - extendedWaitUntil:
-    visible: "Anotar observación"
+    visible: "Anotar"
     timeout: 60000
 # The workspace restores its own preference. Set it explicitly after loading.
 - openLink: apisense:///ui-catalog
@@ -51,10 +51,10 @@ name: Pantallas Android con datos sintéticos y tema explícito
 - openLink: apisense:///dashboard
 - scrollUntilVisible:
     element:
-      text: "Estado por Colmena"
+      text: "Nada por revisar"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/03-dashboard
 - openLink: apisense:///hives
-- assertVisible: "Mis colmenas"
+- assertVisible: "Buscar colmena"
 - takeScreenshot: .artifacts/design/${THEME_KEY}/04-hives
 - openLink: apisense:///hive/00000000-0000-4000-8000-000000000101
 - assertVisible: "Colmena 01"

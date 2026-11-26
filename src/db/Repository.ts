@@ -120,6 +120,47 @@ export class Repository {
       return row;
     });
   }
+  /**
+   * Saves one review on many node verdicts atomically (an alert episode). Skips
+   * removed verdicts, those of a removed hive and those already reviewed (for
+   * example on another phone); resolves to how many it saved.
+   * Does not call save(): a nested transaction would wait on itself.
+   */
+  async reviewVerdicts(
+    ids: string[],
+    review: Pick<
+      EntityMap["edge_verdicts"],
+      "review" | "reviewed_at" | "review_note"
+    >,
+  ): Promise<number> {
+    return this.transaction(async () => {
+      let saved = 0;
+      for (const id of ids) {
+        const old = (
+          await this.sql.all<EntityMap["edge_verdicts"]>(
+            `SELECT v.* FROM edge_verdicts v JOIN hives h ON h.id = v.hive_id
+              WHERE v.id=? AND v.review IS NULL AND v.deleted_at IS NULL
+                AND h.deleted_at IS NULL`,
+            [id],
+          )
+        )[0];
+        if (!old) continue;
+        const row = {
+          ...old,
+          ...review,
+          updated_at: new Date(
+            Math.max(this.now().getTime(), Date.parse(old.updated_at) + 1),
+          ).toISOString(),
+          synced_at: null,
+          local_revision: old.local_revision + 1,
+        };
+        await this.insert("edge_verdicts", row as unknown as Dictionary);
+        await this.enqueue("edge_verdicts", id, row.local_revision);
+        saved++;
+      }
+      return saved;
+    });
+  }
   private enqueue(table: Table, id: string, revision: number) {
     return this.sql.run(
       "INSERT INTO sync_queue(table_name,record_id,revision,next_retry_at) VALUES (?,?,?,?) ON CONFLICT(table_name,record_id) DO UPDATE SET revision=excluded.revision,attempts=0,next_retry_at=excluded.next_retry_at,last_error=NULL",

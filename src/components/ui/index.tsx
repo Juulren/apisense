@@ -209,6 +209,39 @@ export function Button({
     </Pressable>
   );
 }
+/** A button that is only an icon: 48 dp to touch, always with a spoken label. */
+export function IconButton({
+  icon,
+  label,
+  onPress,
+  expanded,
+  testID,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  /** For one that opens and closes something. */
+  expanded?: boolean;
+  testID?: string;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={expanded === undefined ? undefined : { expanded }}
+      onPress={onPress}
+      style={{
+        minWidth: 48,
+        minHeight: 48,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Icon name={icon} />
+    </Pressable>
+  );
+}
 export function Field({
   label,
   error,
