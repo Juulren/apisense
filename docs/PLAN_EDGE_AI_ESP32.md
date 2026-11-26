@@ -66,7 +66,16 @@ Puerta B: características dentro de tolerancia en todas las ventanas de prueba;
 - Cambiar la forma de calcular las características (`FEATURE_VERSION`) borra lo aprendido.
 - El puente se reconecta si se pierde el USB (sin reiniciar la placa) y guarda en memoria los mensajes que no pudo enviar para reintentarlos con su hora original. Si se cierra el puente, esos pendientes se pierden (quedan en el registro).
 - Corrección de un dato anterior: calcular cuesta unos **3,7 ms** por trama de 32 ms (no 16,7 ms, que incluía la espera del puerto USB).
-- **Falta:** reposo profundo y presupuesto de energía, sensores de temperatura y batería, el radio, y una corrida continua larga (al menos 1 h). La reconexión del puente no se ha probado desconectando el cable.
+- **Falta:** reposo profundo y presupuesto de energía, sensores de temperatura y batería, el radio, y corridas de varios días. La reconexión del puente no se ha probado desconectando el cable.
+
+### Corrida de 1 hora (25 nov, 20:53–21:55)
+Compilación **rápida** (ventanas de 60 s seguidas) con el modelo de los datasets ya cargado, micrófono real, por USB y **sin enviar nada** a Supabase.
+- **Estabilidad: pasa la parte de «1 h sin reinicios ni desbordes» de la puerta B.** 61 ventanas cada 60–61 s, un solo arranque (el de abrir el puerto), ningún error en el registro y el micrófono bien en todas.
+- Audio perdido medido: 4 ms en cada ventana de 60 s (el límite para descartarla es 600 ms). Cálculo: 6,9 s por ventana.
+- Memoria sin cambios de principio a fin: 230 200 bytes libres (mínimo histórico 216 212). En una hora no se ve ninguna fuga. El margen mínimo de pila de la tarea principal fue de 4 496 bytes (de 8 192, el valor por defecto del núcleo); ya se había llegado a él en el arranque, antes de la primera ventana. Las pilas de las demás tareas no se midieron.
+- **No cubrió:** guardar lo aprendido en la flash (con el modelo listo lo hace cada 12 ventanas aprendidas y hubo 7), la fase de aprendizaje, la compilación de campo con pausas, el envío a Supabase, la reconexión del USB ni el radio.
+- **Veredictos (no miden acierto):** las primeras 9 ventanas salieron habituales: 7 bajo el umbral y 2 que ya lo pasaban sin que la alarma se activara todavía. Desde las 21:03:55 la alarma siguió activa 52 ventanas, hasta el final. El nivel de las 7 primeras fue de −44 a −41 dBFS; con la alarma activa fue de −39 a −30 dBFS, salvo una ventana a −43 que quedó apenas bajo el umbral (4,123 frente a 4,209). La alarma se activó cuando subió el nivel, pero el puntaje ya había pasado el umbral dos ventanas antes (a las 21:01:54, con −41,5 dBFS), así que el nivel no lo explica todo. No se anotó qué pasaba en el cuarto y no se sabe la causa. La línea base viene de los datasets y no de este cuarto ni de una colmena: no dice nada sobre abejas.
+- Las 7 ventanas aprendidas entraron en la copia del modelo en RAM; como no se llegó a guardar, el modelo en flash sigue igual (al arrancar solo se vuelve a anotar el identificador de la compilación).
 
 ## Fase D · Enviar a la app y a Supabase
 
