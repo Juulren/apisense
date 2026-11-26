@@ -186,7 +186,11 @@ def secure_opener() -> urllib.request.OpenerDirector:
 def post_uplink(opener, url: str, secret: str, payload: bytes, dev_eui: str, f_cnt: int, session: str,
                 received_at: str | None = None) -> tuple[bool, str]:
     """Post one message as The Things Stack would. Returns (accepted by the server, one-line answer)."""
-    data = json.dumps(ttn_body(payload, dev_eui, f_cnt, session, received_at)).encode()
+    return post_json(opener, url, secret, ttn_body(payload, dev_eui, f_cnt, session, received_at))
+
+
+def post_json(opener, url: str, secret: str, body: dict) -> tuple[bool, str]:
+    data = json.dumps(body).encode()
     request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json", "x-uplink-secret": secret})
     try:
         with opener.open(request, timeout=20) as r:

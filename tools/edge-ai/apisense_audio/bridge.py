@@ -20,7 +20,7 @@ from collections import deque
 from datetime import datetime
 from pathlib import Path
 
-from .uplink_sim import FLAG_MIC_FAULT, FLAG_NOT_JUDGING, crc8, now_iso, post_uplink, secure_opener
+from .uplink_sim import FLAG_MIC_FAULT, FLAG_NOT_JUDGING, crc8, now_iso, post_json, post_uplink, secure_opener
 
 TIME_EVERY_S = 3600  # the board's clock drifts a little; a small correction does not drop an alarm
 QUEUE_MAX = 1500  # messages kept while there is no internet (about 10 days at one every 10 minutes)
@@ -40,6 +40,49 @@ def worth_retrying(answer: str) -> bool:
     """No connection or a server-side failure can be fixed by trying again; a refusal (4xx) cannot."""
     first = answer.split(" ", 1)[0]
     return not first.isdigit() or first.startswith("5") or first == "429"
+
+
+def secret_problem(secret: str) -> str | None:
+    """Why this text cannot be the secret, or None. In some Windows consoles Ctrl+V pastes nothing and types
+    an invisible character; sent in a header, the server answers an empty 400 to every message."""
+    if all(32 <= ord(c) <= 126 for c in secret):
+        return None
+    return "lo escrito lleva un carácter invisible o no válido (suele pasar con Ctrl+V): pégalo con clic derecho"
+
+
+def secret_verdict(answer: str) -> str:
+    """What the answer to an empty message says about the secret: lora-uplink checks the secret before the
+    body, so "invalid_shape" means it was accepted. Nothing can be stored from an empty message."""
+    if answer.startswith("400 ") and "invalid_shape" in answer:
+        return "ok"
+    return "wrong" if answer.startswith("401") else "unknown"
+
+
+def ask_secret(read, check, say, tries: int = 3) -> str | None:
+    """A secret worth using, or None. read() gives what was typed; check(secret) gives the server's answer."""
+    for _ in range(tries):
+        secret = read().strip()
+        if not secret:
+            say("no se escribió ningún secreto")
+            continue
+        problem = secret_problem(secret)
+        if problem:
+            say(problem)
+            continue
+        answer = check(secret)
+        verdict = secret_verdict(answer)
+        if verdict == "wrong":
+            say("el servidor no reconoce ese secreto: debe ser el mismo que LORA_UPLINK_SECRET en Supabase")
+            continue
+        if verdict == "ok":
+            say("secreto comprobado (no se guardó nada)")
+            return secret
+        if worth_retrying(answer):  # no internet or a server failure: keep what the node says and send it later
+            say(f"no se pudo comprobar el secreto ({answer}); sigo y reintento el envío")
+            return secret
+        say(f"la dirección no respondió como lora-uplink ({answer}); revisa UPLINK_URL")
+        return None
+    return None
 
 
 class Outbox:
@@ -126,6 +169,7 @@ def main() -> int:
     a = ap.parse_args()
 
     secret = None
+    opener = secure_opener()
     if a.url:
         if not a.url.startswith("https://") or not a.dev_eui:
             print("--url debe ser https y necesita --dev-eui")
@@ -133,16 +177,25 @@ def main() -> int:
         if not a.yes_store_real_rows:
             print("Con --url cada mensaje se GUARDA en tu proyecto y puede mandar avisos. Añade --yes-store-real-rows.")
             return 2
-        secret = os.environ.get(a.secret_env)
-        if not secret and sys.stdin.isatty():
-            secret = getpass.getpass("Secreto del puente (no se muestra ni se guarda): ").strip()
-        if not secret:
+        stored = os.environ.get(a.secret_env)
+        if stored:
+            read, tries = lambda: stored, 1
+        elif sys.stdin.isatty():
+            prompt = "Secreto del puente (pégalo con clic derecho y pulsa Intro; no se muestra ni se guarda): "
+            read, tries = lambda: getpass.getpass(prompt), 3
+        else:
             print(f"falta la variable de entorno {a.secret_env}")
+            return 2
+        try:
+            secret = ask_secret(read, lambda s: post_json(opener, a.url, s, {})[1], print, tries)
+        except (KeyboardInterrupt, EOFError):
+            secret = None
+        if secret is None:
+            print("sin un secreto válido no se envía nada")
             return 2
 
     import serial  # pip install pyserial
 
-    opener = secure_opener()
     session = f"bridge-{int(time.time())}"  # a new session per run, so counters never collide with an older run
     outbox = Outbox(lambda payload, n, at: post_uplink(opener, a.url, secret, payload, a.dev_eui, n, session, at))
     f_cnt = 0
