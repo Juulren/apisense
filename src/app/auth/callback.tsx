@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useURL } from "expo-linking";
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { ActivityIndicator } from "react-native";
 import { Screen } from "../../components/ui/Screen";
 import { Button, Label } from "../../components/ui";
 import { completeAuthCallback } from "../../services/supabase";
 import { useApp } from "../../state/AppProvider";
 import { DEMO_ONLY } from "../../config/runtime";
+import { StartAt } from "../../components/StartAt";
+import { startAt } from "../../state/startAt";
 
 export default function AuthCallback() {
   const url = useURL();
@@ -35,7 +37,7 @@ export default function AuthCallback() {
   }, [url]);
   if (DEMO_ONLY) return <Redirect href="/" />;
   if (confirmed && app.workspace && !app.busy)
-    return <Redirect href="/dashboard" />;
+    return <StartAt href="/dashboard" />;
   const error =
     message ??
     (confirmed
@@ -54,7 +56,7 @@ export default function AuthCallback() {
           <Label>{error}</Label>
           <Button
             label="Volver a iniciar sesión"
-            onPress={() => router.replace("/login")}
+            onPress={() => startAt("/login")}
           />
         </>
       ) : (

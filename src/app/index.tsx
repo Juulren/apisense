@@ -1,14 +1,16 @@
 import { ActivityIndicator, Image, View } from "react-native";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 import { Badge, Button, Card, Icon, Label } from "../components/ui";
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { DEMO_ONLY, SECURITY_QA } from "../config/runtime";
+import { startAt } from "../state/startAt";
+import { StartAt } from "../components/StartAt";
 export default function Welcome() {
   const app = useApp(),
     task = useTask();
-  if (app.workspace) return <Redirect href="/dashboard" />;
+  if (app.workspace) return <StartAt href="/dashboard" />;
   return (
     <Screen header={false}>
       <View style={{ alignItems: "center", paddingTop: 64, gap: 18 }}>
@@ -58,7 +60,7 @@ export default function Welcome() {
             onPress={() =>
               task.run(async () => {
                 await app.enterDemo();
-                router.replace("/dashboard");
+                startAt("/dashboard");
               })
             }
           />

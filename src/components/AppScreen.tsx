@@ -1,10 +1,10 @@
 import { ActivityIndicator, View } from "react-native";
-import { Redirect } from "expo-router";
 import type { ComponentProps, ReactNode } from "react";
 import { Screen } from "./ui/Screen";
 import { Label } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { headerStatus } from "../services/HeaderStatus";
+import { StartAt } from "./StartAt";
 export function AppScreen(props: ComponentProps<typeof Screen>) {
   const { workspace, busy, syncState, error, reload, data } = useApp();
   if (busy)
@@ -14,7 +14,7 @@ export function AppScreen(props: ComponentProps<typeof Screen>) {
         <Label>Abriendo tu base local…</Label>
       </Screen>
     );
-  if (!workspace) return <Redirect href="/login" />;
+  if (!workspace) return <StartAt href="/login" />;
   const status = headerStatus({
     demo: workspace.demo,
     sync: syncState.status,

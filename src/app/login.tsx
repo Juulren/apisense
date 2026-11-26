@@ -17,6 +17,8 @@ import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { DEMO_ONLY } from "../config/runtime";
 import { cleanName, isEmail, newPasswordProblem } from "../services/Profile";
+import { startAt } from "../state/startAt";
+import { StartAt } from "../components/StartAt";
 export default function Login() {
   const app = useApp(),
     task = useTask();
@@ -26,13 +28,13 @@ export default function Login() {
     [visible, setVisible] = useState(false),
     [offline, setOffline] = useState(false),
     [mode, setMode] = useState<"login" | "register">("login");
-  if (app.workspace) return <Redirect href="/dashboard" />;
+  if (app.workspace) return <StartAt href="/dashboard" />;
   if (DEMO_ONLY) return <Redirect href="/" />;
   const submit = () =>
     task.run(async () => {
       if (offline) {
         await app.offlineLogin();
-        router.replace("/dashboard");
+        startAt("/dashboard");
         return;
       }
       if (!isEmail(email))
@@ -45,7 +47,7 @@ export default function Login() {
         // Existing accounts keep working whatever the current policy is.
         if (!password) throw new Error("Escribe tu contraseña");
         await app.login(email, password);
-        router.replace("/dashboard");
+        startAt("/dashboard");
       }
     });
   return (
@@ -182,7 +184,7 @@ export default function Login() {
           onPress={() =>
             task.run(async () => {
               await app.enterDemo();
-              router.replace("/dashboard");
+              startAt("/dashboard");
             })
           }
         />
@@ -210,7 +212,7 @@ export default function Login() {
                       onPress: () =>
                         task.run(async () => {
                           await app.restoreFromCloud();
-                          router.replace("/dashboard");
+                          startAt("/dashboard");
                         }),
                     },
                   ],

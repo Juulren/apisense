@@ -15,6 +15,7 @@ import { useTheme } from "../components/ui/theme";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { dateLabel } from "../state/selectors";
+import { startAt } from "../state/startAt";
 export default function Settings() {
   const app = useApp(),
     task = useTask(),
@@ -113,7 +114,7 @@ export default function Settings() {
         onPress={() =>
           task.run(async () => {
             await app.logout();
-            router.replace("/");
+            startAt("/");
           })
         }
       />

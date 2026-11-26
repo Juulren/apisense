@@ -101,15 +101,14 @@ export default function Inspection() {
       {task.message ? (
         <Label accessibilityLiveRegion="polite">{task.message}</Label>
       ) : null}
-      {hive ? (
-        <Button
-          label="Volver al detalle de colmena"
-          variant="secondary"
-          onPress={() =>
-            router.dismissTo({ pathname: "/hive/[id]", params: { id: hive.id } })
-          }
-        />
-      ) : null}
+      {/* Back to wherever the person came from: home, the list or a hive. */}
+      <Button
+        label="Volver"
+        variant="secondary"
+        onPress={() =>
+          router.canGoBack() ? router.back() : router.replace("/dashboard")
+        }
+      />
     </AppScreen>
   );
 }

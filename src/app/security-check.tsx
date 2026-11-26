@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { Screen } from "../components/ui/Screen";
 import { Button, Label } from "../components/ui";
 import { SECURITY_QA } from "../config/runtime";
+import { startAt } from "../state/startAt";
 
 export default function SecurityCheck() {
   const [results, setResults] = useState<string[]>([]);
@@ -48,7 +49,7 @@ export default function SecurityCheck() {
       <Button
         label="Volver al inicio"
         disabled={state === "running"}
-        onPress={() => router.replace("/")}
+        onPress={() => startAt("/")}
       />
     </Screen>
   );

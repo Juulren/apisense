@@ -52,8 +52,8 @@ name: Demo nativa offline y persistencia
 - scrollUntilVisible:
     centerElement: true
     element:
-      text: "Volver al detalle de colmena"
-- tapOn: "Volver al detalle de colmena"
+      text: "Volver"
+- tapOn: "Volver"
 - scrollUntilVisible:
     centerElement: true
     element:

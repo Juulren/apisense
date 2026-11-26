@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import { Redirect, router } from "expo-router";
+import { Redirect } from "expo-router";
 import { Button, Card, Field, Label } from "../components/ui";
 import { Screen } from "../components/ui/Screen";
 import { useApp } from "../state/AppProvider";
@@ -11,6 +11,8 @@ import {
   isRecoveryCode,
   newPasswordProblem,
 } from "../services/Profile";
+import { startAt } from "../state/startAt";
+import { StartAt } from "../components/StartAt";
 
 // Three steps: ask for a code by email, check it, then set the new password.
 // The account only opens after the last step. The first answer is the same
@@ -31,7 +33,7 @@ export default function ForgotPassword() {
     },
     [cancel],
   );
-  if (app.workspace) return <Redirect href="/dashboard" />;
+  if (app.workspace) return <StartAt href="/dashboard" />;
   if (DEMO_ONLY) return <Redirect href="/" />;
   const send = () =>
     task.run(async () => {
@@ -57,7 +59,7 @@ export default function ForgotPassword() {
       if (problem) throw new Error(problem);
       await app.setRecoveredPassword(password, email);
       verified.current = false;
-      router.replace("/dashboard");
+      startAt("/dashboard");
     });
   return (
     <Screen

@@ -14,7 +14,7 @@
 | Pantalla | Hoy | Propuesta |
 |---|---|---|
 | Barra superior | «Apisense Apiario» y estado en todas | Título de la pantalla; el estado solo si hay problema (sin conexión, error o registros sin enviar) |
-| Inicio | La misma alerta aparece en el aviso, en el mosaico y en «0 de 1 con sonido habitual»; además dice «1 colmenas» | Saludo, clima en una línea y colmenas con su estado, las que piden revisión arriba. Un botón: Anotar |
+| Inicio | La misma alerta aparece en el aviso, en el mosaico y en «0 de 1 con sonido habitual»; además dice «1 colmenas» | Saludo, clima siempre desplegado (cambio pedido el 26 nov) y colmenas con su estado, las que piden revisión arriba. Un botón: Anotar |
 | Diagnóstico y Mis colmenas | Dos pantallas que listan las mismas colmenas | **Una sola**, en la pestaña «Colmenas»: buscar, abrir, añadir; mapa como vista. Se conservan las rutas que abren las notificaciones |
 | Colmena | Botón largo, nodo, línea de tiempo, registros, bitácora, vincular y administrar | Estado grande y «Revisar» si hay alerta; línea de tiempo; últimas notas. Renombrar y quitar, en un menú. Vincular el nodo pasa a administración |
 | Alertas | **Una tarjeta por cada mensaje** (hubo 20 de una colmena en una prueba de unos 20 minutos), con cuatro botones y una nota cada una | **Una por colmena y episodio** («desde las 22:42 · 20 avisos»). Dos botones: **Confirmada** / **Falsa alarma**, y nota opcional |
@@ -86,5 +86,10 @@ Arranque en frío antes del rediseño, demo en el emulador: **mediana 673 ms** e
 
 Abrir una colmena sigue llevando a su detalle.
 
+## Regresar (26 nov)
+**Regla:** regresar (botón o gesto de Android) lleva a la pantalla que se veía antes; los botones «Volver» hacen lo mismo. En la primera pantalla de la sesión, Android sale de la app. Entrar o salir de la cuenta empieza un historial nuevo (`startAt`).
+
+Se reprodujeron y corrigieron dos fallos: en Anotar el botón iba al detalle de una colmena aunque se llegara desde Inicio, y tras salir y volver a entrar regresaban pantallas viejas. Por revisión del código se corrigió lo mismo para la sesión que se cierra sola, el registro, el enlace de confirmación y las notificaciones, **sin probarlo** (requiere cuenta o notificaciones reales). Falta confirmarlo en el teléfono.
+
 ## Ya corregido (25 nov, fuera de este plan, aún sin commit)
-El teclado que devolvía la pantalla hacia arriba, y deslizar para actualizar (probados en el emulador con la demo; sin servidor, no se probó que bajen datos nuevos). El botón **regresar** no se reprodujo en el emulador (Android 15): falta saber teléfono, versión de Android y pantalla.
+El teclado que devolvía la pantalla hacia arriba, y deslizar para actualizar (probados en el emulador con la demo; sin servidor, no se probó que bajen datos nuevos). Sobre el botón **regresar**, ver la sección anterior.

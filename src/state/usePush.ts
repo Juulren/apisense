@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Platform } from "react-native";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { supabase } from "../services/supabase";
 import {
   PUSH_ENABLED,
@@ -16,6 +16,9 @@ import { useApp } from "./AppProvider";
  */
 export function usePushRegistration() {
   const { workspace } = useApp();
+  const path = usePathname();
+  const current = useRef(path);
+  current.current = path;
   const real = Boolean(workspace && !workspace.demo);
   useEffect(() => {
     if (!PUSH_ENABLED || !real || !supabase) return;
@@ -28,6 +31,15 @@ export function usePushRegistration() {
           name: "Alertas del nodo",
           importance: Notifications.AndroidImportance.HIGH,
         });
+        const open = (response: import("expo-notifications").NotificationResponse) => {
+          // Handled once: otherwise the same tap comes back with the next session.
+          Notifications.clearLastNotificationResponse();
+          const target = routeForNotification(
+            response.notification.request.content.data,
+          );
+          // A second copy of the screen would make back seem to do nothing.
+          if (target !== current.current) router.push(target as never);
+        };
         const claim = async (token: string, platform: string) => {
           const { error } = await supabase!.rpc("claim_push_token", {
             p_token: token,
@@ -58,19 +70,12 @@ export function usePushRegistration() {
             void claim(next, Platform.OS).catch(() => {});
           }),
           Notifications.addNotificationResponseReceivedListener((response) => {
-            router.push(
-              routeForNotification(
-                response.notification.request.content.data,
-              ) as never,
-            );
+            open(response);
           }),
         );
         // A tap that launched the app arrived before the listener existed.
         const launch = await Notifications.getLastNotificationResponseAsync();
-        if (launch && !cancelled)
-          router.push(
-            routeForNotification(launch.notification.request.content.data) as never,
-          );
+        if (launch && !cancelled) open(launch);
       } catch {
         // Push is a convenience; the in-app alerts keep working.
       }

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { router } from "expo-router";
 import { Button, Card, Field, Label, Section } from "./ui";
 import { useApp } from "../state/AppProvider";
 import { useTask } from "../state/useTask";
 import { supabase } from "../services/supabase";
 import { newPasswordProblem } from "../services/Profile";
+import { startAt } from "../state/startAt";
 
 /** "Mi perfil": the name shown in the greeting, and the account's own controls. */
 export function ProfileSection() {
@@ -165,7 +165,7 @@ export function ProfileSection() {
                 onPress={() =>
                   task.run(async () => {
                     await app.deleteAccount(current);
-                    router.replace("/");
+                    startAt("/");
                   })
                 }
               />
